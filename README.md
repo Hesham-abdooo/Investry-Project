@@ -1,16 +1,46 @@
-# React + Vite
+# Investry
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+🎓 Graduation Project 2026  
+A React.js Web Application
 
-Currently, two official plugins are available:
+## 📌 Overview
+Investry is a web application developed as a Graduation Project for 2026.  
+The project aims to provide users with an intuitive and modern platform for managing and tracking investment-related activities.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🚀 Features
+- User-friendly and responsive UI
+- Secure authentication system
+- Dashboard with investment insights
+- Real-time data updates
+- Clean and modern design
 
-## React Compiler
+## 🛠️ Technologies Used
+- React.js
+- JavaScript (ES6+)
+- HTML5 & CSS3
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 🏗️ System Architecture
+- Frontend: React.js
+- Backend: ASP.NET Core Web API  
+- Database: SQL Server  
 
-## Expanding the ESLint configuration
+## 👨‍💻 Team Members
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- Hisham Abd Alhamed
+- Hossam Mohamed Youssef
+- Abdullah Ibrahim Dandarawy
+- Abd Alrahman Salah Abd Alkarim
+- Ahmed Rabea Abbas
+- Hamza Mohamed Hassan
+- Hatem Mohamed Hassan
+- Abd Alrahman Alaa
+
+## 🎓 Supervised By
+Dr. [Basma Ahmed]
+
+
+## 📦 Installation & Setup
+
+1. Clone the repository:
+```bash
+git clone https://github.com/Hesham-abdooo/Investry-Project.git
