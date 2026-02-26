@@ -34,6 +34,7 @@ The project aims to provide users with an intuitive and modern platform for mana
 - Hamza Mohamed Hassan
 - Hatem Mohamed Hassan
 - Abd Alrahman Alaa
+- Yasmeen Abdelrahim
 
 ## 🎓 Supervised By
 Dr. [Basma Ahmed]
