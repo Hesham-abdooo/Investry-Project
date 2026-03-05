@@ -1,0 +1,140 @@
+/* ==============================
+   How It Works Section
+============================== */
+
+.howItWorks {
+  background-color: #f5f5f0;
+  padding: 80px 24px;
+  width: 100%;
+}
+
+/* ==============================
+   Header
+============================== */
+
+.header {
+  text-align: center;
+  margin-bottom: 64px;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #C9A84C;
+  margin-bottom: 16px;
+}
+
+.subtitle {
+  font-size: 1rem;
+  color: #888;
+  max-width: 480px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* ==============================
+   Steps Row
+============================== */
+
+.steps {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.stepWrapper {
+  display: flex;
+  align-items: flex-start;
+  flex: 1;
+}
+
+/* ==============================
+   Dashed Connector
+============================== */
+
+.connector {
+  flex-shrink: 0;
+  width: 80px;
+  border-top: 2px dashed #ccc;
+  margin-top: 36px;
+}
+
+/* ==============================
+   Single Step
+============================== */
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  flex: 1;
+  padding: 0 16px;
+}
+
+/* ==============================
+   Circle Numbers
+============================== */
+
+.circle {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 20px;
+  flex-shrink: 0;
+}
+
+.circleGold  { background-color: #C9A84C; }
+.circleNavy  { background-color: #1a2340; }
+.circleGreen { background-color: #4ecb8d; }
+
+/* ==============================
+   Step Text
+============================== */
+
+.stepTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #C9A84C;
+  margin-bottom: 10px;
+}
+
+.stepDescription {
+  font-size: 0.875rem;
+  color: #888;
+  line-height: 1.6;
+  max-width: 220px;
+}
+
+/* ==============================
+   Responsive - Mobile
+============================== */
+
+@media (max-width: 768px) {
+  .steps {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .stepWrapper {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .connector {
+    width: 2px;
+    height: 40px;
+    border-top: none;
+    border-left: 2px dashed #ccc;
+    margin-top: 0;
+    align-self: center;
+  }
+}
