@@ -6,25 +6,16 @@ import LandingPage from "../Pages/LandingPage/LandingPage";
 import Login from "../Pages/Authentication/Login";
 import SignUp from "../Pages/Authentication/SignUp";
 import NotFound from "../Pages/NotFound/NotFound";
-import Home from "../Components/LandingPage/Home.jsx";
+
 import Investor from "../Pages/Investor/Investor.jsx";
 import InvestorDashboard from "../Components/Investor/InvestorLayout/InvestorDashboard.jsx";
-
-
-
-
 import Founder from "../Pages/Founder/Founder.jsx";
 import FounderDasboard from "../Components/Founder/FounderLayout/FounderDasboard.jsx";
 const routes = createBrowserRouter([
   // ! Routing Landing page
   {
-    path: "",
+    path: "/",
     element: <LandingPage />,
-    children: [
-      { index: true, element: <Home /> },
-      { path: "home", element: <Home /> },
-    
-    ],
   },
 
     // ! Routing Auth pages

@@ -1,9 +1,5 @@
-
-
-
 import React from "react";
-import FooterSyles from "./Footer.module.css"
-
+import "tailwindcss";
 import { FaTwitter, FaLinkedinIn, FaFacebookF, FaInstagram } from "react-icons/fa";
 import { HiOutlineGlobeAlt } from "react-icons/hi";
 
@@ -40,7 +36,7 @@ const FooterColumn = ({ title, links }) => (
     {links.map((link) => (
       <span
         key={link.label}
-        className="text-gray-500 font-light text-sm hover:text-gray-300 transition-colors duration-200"
+        className="text-gray-500 font-light text-sm hover:text-gray-300 transition-colors duration-200 cursor-pointer"
       >
         {link.label}
       </span>
@@ -81,7 +77,7 @@ export default function Footer() {
                 <a
                   key={index}
                   href={social.href}
-                  className="text-gray-400 hover:text-white text-lg transition-colors duration-200"
+                  className="text-gray-400 hover:text-white text-lg transition-colors duration-200 cursor-pointer"
                 >
                   {social.icon}
                 </a>
@@ -105,13 +101,16 @@ export default function Footer() {
         <p className="text-gray-500 text-sm">© 2025 InvesTry Platform. All rights reserved.</p>
 
         <div className="flex items-center gap-6">
-          <span className="text-gray-400 font-light text-sm hover:text-white transition-colors">Privacy Policy</span>
-          <span  className="text-gray-400 font-light text-sm hover:text-white transition-colors">Terms of Service</span>
+          <span className="text-gray-400 font-light text-sm hover:text-white transition-colors cursor-pointer">Privacy Policy</span>
+          <span  className="text-gray-400 font-light text-sm hover:text-white transition-colors cursor-pointer">Terms of Service</span>
 
           {/* Language Switcher */}
           <div className="flex items-center gap-2 border border-gray-700 rounded-lg px-3 py-1.5">
             <HiOutlineGlobeAlt className="text-gray-400 text-base" />
-            <span className="text-gray-400 text-sm">EN | AR</span>
+            <span className="text-gray-400 text-sm hover:text-white transition-colors cursor-pointer">EN</span>
+            <span className="text-gray-400 text-sm ">|</span>
+            <span className="text-gray-400 text-sm hover:text-white transition-colors cursor-pointer">AR</span>
+
           </div>
         </div>
       </div>

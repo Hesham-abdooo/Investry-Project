@@ -1,0 +1,300 @@
+.background {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 640px;
+    background: linear-gradient(130deg,#d4a017,#1A3673);
+    gap: 150px;
+}
+.content h1 {
+    font-size: 56px;
+    font-weight: bold;
+    font-family: "Nimbus Sans", sans-serif;
+    margin: 0;
+    width: 544px;
+}
+#he{
+    color: #ffffff;
+}
+#she{
+    color: #0F2044;
+}
+.content p {
+    font-size: 1.2rem;
+    margin-top: 110px;
+    color: #FFFFFFCC;
+    font-family: "Inter", sans-serif;
+    width: 544px;
+}
+.start_btn{
+    margin-top: 14px;
+    padding: 12px 24px;
+    background-color: #0F2044;
+    color: #ffffff;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+
+}
+.explore_btn{
+   margin: 12px;
+    padding: 12px 24px;
+    background-color: transparent;
+    color: #ffffff;
+    border: 2px solid #ffffff;
+    border-radius: 5px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+}
+.explore_btn:hover{
+    background-color: #ffffff;
+    color: #0F2044;
+    transition: 0.3s;
+}
+/*--------------------------------------------------------------------------------------------------------*/
+.hiw_bg{
+    display: flex;
+    flex-direction: column;
+    background-color:#F8FAFC;
+    height: 533px;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+}
+.hiw_head{
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    
+}
+.hiw_head h1{
+    font-family: "Nimbus Sans", sans-serif;
+    font-size: 36px;
+    color: #d4a017;
+}
+.hiw_head p{
+    font-family: "Inter", sans-serif;
+    font-size: 16px;
+    color: #8a8a8a;
+    margin-top: 10px;
+}
+.steps{
+  padding:60px 20px;
+}
+
+.steps-container{
+  max-width:1000px;
+  margin:auto;
+  display:flex;
+  justify-content:space-between;
+  position:relative;
+}
+
+/* dotted line */
+.steps-container::before{
+  content:"";
+  position:absolute;
+  top:22px;
+  left:15%;
+  width:70%;
+  border-top:2px dashed #d3d3d3;
+  z-index:0;
+}
+
+.step{
+  text-align:center;
+  width:30%;
+  position:relative;
+  z-index:1;
+}
+
+.circle{
+  width:45px;
+  height:45px;
+  border: 5px solid rgb(223, 220, 220);
+  box-shadow: black;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:white;
+  font-weight:bold;
+  margin:auto;
+}
+
+.yellow{
+    font-family: "Inter", sans-serif;
+  background:#d89c12;
+}
+
+.blue{
+    font-family: "Inter", sans-serif;
+  background:#1c2b4a;
+}
+
+.green{
+    font-family: "Inter", sans-serif;
+  background:#6fd3b2;
+}
+
+.step h3{
+    font-family: "Nimbus Sans", sans-serif;
+     margin-top:15px;
+    color:#d89c12;
+}
+
+.step p{
+    font-family: "Inter", sans-serif;
+  font-size:14px;
+  color:#8a8a8a;
+  margin-top:8px;
+}
+/*--------------------------FUNDING MODELS--------------------------*/
+.FM-head{
+  justify-content: center;
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  padding-top: 70px;
+
+}
+.FM-head h1{
+font-family: "Nimbus Sans", sans-serif;
+    font-size: 36px;
+    color: #d4a017;
+}
+.FM-head p{
+font-family: "Inter", sans-serif;
+  font-size: 16px;
+  color: #8a8a8a;
+  margin-top: 10px;
+}
+.funds{
+  display: flex;
+  padding:60px 20px;
+  justify-content: space-around;
+  flex-wrap: wrap;
+}
+.cards-container{
+  position: relative;
+  background-color: #F8FAFC;
+  margin-top: 5px;
+  padding: 30px ;
+   border: 0px solid hsl(0, 0%, 80%);
+    border-radius: 5px;
+    box-shadow: 5px 5px 5px hsla(0, 0%, 0%, 0.1);
+    display: flex;
+    width: 300px;
+    height: 300px;
+    align-items: center; 
+    
+}
+.cards h1{
+  color: #d4a017;
+  font-family: "Nimbus Sans", sans-serif;
+}
+.cards p{
+  color: #8a8a8a;
+  font-family: "Inter", sans-serif;
+}
+.cards a{
+  color: black;
+  text-decoration: underline;
+  font-family: "Inter", sans-serif;
+}
+/*--------------------------------------------------------------------------------------------*/
+.overview{
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  background-color: #d4a017;
+  width: 100%;
+  height: 270px;
+  flex-wrap: wrap;
+}
+.view{
+  display: flex;
+  flex-direction: column;
+  font-size: 20px;
+  align-items: center;
+}
+.view h1{
+  color: #0F2044 ;
+  font-weight: bold;
+  font-family:monospace;
+  font-size: 30px;
+}
+.view p{
+  color: #FFFFFFCC;
+  font-family: "Inter", sans-serif;
+}
+/*----------------------------------------TRUST & SECURITY--------------------------------------------*/
+.T-head{
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    padding-top: 100px;
+    padding-bottom: 50px;
+}
+.T-head h1{
+    font-family: "Nimbus Sans", sans-serif;
+    font-size: 36px;
+    color: #d4a017;
+}
+.T-head p{
+    font-family: "Inter", sans-serif;
+    font-size: 16px;
+    color: #8a8a8a;
+    margin-top: 10px;
+}
+.security-EX{
+  padding:60px;
+}
+.sec-container{
+  max-width:1000px;
+  margin:auto;
+  display:flex;
+  justify-content:space-between;
+  position:relative;
+  gap: 20px;
+}
+
+.ts{
+  text-align:center;
+  width:30%;
+  position:relative;
+  z-index:1;
+}
+.T-icons{
+  width:64px;
+  height:64px;
+  font-size: 20px;
+  background-color:  #F8FAFC ;
+  box-shadow: black;
+  border-radius:12px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#d4a017;
+  font-weight:bold;
+  margin:auto;
+
+}
+.ts h3{
+    font-family: "Nimbus Sans", sans-serif;
+     margin-top:15px;
+    color:#d89c12;
+}
+
+.ts p{
+    font-family: "Inter", sans-serif;
+  font-size:14px;
+  color:#8a8a8a;
+  margin-top:8px;
+}
