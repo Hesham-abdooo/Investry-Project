@@ -39,6 +39,10 @@
     cursor: pointer;
 
 }
+.start_btn:hover{
+   background-color: #D4A017;
+    transition: 0.3s;
+}
 .explore_btn{
    margin: 12px;
     padding: 12px 24px;
@@ -227,7 +231,7 @@ font-family: "Inter", sans-serif;
   color: #0F2044 ;
   font-weight: bold;
   font-family:monospace;
-  font-size: 30px;
+  font-size: 40px;
 }
 .view p{
   color: #FFFFFFCC;
@@ -262,7 +266,7 @@ font-family: "Inter", sans-serif;
   display:flex;
   justify-content:space-between;
   position:relative;
-  gap: 20px;
+  gap: 50px;
 }
 
 .ts{
