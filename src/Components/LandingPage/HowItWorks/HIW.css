@@ -79,6 +79,7 @@
 .hiw_head h1{
     font-family: "Nimbus Sans", sans-serif;
     font-size: 36px;
+    font-weight: bold;
     color: #d4a017;
 }
 .hiw_head p{
@@ -158,7 +159,7 @@
   color:#8a8a8a;
   margin-top:8px;
 }
-/*--------------------------FUNDING MODELS--------------------------*/
+/*------------------------------------------------FUNDING MODELS-----------------------------------------------*/
 .FM-head{
   justify-content: center;
   align-items: center;
@@ -170,6 +171,7 @@
 .FM-head h1{
 font-family: "Nimbus Sans", sans-serif;
     font-size: 36px;
+    font-weight: bold;
     color: #d4a017;
 }
 .FM-head p{
@@ -180,7 +182,7 @@ font-family: "Inter", sans-serif;
 }
 .funds{
   display: flex;
-  padding:60px 20px;
+  padding:60px 110px;
   justify-content: space-around;
   flex-wrap: wrap;
 }
@@ -189,18 +191,23 @@ font-family: "Inter", sans-serif;
   background-color: #F8FAFC;
   margin-top: 5px;
   padding: 30px ;
-   border: 0px solid hsl(0, 0%, 80%);
-    border-radius: 5px;
-    box-shadow: 5px 5px 5px hsla(0, 0%, 0%, 0.1);
-    display: flex;
-    width: 300px;
-    height: 300px;
-    align-items: center; 
+  border: 0px solid hsl(0, 0%, 80%);
+  border-radius: 5px;
+  box-shadow: 5px 5px 5px hsla(0, 0%, 0%, 0.1);
+  display: flex;
+  width: 300px;
+  height: 300px;
+  align-items: center; 
     
+}
+.cards img{
+  padding-bottom:15px;
 }
 .cards h1{
   color: #d4a017;
   font-family: "Nimbus Sans", sans-serif;
+  font-size: 30px;
+  font-weight: bold;
 }
 .cards p{
   color: #8a8a8a;
@@ -210,11 +217,60 @@ font-family: "Inter", sans-serif;
   color: black;
   text-decoration: underline;
   font-family: "Inter", sans-serif;
+  text-decoration: none;
+  
 }
+.cards a:hover{
+text-decoration: underline;
+}
+/*------------------------------------------Featured Campaigns------------------------------------------*/
+.featured_bg{
+  width: 100%;
+  height: 790px;
+  background-color: #F8FAFC;
+}
+.featured-head{
+  margin-top: 100px;
+  display: flex;
+  justify-content: space-around;
+  align-items: baseline;
+}
+.feat-head h1{
+  font-family: "Nimbus Sans", sans-serif;
+  color: #d4a017;
+}
+.feat-head p{
+  color: #94A3B8;
+  font-family: "Inter", sans-serif;
+}
+.feat-btn{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border: 2px solid #d4a017;
+  border-radius: 5px;
+  height: 45px;
+  width: 200px;
+  color: #d4a017 ;
+}
+.feat-btn:hover{
+  background-color: #D4A017;
+  color: white;
+  transition-duration: 0.3s;
+}
+.feat-container{
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
 /*--------------------------------------------------------------------------------------------*/
 .overview{
   display: flex;
   justify-content: space-around;
+  padding: 90px;
   align-items: center;
   background-color: #d4a017;
   width: 100%;
@@ -230,7 +286,7 @@ font-family: "Inter", sans-serif;
 .view h1{
   color: #0F2044 ;
   font-weight: bold;
-  font-family:monospace;
+  font-family:'Times New Roman', Times, serif;
   font-size: 40px;
 }
 .view p{
@@ -243,12 +299,13 @@ font-family: "Inter", sans-serif;
     align-items: center;
     display: flex;
     flex-direction: column;
-    padding-top: 100px;
-    padding-bottom: 50px;
+    padding-top: 120px;
+    padding-bottom: 30px;
 }
 .T-head h1{
     font-family: "Nimbus Sans", sans-serif;
     font-size: 36px;
+    font-weight: bold;
     color: #d4a017;
 }
 .T-head p{
@@ -261,12 +318,14 @@ font-family: "Inter", sans-serif;
   padding:60px;
 }
 .sec-container{
-  max-width:1000px;
-  margin:auto;
+  padding-left: 100px;
+  padding-right: 100px;
+  width:100%;
+  gap: 30px;
   display:flex;
   justify-content:space-between;
   position:relative;
-  gap: 50px;
+  
 }
 
 .ts{
@@ -278,7 +337,7 @@ font-family: "Inter", sans-serif;
 .T-icons{
   width:64px;
   height:64px;
-  font-size: 20px;
+  font-size: 35px;
   background-color:  #F8FAFC ;
   box-shadow: black;
   border-radius:12px;
@@ -291,6 +350,7 @@ font-family: "Inter", sans-serif;
 
 }
 .ts h3{
+  font-size: 20px;
     font-family: "Nimbus Sans", sans-serif;
      margin-top:15px;
     color:#d89c12;
