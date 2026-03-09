@@ -5,10 +5,12 @@ import live from "../../../assets/live.png";
 import Equity from "../../../assets/equity.png";
 import Mudbarah from "../../../assets/mudbarah.png"
 import Reward from "../../../assets/reward.png"
+import FeatContainer from "../../../assets/featContainer.png"
 import { FiLock } from "react-icons/fi";
 import { IoMdCheckmarkCircleOutline } from "react-icons/io";
 import { GoShieldCheck } from "react-icons/go";
 import { MdContentPasteSearch } from "react-icons/md";
+
 
 function HIW(){
     return(
@@ -96,12 +98,31 @@ function HIW(){
   <div className='cards-container'>
     <div className='cards'>
       <img src={Mudbarah} alt="Mudbarah" />
-      <h1>Mudbarah</h1>
+      <h1>Mudarabah</h1>
       <p>Participate in Sharia-compliant profit-sharing investments with vetted businesses.</p>
       <a href="/">Learn more</a>
     </div>
   </div>
   </section>
+
+  {/*-------------------------------------------Featured Campaigns------------------------------------------*/}
+
+<div className='featured_bg'>
+  <div className='featured-head'>
+    <div className='feat-head'>
+    <h1>Featured Campaigns</h1>
+    <p>Discover high-potential projects actively raising funds.</p>
+    </div>
+    <div className='feat-btn'>
+      <button>View all Campaigns</button>
+    </div>
+  </div>
+  <section>
+    <div className='feat-container'>
+          <img src={FeatContainer} alt="" />
+    </div>
+  </section>
+</div>
   {/*----------------------------------------------------------------------------------------------------*/}
 
   <div className='overview'>
@@ -155,7 +176,7 @@ function HIW(){
           <div className='ts'>
             <div className='T-icons'><MdContentPasteSearch/></div>
             <h3>Audit Trail</h3>
-            <p>Transparent tracking of all platformtransactions and agreements.</p>
+            <p>Transparent tracking of all platform transactions and agreements.</p>
           </div>
             
         </div>

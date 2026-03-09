@@ -8,7 +8,7 @@ function NavBar() {
     <header className='header'>
       <a href="/" className='logo'>
         <img src={Logo} alt="InvesTry" className='logo-icon' />
-        InvesTry
+        Inves<span>Try</span>
       </a>
 
       <nav className='nav-links'>
