@@ -1,29 +1,10 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import React, { useState } from "react";
 import { HiOutlineMail, HiArrowLeft } from "react-icons/hi";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import TopBar from "../Basics/TopBar";
+
+
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
@@ -31,31 +12,61 @@ export default function ForgotPassword() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
-  const handleSubmit = async () => {
-    if (!email) {
-      setError("Please enter your email address.");
-      return;
-    }
-    setError("");
-    setLoading(true);
-    try {
-      await axios.post("https://investry.runasp.net/api/Auth/forgot-password", {
-        email,
-      });
-      setSuccess(true);
-    } catch (err) {
-      const msg = err.response?.data?.errors?.[0]?.message;
-      setError(msg || "Something went wrong. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+  const validateEmail = (val) => {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(val);
   };
 
+ const handleSubmit = async () => {
+
+  const trimmedEmail = email.trim();
+
+  if (!trimmedEmail) {
+    setError("Please enter your email address.");
+    return;
+  }
+
+  if (!validateEmail(trimmedEmail)) {
+    setError("Please enter a valid email address.");
+    return;
+  }
+
+  setError("");
+  setLoading(true);
+
+  try {
+
+    await axios.post(
+      "https://investry.runasp.net/api/Auth/forgot-password",
+      {
+        email: trimmedEmail,
+      }
+    );
+
+    setSuccess(true);
+
+  } catch (err) {
+
+    const msg =
+      err.response?.data?.message ||
+      err.response?.data?.errors?.[0]?.message ||
+      "Something went wrong. Please try again.";
+
+    setError(msg);
+
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+
+  
   return (
     <div className="min-h-screen flex flex-col lg:flex-row">
 
-      {/* ===== Left Side ===== */}
-   <div className="hidden lg:flex lg:w-1/2 bg-[#C9A84C] flex-col justify-between p-8 lg:p-12 lg:min-h-screen">
+      {/* ===== Left Side (Desktop Only) ===== */}
+      <div className="hidden lg:flex lg:w-1/2 bg-[#C9A84C] flex-col justify-between p-12 min-h-screen">
 
         {/* Logo */}
         <div className="flex items-center gap-2">
@@ -65,23 +76,21 @@ export default function ForgotPassword() {
               <path d="M12 7v5l3 3" stroke="#C9A84C" strokeWidth="2" strokeLinecap="round" />
             </svg>
           </div>
-          <span className="text-white text-lg font-bold tracking-tight">
-            InvesTry</span>
-         
+          <span className="text-white text-lg font-bold tracking-tight">InvesTry</span>
         </div>
 
         {/* Center text */}
-        <div className="mt-8 lg:mt-0">
-          <h1 className="text-3xl lg:text-5xl font-bold text-white leading-tight mb-4">
+        <div>
+          <h1 className="text-5xl font-bold text-white leading-tight mb-4">
             Regain access to<br />your account.
           </h1>
-          <p className="text-white/80 text-sm lg:text-base leading-relaxed max-w-xs">
+          <p className="text-white/80 text-base leading-relaxed max-w-xs">
             Don't worry, it happens. Follow the simple steps to securely restore access to your Sharia-compliant crowdfunding portfolio.
           </p>
         </div>
 
         {/* Bottom — Trusted */}
-        <div className="flex items-center gap-3 mt-8 lg:mt-0">
+        <div className="flex items-center gap-3">
           <div className="flex -space-x-2">
             <div className="w-8 h-8 rounded-full border-2 border-white overflow-hidden">
               <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="investor" className="w-full h-full object-cover" />
@@ -98,20 +107,10 @@ export default function ForgotPassword() {
       </div>
 
       {/* ===== Right Side ===== */}
-      <div className="lg:w-1/2 bg-gray-50 flex flex-col">
+      <div className="w-full lg:w-1/2 bg-gray-50 flex flex-col min-h-screen">
 
         {/* Top bar */}
-        <div className="flex justify-end px-6 lg:px-10 py-5">
-          <div className="flex items-center gap-2 text-sm text-gray-500">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5" />
-              <path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20" stroke="currentColor" strokeWidth="1.5" />
-            </svg>
-            <span>EN</span>
-            <span className="text-gray-300">|</span>
-            <span>AR</span>
-          </div>
-        </div>
+    <TopBar/>
 
         {/* Card */}
         <div className="flex-1 flex items-center justify-center px-6 lg:px-10 py-8">
@@ -150,9 +149,12 @@ export default function ForgotPassword() {
                     <input
                       type="email"
                       value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        if (error) setError("");
+                      }}
                       onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-                      
+                      placeholder="example@email.com"
                       className="w-full border border-gray-200 rounded-xl pl-11 pr-4 py-3 text-sm outline-none focus:border-[#1a2340] transition-colors placeholder:text-gray-300"
                     />
                   </div>
@@ -160,7 +162,7 @@ export default function ForgotPassword() {
 
                 <button
                   onClick={handleSubmit}
-                  disabled={loading}
+                 disabled={loading || !email.trim()}
                   className="w-full bg-[#1a2340] hover:bg-[#243060] disabled:opacity-60 text-white font-semibold py-3.5 rounded-xl transition-colors duration-200 text-sm"
                 >
                   {loading ? "Sending..." : "Send Reset Link"}
@@ -200,7 +202,7 @@ export default function ForgotPassword() {
                 <p className="text-xs text-gray-400 text-center mb-6">
                   Didn't receive it? Check spam or{" "}
                   <button
-                    onClick={() => { setSuccess(false); setEmail(""); }}
+                    onClick={() => setSuccess(false)}
                     className="text-[#C9A84C] font-semibold hover:underline"
                   >
                     try again
