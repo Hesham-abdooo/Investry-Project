@@ -6,6 +6,7 @@ import axios from "axios";
 import GoogleLoginButton from "../../Components/Login/GoogleLoginButton";
 import bgImage from "../../assets/WhatsApp Image 2026-03-05 at 3.15.35 AM.jpg";
 import Logo from "../../Components/Logo";
+import TopBar from "../../Components/Basics/TopBar";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -101,10 +102,7 @@ export default function Login() {
       {/* Right Side */}
       <div className="w-full lg:w-1/2 flex flex-col bg-white">
         <div className="flex justify-end px-8 py-5">
-          <div className="flex items-center gap-1.5 text-sm text-gray-500">
-            <HiOutlineGlobeAlt className="text-base" />
-            <span>EN | AR</span>
-          </div>
+         <TopBar/>
         </div>
 
         <div className="flex-1 flex items-center justify-center px-8">

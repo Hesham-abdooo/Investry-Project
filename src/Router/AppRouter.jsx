@@ -55,8 +55,7 @@ const routes = createBrowserRouter([
     ],
   },
 
-  //! Routing NotFound Page
-  { path: "*", element: <NotFound /> },
+
 
   //! Routing Forgot,Reset Password
   { path: "/forgot-password", element: <ForgotPassword /> },
@@ -64,6 +63,11 @@ const routes = createBrowserRouter([
 
   //!Routing LogOut
   { path: "/LogOut", element: <LogOut /> },
+
+
+
+    //! Routing NotFound Page
+  { path: "*", element: <NotFound /> },
 ]);
 
 export default function AppRouter() {

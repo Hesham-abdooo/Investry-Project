@@ -3,6 +3,7 @@ import "./NavBar.module.css";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import Logo from "../../Logo";
+import TopBar from "../../Basics/TopBar";
 
 const DiamondIcon = () => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
@@ -23,17 +24,7 @@ const DiamondIcon = () => (
   </svg>
 );
 
-const GlobeIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-    <circle cx="12" cy="12" r="10" stroke="#555" strokeWidth="1.6" />
-    <path
-      d="M12 2C12 2 8 7 8 12s4 10 4 10M12 2c0 0 4 5 4 10s-4 10-4 10M2 12h20"
-      stroke="#555"
-      strokeWidth="1.4"
-      strokeLinecap="round"
-    />
-  </svg>
-);
+
 
 const MenuIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -65,7 +56,7 @@ const navLinks = [
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [lang, setLang] = useState("EN");
+
 
   return (
     <nav className="w-full bg-white border-b border-gray-100 shadow-sm sticky top-0 z-50">
@@ -94,22 +85,7 @@ export default function Navbar() {
           {/* * Desktop Right Side */}
           <div className="hidden md:flex items-center gap-4">
             {/* * Language Switcher */}
-            <div className="flex items-center gap-1.5 text-sm text-gray-500">
-              <GlobeIcon />
-              <button
-                onClick={() => setLang("EN")}
-                className={`font-medium transition-colors ${lang === "EN" ? "text-gray-800" : "text-gray-400 hover:text-gray-600"}`}
-              >
-                EN
-              </button>
-              <span className="text-gray-300">|</span>
-              <button
-                onClick={() => setLang("AR")}
-                className={`font-medium transition-colors ${lang === "AR" ? "text-gray-800" : "text-gray-400 hover:text-gray-600"}`}
-              >
-                AR
-              </button>
-            </div>
+    <TopBar/>
 
 
 
@@ -187,22 +163,7 @@ export default function Navbar() {
 
 
           {/* * Mobile Language Switcher */}
-          <div className="flex items-center gap-1.5 text-sm text-gray-500 py-1">
-            <GlobeIcon />
-            <button
-              onClick={() => setLang("EN")}
-              className={`font-medium transition-colors ${lang === "EN" ? "text-gray-800" : "text-gray-400"}`}
-            >
-              EN
-            </button>
-            <span className="text-gray-300">|</span>
-            <button
-              onClick={() => setLang("AR")}
-              className={`font-medium transition-colors ${lang === "AR" ? "text-gray-800" : "text-gray-400"}`}
-            >
-              AR
-            </button>
-          </div>
+      <TopBar/>
 
 
 
