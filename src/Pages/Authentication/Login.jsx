@@ -5,7 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import GoogleLoginButton from "../../Components/Login/GoogleLoginButton";
 import bgImage from "../../assets/WhatsApp Image 2026-03-05 at 3.15.35 AM.jpg";
-import Logo from "../../Components/Logo";
+import Logo from "../../Components/Basics/Logo";
 import TopBar from "../../Components/Basics/TopBar";
 
 export default function Login() {

@@ -2,8 +2,8 @@ import React from "react";
 import "./NavBar.module.css";
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import Logo from "../../Logo";
 import TopBar from "../../Basics/TopBar";
+import Logo from "../../Basics/Logo";
 
 const DiamondIcon = () => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
