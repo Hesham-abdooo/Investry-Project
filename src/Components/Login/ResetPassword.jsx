@@ -70,7 +70,7 @@ export default function ResetPassword() {
           userId,
           token,
           newPassword,
-          
+          confirmNewPassword: newPassword,
         },
       );
 
