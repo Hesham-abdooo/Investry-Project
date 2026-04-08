@@ -14,8 +14,9 @@ export default function ResetPassword() {
   const navigate = useNavigate();
 
   const userId = searchParams.get("userId");
- const token = searchParams.get("token") || "";
-
+ const token = (searchParams.get("token") || "").replace(/ /g, "+");
+  console.log("TOKEN:", token);
+  console.log("USERID:", userId);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showNew, setShowNew] = useState(false);
@@ -64,15 +65,15 @@ export default function ResetPassword() {
     try {
       setLoading(true);
 
-      const { data } = await axios.post(
-        "https://investry.runasp.net/api/Auth/reset-password",
-        {
-          userId,
-          token,
-          newPassword,
-          confirmNewPassword: newPassword,
-        },
-      );
+const { data } = await axios.post(
+  "https://investry.runasp.net/api/Auth/reset-password",
+  {
+    userId: userId,
+    token: encodeURIComponent(token),
+    newPassword: newPassword,
+    confirmNewPassword: newPassword,
+  }
+);
 
       if (data.success) {
         setSuccess("Password reset successfully. Redirecting to login...");
