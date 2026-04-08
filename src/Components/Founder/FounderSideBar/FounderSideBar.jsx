@@ -17,7 +17,8 @@ import "./FounderSideBar.module.css"
 
 import { Link, useLocation } from 'react-router-dom'
 import { FaHome, FaFolder, FaWallet, FaChartBar, FaQuestionCircle, FaUserCog, FaSignOutAlt, FaPlusSquare } from 'react-icons/fa'
-import Logo from "../../Logo";
+import Logo from "../../Basics/Logo";
+
 
 const menu = [
   { label: 'Overview', icon: FaHome, path: '/founder' },

@@ -70,8 +70,8 @@ export default function ResetPassword() {
           userId,
           token,
           newPassword,
-          confirmPassword,
-        }
+          
+        },
       );
 
       if (data.success) {
@@ -81,15 +81,13 @@ export default function ResetPassword() {
           navigate("/login");
         }, 2000);
       } else {
-        setError(
-          data.errors?.[0]?.message || "Failed to reset password."
-        );
+        setError(data.errors?.[0]?.message || "Failed to reset password.");
       }
     } catch (err) {
       setError(
         err.response?.data?.errors?.[0]?.message ||
           err.response?.data?.data ||
-          "Something went wrong. Please try again."
+          "Something went wrong. Please try again.",
       );
     } finally {
       setLoading(false);
@@ -236,9 +234,7 @@ export default function ResetPassword() {
                         className="h-1 flex-1 rounded-full transition-all duration-300"
                         style={{
                           background:
-                            i <= strength
-                              ? strengthColor[strength]
-                              : "#e5e7eb",
+                            i <= strength ? strengthColor[strength] : "#e5e7eb",
                         }}
                       />
                     ))}
@@ -317,7 +313,12 @@ export default function ResetPassword() {
 
             <button
               onClick={handleSubmit}
-              disabled={loading}
+              disabled={
+                loading ||
+                !newPassword.trim() ||
+                !confirmPassword.trim() ||
+                newPassword !== confirmPassword
+              }
               className="w-full bg-[#1a2340] hover:bg-[#243060] disabled:opacity-60 text-white font-semibold py-3.5 rounded-xl transition-colors duration-200 text-sm"
             >
               {loading ? "Resetting..." : "Reset Password"}
