@@ -46,7 +46,7 @@ export default function FounderSideBar() {
 
     <Logo/>
 
-      <Link to="/founder/create" className="flex items-center gap-2 bg-gray-900 text-white text-sm py-2 px-3 rounded-lg mb-4">
+      <Link to="/createProject" className="flex items-center gap-2 bg-gray-900 text-white text-sm py-2 px-3 rounded-lg mb-4">
         <FaPlusSquare size={14} /> Create Project
       </Link>
 

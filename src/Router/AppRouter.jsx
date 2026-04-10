@@ -19,6 +19,7 @@ import FounderWallet from "../Components/Founder/FounderLayout/FounderWallet.jsx
 import FounderAnalytics from "../Components/Founder/FounderLayout/FounderAnalytics.jsx";
 import FounderSupport from "../Components/Founder/FounderLayout/FounderSupport.jsx";
 import FounderProfile from "../Components/Founder/FounderLayout/FounderProfile.jsx";
+import FounderCreateProject from "../Components/Founder/FounderLayout/CreateProject/FounderCreateProject.jsx";
 const routes = createBrowserRouter([
   // ! Routing Landing page
   {
@@ -54,8 +55,7 @@ const routes = createBrowserRouter([
       { path: "profile", element: <FounderProfile /> },
     ],
   },
-
-
+   { path: "/createProject", element: <FounderCreateProject/> },
 
   //! Routing Forgot,Reset Password
   { path: "/forgot-password", element: <ForgotPassword /> },
