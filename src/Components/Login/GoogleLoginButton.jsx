@@ -1,40 +1,41 @@
 import axios from "axios";
-import { useGoogleLogin } from "@react-oauth/google";
+import { GoogleLogin } from "@react-oauth/google";
 import { FcGoogle } from "react-icons/fc";
 
 export default function GoogleLoginButton({ onError, onSuccess }) {
 
-  const handleGoogleLogin = useGoogleLogin({
-    onSuccess: async (tokenResponse) => {
-      const idToken = tokenResponse.id_token;
+  const handleSuccess = async (credentialResponse) => {
+    try {
+
+      const idToken = credentialResponse.credential; // ده ال JWT الصح
+
+      let res;
+
       try {
-        let res;
-        try {
-          res = await axios.post(
-            "https://investry.runasp.net/api/auth/signin-google-founder",
-            { idToken }
-          );
-        } catch {
-          res = await axios.post(
-            "https://investry.runasp.net/api/auth/signin-google-investor",
-            { idToken }
-          );
-        }
-        onSuccess(res.data.data);
+        res = await axios.post(
+          "https://investry.runasp.net/api/auth/signin-google-founder",
+          { IdToken: idToken }
+        );
       } catch {
-        onError("Google login failed. Please try again.");
+        res = await axios.post(
+          "https://investry.runasp.net/api/auth/signin-google-investor",
+          { IdToken: idToken }
+        );
       }
-    },
-    onError: () => onError("Google login failed. Please try again."),
-  });
+
+      onSuccess(res.data.data);
+
+    } catch (err) {
+      onError("Google login failed. Please try again.");
+    }
+  };
 
   return (
-    <button
-      onClick={() => handleGoogleLogin()}
-      className="w-full flex items-center justify-center gap-2 border border-gray-200 rounded-lg py-3 text-sm text-gray-600 hover:bg-gray-50 transition-colors duration-200"
-    >
-      <FcGoogle className="text-lg" />
-      Google
-    </button>
+    <div className="w-full flex justify-center">
+      <GoogleLogin
+        onSuccess={handleSuccess}
+        onError={() => onError("Google login failed. Please try again.")}
+      />
+    </div>
   );
 }
