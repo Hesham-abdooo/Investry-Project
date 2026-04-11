@@ -1,159 +1,18 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import bgImage from "../../assets/WhatsApp Image 2026-03-05 at 3.15.35 AM.jpg";
-import Logo from "../../Components/Basics/Logo";
 import TopBar from "../../Components/Basics/TopBar";
 import SignUpLeftSide from "../../Components/Authentication/Signup/SignUpLeftSide";
+import LoginDivider from "../../Components/Authentication/Login/LoginDivider";
+import GoogleLoginButton from "../../Components/Authentication/Login/GoogleLoginButton";
+import RoleToggle from "../../Components/Authentication/Signup/RoleToggle";
 
-const EyeIcon = ({ open }) =>
-  open ? (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      className="w-4 h-4"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      strokeWidth={2}
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-      />
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-      />
-    </svg>
-  ) : (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      className="w-4 h-4"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      strokeWidth={2}
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M13.875 18.825A10.05 10.05 0 0112 19c-4.477 0-8.268-2.943-9.542-7a9.956 9.956 0 012.293-3.95M6.696 6.696A9.956 9.956 0 0112 5c4.477 0 8.268 2.943 9.542 7a9.956 9.956 0 01-1.34 2.53M3 3l18 18"
-      />
-    </svg>
-  );
-
-const UserIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    className="w-4 h-4"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-    strokeWidth={2}
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-    />
-  </svg>
-);
-
-const MailIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    className="w-4 h-4"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-    strokeWidth={2}
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-    />
-  </svg>
-);
-
-const PhoneIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    className="w-4 h-4"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-    strokeWidth={2}
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-    />
-  </svg>
-);
-
-const LockIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    className="w-4 h-4"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-    strokeWidth={2}
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-    />
-  </svg>
-);
-
-const getPasswordStrength = (pwd) => {
-  if (!pwd) return { level: 0, label: "", color: "" };
-  let score = 0;
-  if (pwd.length >= 8) score++;
-  if (/[A-Z]/.test(pwd)) score++;
-  if (/[0-9]/.test(pwd)) score++;
-  if (/[^A-Za-z0-9]/.test(pwd)) score++;
-  if (score <= 1) return { level: 1, label: "Weak", color: "bg-red-400" };
-  if (score === 2) return { level: 2, label: "Fair", color: "bg-yellow-400" };
-  if (score === 3) return { level: 3, label: "Good", color: "bg-emerald-400" };
-  return { level: 4, label: "Strong", color: "bg-emerald-500" };
-};
-
-const InputField = ({
-  label,
-  icon,
-  type = "text",
-  placeholder,
-  value,
-  onChange,
-  rightSlot,
-  extraClass = "",
-}) => (
-  <div className="mb-1.5">
-    <label className="block text-xs font-medium text-[#1a2340] mb-1">
-      {label}
-    </label>
-    <div className="relative flex items-center">
-      <span className="absolute left-3 text-gray-400">{icon}</span>
-      <input
-        type={type}
-        placeholder={placeholder}
-        value={value}
-        onChange={onChange}
-        className={`w-full pl-9 pr-10 py-2 text-sm text-[#1a2340] border border-gray-200 rounded-lg outline-none focus:border-[#1a2340] transition-colors placeholder:text-gray-300 bg-white ${extraClass}`}
-      />
-      {rightSlot && (
-        <span className="absolute right-3 text-gray-400">{rightSlot}</span>
-      )}
-    </div>
-  </div>
-);
+import InputField, {
+  UserIcon,
+  MailIcon,
+  PhoneIcon,
+} from "../../Components/Authentication/Signup/InputField";
+import PasswordField from "../../Components/Authentication/Signup/PasswordField";
 
 export default function SignUp() {
   const navigate = useNavigate();
@@ -165,7 +24,7 @@ export default function SignUp() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // ✅ التغيير الأول: استبدال name بـ firstName و lastName، وإضافة userName
+  
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -177,7 +36,6 @@ export default function SignUp() {
   });
 
   const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
-  const strength = getPasswordStrength(form.password);
 
   const handleSignUp = async () => {
     setError("");
@@ -238,7 +96,7 @@ export default function SignUp() {
   return (
     <div className="h-screen flex overflow-hidden">
       {/* ══ LEFT ══ */}
- <SignUpLeftSide/>
+      <SignUpLeftSide />
 
       {/* ══ RIGHT ══ */}
       <div className="w-full lg:w-1/2 bg-gray-100 overflow-y-auto relative">
@@ -262,25 +120,7 @@ export default function SignUp() {
             )}
 
             {/* Role Toggle */}
-            <div className="flex bg-gray-100 rounded-xl p-1 mb-3 gap-1">
-              {[
-                { key: "founder", label: "Founder", icon: "🌱" },
-                { key: "investor", label: "Investor", icon: "💼" },
-              ].map(({ key, label, icon }) => (
-                <button
-                  key={key}
-                  onClick={() => setRole(key)}
-                  className={`flex-1 flex items-center justify-center gap-2 py-1.5 rounded-lg text-sm font-semibold transition-all ${
-                    role === key
-                      ? "bg-white text-[#1a2340] shadow-sm"
-                      : "text-gray-400 hover:text-gray-600"
-                  }`}
-                >
-                  <span>{icon}</span>
-                  {label}
-                </button>
-              ))}
-            </div>
+            <RoleToggle role={role} onRoleChange={setRole} />
 
             {/* ✅ التغيير الثالث: First Name + Last Name جنب بعض */}
             <div className="flex gap-2 mb-1.5">
@@ -330,83 +170,19 @@ export default function SignUp() {
               onChange={set("phone")}
             />
 
-            {/* Password */}
-            <div className="mb-1.5">
-              <label className="block text-xs font-medium text-[#1a2340] mb-1">
-                Password
-              </label>
-              <div className="relative flex items-center">
-                <span className="absolute left-3 text-gray-400">
-                  <LockIcon />
-                </span>
-                <input
-                  type={showPwd ? "text" : "password"}
-                  value={form.password}
-                  onChange={set("password")}
-                  placeholder="At least 8 characters"
-                  className="w-full pl-9 pr-10 py-2 text-sm text-[#1a2340] border border-gray-200 rounded-lg outline-none focus:border-[#1a2340] transition-colors placeholder:text-gray-300 bg-white"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPwd((v) => !v)}
-                  className="absolute right-3 text-gray-400 hover:text-gray-600"
-                >
-                  <EyeIcon open={showPwd} />
-                </button>
-              </div>
-              {form.password && (
-                <div className="mt-1">
-                  <div className="flex gap-1.5">
-                    {[1, 2, 3, 4].map((i) => (
-                      <div
-                        key={i}
-                        className={`flex-1 h-1 rounded-full transition-all ${i <= strength.level ? strength.color : "bg-gray-200"}`}
-                      />
-                    ))}
-                  </div>
-                  <p
-                    className={`text-xs mt-0.5 font-medium ${strength.level <= 1 ? "text-red-400" : strength.level === 2 ? "text-yellow-500" : "text-emerald-500"}`}
-                  >
-                    Strength: {strength.label}
-                  </p>
-                </div>
-              )}
-            </div>
+            {/* Password,,confirmPassword */}
+            <PasswordField
+              value={form.password}
+              onChange={set("password")}
+              showPassword={showPwd}
+              onToggle={() => setShowPwd((v) => !v)}
+              confirm={form.confirm}
+              onConfirmChange={set("confirm")}
+              showConfirm={showConfirm}
+              onConfirmToggle={() => setShowConfirm((v) => !v)}
+            />
 
             {/* Confirm Password */}
-            <div className="mb-1.5">
-              <label className="block text-xs font-medium text-[#1a2340] mb-1">
-                Confirm Password
-              </label>
-              <div className="relative flex items-center">
-                <span className="absolute left-3 text-gray-400">
-                  <LockIcon />
-                </span>
-                <input
-                  type={showConfirm ? "text" : "password"}
-                  value={form.confirm}
-                  onChange={set("confirm")}
-                  placeholder="Re-enter your password"
-                  className={`w-full pl-9 pr-10 py-2 text-sm text-[#1a2340] border rounded-lg outline-none focus:border-[#1a2340] transition-colors placeholder:text-gray-300 bg-white ${
-                    form.confirm && form.confirm !== form.password
-                      ? "border-red-300"
-                      : "border-gray-200"
-                  }`}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirm((v) => !v)}
-                  className="absolute right-3 text-gray-400 hover:text-gray-600"
-                >
-                  <EyeIcon open={showConfirm} />
-                </button>
-              </div>
-              {form.confirm && form.confirm !== form.password && (
-                <p className="text-xs text-red-400 mt-0.5">
-                  Passwords do not match
-                </p>
-              )}
-            </div>
 
             {/* Terms */}
             <label className="flex items-start gap-2.5 cursor-pointer mb-3 mt-1">
@@ -443,6 +219,10 @@ export default function SignUp() {
               {loading ? "Creating account..." : "Create Account"}
             </button>
 
+            <LoginDivider />
+            <div className="mb-3">
+              <GoogleLoginButton onSuccess={() => {}} onError={() => {}} />
+            </div>
             <p className="text-center text-xs text-gray-400 mt-3">
               Already have an account?{" "}
               <Link
