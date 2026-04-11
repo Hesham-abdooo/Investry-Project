@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { HiOutlineMail, HiArrowLeft } from "react-icons/hi";
 import { Link } from "react-router-dom";
 import axios from "axios";
-import TopBar from "../Basics/TopBar";
+import TopBar from "../../Basics/TopBar";
 
 
 

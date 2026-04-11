@@ -7,14 +7,14 @@ import {
 } from "react-icons/hi";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
-import TopBar from "../Basics/TopBar";
+import TopBar from "../../Basics/TopBar";
 
 export default function ResetPassword() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
   const userId = searchParams.get("userId");
- const token = (searchParams.get("token") || "").replace(/ /g, "+");
+  const token = (searchParams.get("token") || "").replace(/ /g, "+");
   console.log("TOKEN:", token);
   console.log("USERID:", userId);
   const [newPassword, setNewPassword] = useState("");
@@ -65,15 +65,15 @@ export default function ResetPassword() {
     try {
       setLoading(true);
 
-const { data } = await axios.post(
-  "https://investry.runasp.net/api/Auth/reset-password",
-  {
-    userId: userId,
-    token: encodeURIComponent(token),
-    newPassword: newPassword,
-    confirmNewPassword: newPassword,
-  }
-);
+      const { data } = await axios.post(
+        "https://investry.runasp.net/api/Auth/reset-password",
+        {
+          userId: userId,
+          token: encodeURIComponent(token),
+          newPassword: newPassword,
+          confirmNewPassword: newPassword,
+        },
+      );
 
       if (data.success) {
         setSuccess("Password reset successfully. Redirecting to login...");
@@ -160,7 +160,7 @@ const { data } = await axios.post(
 
       {/* ===== Right Side ===== */}
       <div className="w-full lg:w-1/2 bg-gray-50 flex flex-col min-h-screen">
-        <TopBar />
+        <TopBar/>
 
         <div className="flex-1 flex items-center justify-center px-6 lg:px-10 py-8">
           <div className="w-full max-w-md bg-white rounded-2xl shadow-sm border border-gray-100 p-8 lg:p-10">

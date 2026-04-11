@@ -11,8 +11,8 @@ import Investor from "../Pages/Investor/Investor.jsx";
 import InvestorDashboard from "../Components/Investor/InvestorLayout/InvestorDashboard.jsx";
 import Founder from "../Pages/Founder/Founder.jsx";
 import FounderDasboard from "../Components/Founder/FounderLayout/FounderDasboard.jsx";
-import ForgotPassword from "../Components/Login/ForgotPassword.jsx";
-import ResetPassword from "../Components/Login/ResetPassword.jsx";
+import ForgotPassword from "../Components/Authentication/Login/ForgotPassword.jsx";
+
 import LogOut from "../Pages/LogOut/LogOut.jsx";
 import FounderProjects from "../Components/Founder/FounderLayout/FounderProjects.jsx";
 import FounderWallet from "../Components/Founder/FounderLayout/FounderWallet.jsx";
@@ -20,6 +20,8 @@ import FounderAnalytics from "../Components/Founder/FounderLayout/FounderAnalyti
 import FounderSupport from "../Components/Founder/FounderLayout/FounderSupport.jsx";
 import FounderProfile from "../Components/Founder/FounderLayout/FounderProfile.jsx";
 import FounderCreateProject from "../Components/Founder/FounderLayout/CreateProject/FounderCreateProject.jsx";
+import ResetPassword from "../Components/Authentication/Login/ResetPassword.jsx";
+
 const routes = createBrowserRouter([
   // ! Routing Landing page
   {
@@ -55,23 +57,16 @@ const routes = createBrowserRouter([
       { path: "profile", element: <FounderProfile /> },
     ],
   },
-   { path: "/createProject", element: <FounderCreateProject/> },
+  { path: "/createProject", element: <FounderCreateProject /> },
 
   //! Routing Forgot,Reset Password
-  { path: "/forgot-password", element: <ForgotPassword /> },
-  { path: "/reset-password", element: <ResetPassword /> },
+  { path: "/forgot-password", element: <ForgotPassword/> },
+  { path: "/reset-password", element: <ResetPassword/> },
 
-  //!Routing LogOut
-  { path: "/LogOut", element: <LogOut /> },
-
-
-
-    //! Routing NotFound Page
+  //! Routing NotFound Page
   { path: "*", element: <NotFound /> },
 ]);
 
 export default function AppRouter() {
-  return (
-      <RouterProvider router={routes} />
-  );
+  return <RouterProvider router={routes} />;
 }
