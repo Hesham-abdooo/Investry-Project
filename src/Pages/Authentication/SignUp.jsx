@@ -74,16 +74,15 @@ export default function SignUp() {
         password: form.password,
         confirmPassword: form.confirm,
       });
-
+    
       const { token, roles } = res.data.data;
 
       const roleName = Array.isArray(roles) ? roles[0] : roles;
-
+  localStorage.setItem("email", form.email);
       localStorage.setItem("token", token);
       localStorage.setItem("role", roleName);
 
-      if (roleName === "Investor") navigate("/investor/investorDashboard");
-      else if (roleName === "Founder") navigate("/founder/founderDashboard");
+      navigate("/email-check");
     } catch (err) {
       const msg =
         err.response?.data?.errors?.[0]?.message || err.response?.data?.message;
