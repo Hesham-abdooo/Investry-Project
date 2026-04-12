@@ -22,7 +22,7 @@
   background-color: white;
   font-size: 24px;
   font-weight: bold;
-  color: #D4A017;
+  color: #d4a017;
 }
 
 .exit_dash {
@@ -51,7 +51,7 @@
   padding-top: 50px;
   padding-left: 208px;
   padding-right: 208px;
-  background-color: #F8FAFC;
+  background-color: #f8fafc;
 }
 
 .header {
@@ -59,7 +59,7 @@
   flex-direction: column;
   justify-content: center;
   gap: 10px;
-  color: #64748B;
+  color: #64748b;
   font-family: "Nimbus Sans", sans-serif;
 }
 
@@ -107,7 +107,7 @@
   position: relative;
   flex: 1;
   background-color: white;
-  color: #64748B;
+  color: #64748b;
 }
 
 .step-circle {
@@ -235,7 +235,6 @@
   margin: 0;
   line-height: 1.5;
   font-family: "Nimbus Sans", sans-serif;
-
 }
 
 .action_buttons {
@@ -247,7 +246,7 @@
 }
 
 .next_step {
-  background-color: #0F2044;
+  background-color: #0f2044;
   color: white;
   border-radius: 8px;
   padding: 0 24px;
@@ -284,8 +283,8 @@
 }
 
 .save_draft:hover {
-  border-color: #0F2044;
-  color: #0F2044;
+  border-color: #0f2044;
+  color: #0f2044;
 }
 
 .cancel {
@@ -439,7 +438,6 @@
     font-size: 14px;
   }
 }
-
 
 @media (max-width: 480px) {
   .topBar {
@@ -991,7 +989,7 @@
 
 .current_model .model_icon {
   font-size: 20px;
-  color: #D4A017;
+  color: #d4a017;
   background-color: transparent;
 }
 
@@ -1004,7 +1002,7 @@
 }
 
 .current_model h3 span {
-  color: #0F2044;
+  color: #0f2044;
   font-weight: bold;
   background-color: transparent;
 }
@@ -1027,7 +1025,6 @@
 
 .model-container {
   padding-top: 30px;
-  ;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -1069,7 +1066,7 @@
 .duration-btns {
   display: flex;
   gap: 10px;
-  background-color: #F1F5F9;
+  background-color: #f1f5f9;
   height: 50px;
   justify-content: space-around;
 }
@@ -1091,14 +1088,14 @@ textarea {
 }
 
 .duration-btns button:hover {
-  background-color: #0F2044;
+  background-color: #0f2044;
   color: white;
   border: none;
   transition: 0.3s;
 }
 
 .duration-btns button.duration-selected {
-  background-color: #0F2044;
+  background-color: #0f2044;
   color: white;
   border: none;
 }
@@ -1435,7 +1432,7 @@ textarea {
 .review_edit_btn {
   background: none;
   border: none;
-  color: #0F2044;
+  color: #0f2044;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -1490,7 +1487,7 @@ textarea {
 }
 
 .review_highlight {
-  color: #D4A017;
+  color: #d4a017;
   font-weight: 700;
 }
 
@@ -1576,7 +1573,7 @@ textarea {
 .preview_category {
   font-size: 10px;
   font-weight: 700;
-  color: #D4A017;
+  color: #d4a017;
   letter-spacing: 0.5px;
   text-transform: uppercase;
   font-family: "Nimbus Sans", sans-serif;
@@ -1586,7 +1583,7 @@ textarea {
 .preview_title {
   font-size: 15px;
   font-weight: 700;
-  color: #0F2044;
+  color: #0f2044;
   margin: 0;
   line-height: 1.4;
   font-family: "Nimbus Sans", sans-serif;
@@ -1611,7 +1608,7 @@ textarea {
 .preview_goal_value {
   font-size: 20px;
   font-weight: 800;
-  color: #0F2044;
+  color: #0f2044;
   font-family: "Nimbus Sans", sans-serif;
   background-color: transparent;
 }
@@ -1656,7 +1653,7 @@ textarea {
   align-items: center;
   justify-content: center;
   min-height: calc(100vh - 80px);
-  background-color: #F8FAFC;
+  background-color: #f8fafc;
   padding: 40px 20px;
 }
 
@@ -1709,7 +1706,7 @@ textarea {
 }
 
 .success_btn {
-  background-color: #0F2044;
+  background-color: #0f2044;
   color: white;
   border: none;
   border-radius: 8px;
@@ -1728,7 +1725,13 @@ textarea {
 
 /* Submit button styling */
 .submit_btn {
-  background: linear-gradient(135deg, #0F2044, #1a3260);
+  background: linear-gradient(135deg, #0f2044, #1a3260);
   font-weight: 700;
   letter-spacing: 0.3px;
+}
+
+.error_msg {
+  color: red;
+  font-size: 12px;
+  margin-top: 4px;
 }

@@ -4,6 +4,7 @@ const Step4MediaDocs = ({
   coverImages, setCoverImages,
   documents, setDocuments,
   videoUrl, setVideoUrl,
+  errors,
 }) => {
 
   const handleCoverImageUpload = (e) => {
@@ -69,6 +70,7 @@ const Step4MediaDocs = ({
             />
           </div>
           <p className='equity_helper_text'>This image will be used as the thumbnail on the campaign discovery page. Recommended ratio 16:9.</p>
+          {errors.coverImages && <p className="error_msg">{errors.coverImages}</p>}
 
           {coverImages.map((img, index) => (
             <div className='uploaded_file' key={index}>
@@ -124,6 +126,7 @@ const Step4MediaDocs = ({
             />
           </div>
           <p className='equity_helper_text'>Include your business plan, cap table, and financial projections. You can upload multiple files.</p>
+          {errors.documents && <p className="error_msg">{errors.documents}</p>}
 
           {documents.map((doc, index) => (
             <div className='uploaded_file' key={index}>

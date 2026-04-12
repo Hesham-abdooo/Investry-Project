@@ -41,6 +41,7 @@ function CreateProject() {
   const [coverImages, setCoverImages] = useState([]);
   const [documents, setDocuments] = useState([]);
   const [videoUrl, setVideoUrl] = useState("");
+  const [errors, setErrors] = useState({});
 
   const stepDescriptions = [
     "Choose the funding model that fits your project.",
@@ -52,7 +53,7 @@ function CreateProject() {
 
   const handleExit = () => {
     const confirmExit = window.confirm(
-      "Are you sure you want to exit? Your progress may not be saved."
+      "Are you sure you want to exit? Your progress may not be saved.",
     );
 
     if (confirmExit) {
@@ -61,6 +62,61 @@ function CreateProject() {
   };
 
   const handleNextStep = () => {
+    const newErrors = {};
+
+    if (currentStep === 1) {
+      if (!selectedFunding)
+        newErrors.selectedFunding = "Please select a funding model";
+    }
+
+    if (currentStep === 2) {
+      if (!projectTitle.trim())
+        newErrors.projectTitle = "Project title is required";
+      if (!category.trim()) newErrors.category = "Category is required";
+      if (!projectDescription.trim())
+        newErrors.projectDescription = "Project description is required";
+      if (!fundingGoal.trim())
+        newErrors.fundingGoal = "Funding goal is required";
+      if (!minContribution.trim())
+        newErrors.minContribution = "Minimum contribution is required";
+      if (!selectDuration)
+        newErrors.selectDuration = "Please select a duration";
+    }
+
+    if (currentStep === 3) {
+      if (selectedFunding === "Equity-Based" && !equityOffered.trim())
+        newErrors.equityOffered = "Equity offered is required";
+      if (selectedFunding === "Mudarabah") {
+        if (!founderProfitShare.trim())
+          newErrors.founderProfitShare = "Founder profit share is required";
+        if (!contractDuration.trim())
+          newErrors.contractDuration = "Contract duration is required";
+        if (!payoutFrequency.trim())
+          newErrors.payoutFrequency = "Payout frequency is required";
+      }
+      if (selectedFunding === "Reward-Based") {
+        if (
+          rewardTiers.every(
+            (t) => !t.gift.trim() || !t.amount.trim() || !t.quantity.trim(),
+          )
+        )
+          newErrors.rewardTiers = "Please fill all reward tiers";
+      }
+    }
+
+    if (currentStep === 4) {
+      if (coverImages.length === 0)
+        newErrors.coverImages = "Please upload a cover image";
+      if (documents.length === 0)
+        newErrors.documents = "Please upload at least one document";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    setErrors({});
     setCurrentStep((prev) => Math.min(prev + 1, 5));
   };
 
@@ -74,6 +130,7 @@ function CreateProject() {
         <Step1FundingModel
           selectedFunding={selectedFunding}
           setSelectedFunding={setSelectedFunding}
+          errors={errors}
         />
       );
     }
@@ -97,6 +154,7 @@ function CreateProject() {
           setStartDateOption={setStartDateOption}
           scheduledDate={scheduledDate}
           setScheduledDate={setScheduledDate}
+          errors={errors}
         />
       );
     }
@@ -115,6 +173,7 @@ function CreateProject() {
           setContractDuration={setContractDuration}
           payoutFrequency={payoutFrequency}
           setPayoutFrequency={setPayoutFrequency}
+          errors={errors}
         />
       );
     }
@@ -128,6 +187,7 @@ function CreateProject() {
           setDocuments={setDocuments}
           videoUrl={videoUrl}
           setVideoUrl={setVideoUrl}
+          errors={errors}
         />
       );
     }
@@ -148,6 +208,7 @@ function CreateProject() {
           coverImages={coverImages}
           documents={documents}
           videoUrl={videoUrl}
+          
         />
       );
     }
@@ -215,10 +276,7 @@ function CreateProject() {
               Save as draft
             </button>
 
-            <button
-              className="cancel"
-              onClick={() => alert("Cancelled")}
-            >
+            <button className="cancel" onClick={() => alert("Cancelled")}>
               Cancel
             </button>
           </div>

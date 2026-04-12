@@ -17,19 +17,35 @@ export default function Login() {
   const handleLogin = async () => {
     setError("");
     setLoading(true);
+
     try {
       const res = await axios.post(
         "https://investry.runasp.net/api/Auth/login",
         { email, password },
-        { withCredentials: true },
+        { withCredentials: true }
       );
+
       const { token, roles } = res.data.data;
+
       localStorage.setItem("token", token);
       localStorage.setItem("role", roles[0]);
-      if (roles[0] === "Investor") navigate("/investor/investorDashboard");
-      else if (roles[0] === "Founder") navigate("/founder/founderDashboard");
+
+      if (roles[0] === "Investor") {
+        navigate("/investor/investorDashboard");
+      } else if (roles[0] === "Founder") {
+        navigate("/founder/founderDashboard");
+      }
+
     } catch (err) {
       const msg = err.response?.data?.errors?.[0]?.message;
+
+      // ⭐ FIX IMPORTANT
+      if (msg?.toLowerCase().includes("email is not confirmed")) {
+        localStorage.setItem("email", email);
+        navigate("/email-check");
+        return;
+      }
+
       setError(msg || "Invalid email or password");
     } finally {
       setLoading(false);
@@ -39,8 +55,12 @@ export default function Login() {
   const handleGoogleSuccess = ({ token, roles }) => {
     localStorage.setItem("token", token);
     localStorage.setItem("role", roles[0]);
-    if (roles[0] === "Investor") navigate("/investor/investorDashboard");
-    else if (roles[0] === "Founder") navigate("/founder/founderDashboard");
+
+    if (roles[0] === "Investor") {
+      navigate("/investor/investorDashboard");
+    } else if (roles[0] === "Founder") {
+      navigate("/founder/founderDashboard");
+    }
   };
 
   return (
@@ -51,6 +71,7 @@ export default function Login() {
         <div className="flex justify-end px-8 py-3">
           <TopBar />
         </div>
+
         <div className="flex-1 flex items-center justify-center px-8">
           <LoginForm
             email={email}

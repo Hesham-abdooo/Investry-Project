@@ -11,7 +11,7 @@ const Step2ProjectDetails = ({
   minContribution, setMinContribution,
   selectDuration, setSelectDuration,
   startDateOption, setStartDateOption,
-  scheduledDate, setScheduledDate,
+  scheduledDate, setScheduledDate, errors
 }) => {
   return (
     <>
@@ -40,6 +40,7 @@ const Step2ProjectDetails = ({
                   className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#0F2044] outline-none transition bg-white"
                 />
                 <p className="text-sm text-gray-400">Keep it clear and specific.</p>
+                {errors.projectTitle && <p className="error_msg">{errors.projectTitle}</p>}
               </div>
 
               <div className="space-y-2">
@@ -58,6 +59,7 @@ const Step2ProjectDetails = ({
                     <option value="Real Estate">Real Estate</option>
                   </select>
                 </div>
+                {errors.category && <p className="error_msg">{errors.category}</p>}
               </div>
 
               <div className="space-y-2">
@@ -73,6 +75,7 @@ const Step2ProjectDetails = ({
                   />
                 </div>
                 <p className="text-sm text-gray-400">Explain the problem, your solution, and how funds will be used.</p>
+                {errors.projectDescription && <p className="error_msg">{errors.projectDescription}</p>}
               </div>
 
               <div className="space-y-2">
@@ -105,6 +108,7 @@ const Step2ProjectDetails = ({
                   />
                 </div>
                 <p className="text-sm text-gray-400">Total amount you want to raise to complete your project.</p>
+                {errors.fundingGoal && <p className="error_msg">{errors.fundingGoal}</p>}
               </div>
 
               <div className="space-y-2">
@@ -119,6 +123,7 @@ const Step2ProjectDetails = ({
                   />
                 </div>
                 <p className="text-sm text-gray-400">The smallest amount a person can invest in this campaign.</p>
+                {errors.minContribution && <p className="error_msg">{errors.minContribution}</p>}
               </div>
 
               <div className="space-y-2">
@@ -129,6 +134,7 @@ const Step2ProjectDetails = ({
                   <button type="button" className={selectDuration === '90 days' ? 'duration-selected' : ''} onClick={() => setSelectDuration('90 days')}>90 days</button>
                 </div>
                 <p className="text-sm text-gray-400">You can adjust this before final submission.</p>
+                {errors.selectDuration && <p className="error_msg">{errors.selectDuration}</p>}
               </div>
 
               <div className="start_date_group">

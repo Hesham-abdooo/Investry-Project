@@ -39,7 +39,6 @@ export default function SignUp() {
 
   const handleSignUp = async () => {
     setError("");
-    setError("");
 
     if (
       !form.firstName ||
@@ -74,11 +73,11 @@ export default function SignUp() {
         password: form.password,
         confirmPassword: form.confirm,
       });
-    
+
       const { token, roles } = res.data.data;
 
-      const roleName = Array.isArray(roles) ? roles[0] : roles;
-  localStorage.setItem("email", form.email);
+      const roleName = roles?.[0] || roles || "Investor";
+      localStorage.setItem("email", form.email.trim().toLowerCase());
       localStorage.setItem("token", token);
       localStorage.setItem("role", roleName);
 

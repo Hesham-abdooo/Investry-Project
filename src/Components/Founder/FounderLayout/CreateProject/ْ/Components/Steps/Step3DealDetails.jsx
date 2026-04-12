@@ -12,6 +12,7 @@ const Step3DealDetails = ({
   founderProfitShare, setFounderProfitShare,
   contractDuration, setContractDuration,
   payoutFrequency, setPayoutFrequency,
+  errors,
 }) => {
 
   const formatNumber = (num) => {
@@ -81,6 +82,7 @@ const Step3DealDetails = ({
             </div>
           </div>
         ))}
+        {errors.rewardTiers && <p className="error_msg">{errors.rewardTiers}</p>}
         <button type="button" className='add_tier_btn' onClick={addTier}>+ Add another tier</button>
       </div>
     );
@@ -107,6 +109,7 @@ const Step3DealDetails = ({
                 <span className='equity_pct_badge'>%</span>
               </div>
               <p className='equity_helper_text'>Enter the percentage of the entire company you will offer for the funding goal shown above.</p>
+              {errors.equityOffered && <p className="error_msg">{errors.equityOffered}</p>}
             </div>
           </div>
         </div>
@@ -130,6 +133,7 @@ const Step3DealDetails = ({
                 <span className='equity_pct_badge'>%</span>
               </div>
               <p className='equity_helper_text'>Your percentage of the project's total profit.</p>
+              {errors.founderProfitShare && <p className="error_msg">{errors.founderProfitShare}</p>}
             </div>
 
             <div className='tier_field'>
@@ -146,6 +150,7 @@ const Step3DealDetails = ({
                 <option value='24 months'>24 months</option>
                 <option value='36 months'>36 months</option>
               </select>
+              {errors.contractDuration && <p className="error_msg">{errors.contractDuration}</p>}
             </div>
 
             <div className='tier_field'>
@@ -161,6 +166,7 @@ const Step3DealDetails = ({
                 <option value='Semi-annually'>Semi-annually (6 months)</option>
                 <option value='Annually'>Annually (12 months)</option>
               </select>
+              {errors.payoutFrequency && <p className="error_msg">{errors.payoutFrequency}</p>}
             </div>
           </div>
         </div>
