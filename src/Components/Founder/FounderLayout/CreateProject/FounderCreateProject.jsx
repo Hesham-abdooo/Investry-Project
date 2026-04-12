@@ -1,11 +1,3 @@
-import React from 'react'
-
-
-
-
-
-
-
 import React, { useState } from 'react';
 import { FaGift } from "react-icons/fa6";
 import { FiPieChart } from "react-icons/fi";
