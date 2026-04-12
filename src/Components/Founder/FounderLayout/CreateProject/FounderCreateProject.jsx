@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { IoAlertCircleOutline } from "react-icons/io5";
-import Stepper from "./components/Stepper";
-import Step1FundingModel from "./components/steps/Step1FundingModel";
+import Stepper from "./ْ/Components/Stepper";
+import Step1FundingModel from "./ْ/Components/Steps/Step1FundingModel";
 import "./FounderCREATE.css";
 import Step2ProjectDetails from "./ْ/Components/Steps/Step2ProjectsDetails";
 import Step3DealDetails from "./ْ/Components/Steps/Step3DealDetails";
