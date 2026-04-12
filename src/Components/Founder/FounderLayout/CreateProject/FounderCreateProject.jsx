@@ -2,13 +2,14 @@ import React, { useState } from "react";
 import { IoAlertCircleOutline } from "react-icons/io5";
 import Stepper from "./ْ/Components/Stepper";
 import Step1FundingModel from "./ْ/Components/Steps/Step1FundingModel";
-import "./FounderCREATE.css";
 import Step2ProjectDetails from "./ْ/Components/Steps/Step2ProjectsDetails";
 import Step3DealDetails from "./ْ/Components/Steps/Step3DealDetails";
 import Step4MediaDocs from "./ْ/Components/Steps/Step4MediaDocs";
 import Step5Review from "./ْ/Components/Steps/Step5Review";
 import SuccessPage from "./ْ/Components/SuccessPage";
 import DiamondIcon from "./ْ/Components/DiamondIcon";
+import "./FounderCREATE.css";
+import { Link } from "react-router-dom";
 
 function CreateProject() {
   const [selectedFunding, setSelectedFunding] = useState(null);
@@ -213,9 +214,9 @@ function CreateProject() {
           <DiamondIcon />
           <span>InvesTry</span>
         </div>
-        <button type="button" className="exit_dash">
+        <Link to="/founder/FounderDashboard" className="exit_dash">
           Exit to Dashboard
-        </button>
+        </Link>
       </div>
       <div className="page">
         <div className="header">
