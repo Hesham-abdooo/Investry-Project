@@ -353,7 +353,7 @@ function CreateProject() {
               Save as draft
             </button>
 
-            <button className="cancel" onClick={() => alert("Cancelled")}>
+            <button className="cancel" onClick={handleExit}>
               Cancel
             </button>
           </div>

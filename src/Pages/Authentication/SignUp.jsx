@@ -6,7 +6,6 @@ import SignUpLeftSide from "../../Components/Authentication/Signup/SignUpLeftSid
 import LoginDivider from "../../Components/Authentication/Login/LoginDivider";
 import GoogleLoginButton from "../../Components/Authentication/Login/GoogleLoginButton";
 import RoleToggle from "../../Components/Authentication/Signup/RoleToggle";
-
 import InputField, {
   UserIcon,
   MailIcon,
@@ -58,7 +57,6 @@ export default function SignUp() {
     setLoading(true);
 
     try {
-      // ✅ التغيير الثاني: endpoint مختلف لكل role، وبنبعت confirmPassword للـ Backend
       const endpoint =
         role === "founder"
           ? "https://investry.runasp.net/api/Auth/register-founder"
@@ -75,7 +73,6 @@ export default function SignUp() {
       });
 
       const { token, roles } = res.data.data;
-
       const roleName = roles?.[0] || roles || "Investor";
       localStorage.setItem("email", form.email.trim().toLowerCase());
       localStorage.setItem("token", token);
@@ -93,10 +90,8 @@ export default function SignUp() {
 
   return (
     <div className="h-screen flex overflow-hidden">
-      {/* ══ LEFT ══ */}
       <SignUpLeftSide />
 
-      {/* ══ RIGHT ══ */}
       <div className="w-full lg:w-1/2 bg-gray-100 overflow-y-auto relative">
         <div className="absolute top-3 right-6 z-20">
           <TopBar />
@@ -117,10 +112,8 @@ export default function SignUp() {
               </div>
             )}
 
-            {/* Role Toggle */}
             <RoleToggle role={role} onRoleChange={setRole} />
 
-            {/* ✅ التغيير الثالث: First Name + Last Name جنب بعض */}
             <div className="flex gap-2 mb-1.5">
               <div className="flex-1">
                 <InputField
@@ -142,7 +135,6 @@ export default function SignUp() {
               </div>
             </div>
 
-            {/* ✅ التغيير الرابع: Username field جديد */}
             <InputField
               label="Username"
               icon={<UserIcon />}
@@ -150,7 +142,6 @@ export default function SignUp() {
               value={form.userName}
               onChange={set("userName")}
             />
-
             <InputField
               label="Email Address"
               icon={<MailIcon />}
@@ -168,7 +159,6 @@ export default function SignUp() {
               onChange={set("phone")}
             />
 
-            {/* Password,,confirmPassword */}
             <PasswordField
               value={form.password}
               onChange={set("password")}
@@ -180,9 +170,6 @@ export default function SignUp() {
               onConfirmToggle={() => setShowConfirm((v) => !v)}
             />
 
-            {/* Confirm Password */}
-
-            {/* Terms */}
             <TermsCheckbox agreed={agreed} onAgreeChange={setAgreed} />
 
             <button
@@ -195,7 +182,27 @@ export default function SignUp() {
 
             <LoginDivider />
             <div className="mb-3">
-              <GoogleLoginButton onSuccess={() => {}} onError={() => {}} />
+              {/* ✅ التعديل هنا بس */}
+              <GoogleLoginButton
+                role={role}
+                onSuccess={(data) => {
+                  const userRole = (
+                    data.roles?.[0] || data.roles
+                  )?.toLowerCase();
+                  if (userRole !== role) {
+                    setError(
+                      `This Google account is already registered as a ${userRole}. Please login instead.`,
+                    );
+                    return;
+                  }
+                  if (userRole === "founder") {
+                    navigate("/founder/founderDashboard");
+                  } else {
+                    navigate("/investor/investorDashboard");
+                  }
+                }}
+                onError={(msg) => setError(msg)}
+              />
             </div>
             <p className="text-center text-xs text-gray-400 mt-3">
               Already have an account?{" "}

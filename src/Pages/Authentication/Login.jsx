@@ -1,6 +1,6 @@
 import React from "react";
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import TopBar from "../../Components/Basics/TopBar";
 import LoginLeftSide from "../../Components/Authentication/Login/LoginLeftSide";
@@ -26,7 +26,6 @@ export default function Login() {
       );
 
       const { token, roles } = res.data.data;
-
       localStorage.setItem("token", token);
       localStorage.setItem("role", roles[0]);
 
@@ -37,21 +36,12 @@ export default function Login() {
       }
     } catch (err) {
       const msg = err.response?.data?.errors?.[0]?.message;
-      // لو الايميل مش confirmed
       if (msg?.toLowerCase().includes("not confirmed")) {
-        // نخزن الايميل عشان resend
         localStorage.setItem("email", email);
-        // رسالة ألطف للمستخدم
-        setError(
-          "Please confirm your email first. Redirecting to verification page...",
-        );
-        // بعد 3 ثواني نوديه صفحة  email check
-        setTimeout(() => {
-          navigate("/email-check");
-        }, 3000);
+        setError("Please confirm your email first. Redirecting to verification page...");
+        setTimeout(() => navigate("/email-check"), 3000);
         return;
       }
-
       setError(msg || "Invalid email or password");
     } finally {
       setLoading(false);
@@ -60,11 +50,12 @@ export default function Login() {
 
   const handleGoogleSuccess = ({ token, roles }) => {
     localStorage.setItem("token", token);
-    localStorage.setItem("role", roles[0]);
+    localStorage.setItem("role", roles?.[0] || roles);
 
-    if (roles[0] === "Investor") {
+    const userRole = (roles?.[0] || roles)?.toLowerCase();
+    if (userRole === "investor") {
       navigate("/investor/investorDashboard");
-    } else if (roles[0] === "Founder") {
+    } else if (userRole === "founder") {
       navigate("/founder/founderDashboard");
     }
   };

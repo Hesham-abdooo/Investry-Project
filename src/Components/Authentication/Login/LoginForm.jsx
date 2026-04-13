@@ -22,6 +22,7 @@ export default function LoginForm({
   onTogglePassword,
   onLogin,
   onGoogleSuccess,
+  role,
   onError,
 }) {
   return (
@@ -88,7 +89,7 @@ export default function LoginForm({
       <LoginDivider />
 
       <div className="mb-3">
-        <GoogleLoginButton onSuccess={onGoogleSuccess} onError={onError} />
+        <GoogleLoginButton onSuccess={onGoogleSuccess} onError={onError} role={role} />
       </div>
 
       <p className="text-center text-sm text-gray-400 mt-6">
