@@ -11,6 +11,7 @@ import Step5Review from "./ْ/Components/Steps/Step5Review";
 import SuccessPage from "./ْ/Components/SuccessPage";
 import DiamondIcon from "./ْ/Components/DiamondIcon";
 
+import { createProject } from "./Services/Service.js";
 import "./FounderCREATE.css";
 
 function CreateProject() {
@@ -42,6 +43,7 @@ function CreateProject() {
   const [documents, setDocuments] = useState([]);
   const [videoUrl, setVideoUrl] = useState("");
   const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
 
   const stepDescriptions = [
     "Choose the funding model that fits your project.",
@@ -55,7 +57,6 @@ function CreateProject() {
     const confirmExit = window.confirm(
       "Are you sure you want to exit? Your progress may not be saved.",
     );
-
     if (confirmExit) {
       navigate("/founder/FounderDashboard");
     }
@@ -124,6 +125,77 @@ function CreateProject() {
     setCurrentStep((prev) => Math.max(prev - 1, 1));
   };
 
+  const handleSubmit = async () => {
+    setIsLoading(true);
+
+    const formData = new FormData();
+
+    formData.append("Title", projectTitle);
+    formData.append("ShortDescription", projectDescription);
+    formData.append("LongDescription", projectDescription);
+    formData.append(
+      "FundingModel",
+      selectedFunding === "Reward-Based"
+        ? 0
+        : selectedFunding === "Equity-Based"
+          ? 1
+          : 2,
+    );
+    formData.append("TargetAmount", fundingGoal);
+    formData.append("MinimumContribution", minContribution);
+    formData.append(
+      "StartDate",
+      startDateOption === "immediately"
+        ? new Date(Date.now() + 60 * 1000).toISOString() // ✅ بعد دقيقة
+        : new Date(scheduledDate).toISOString(),
+    );
+    formData.append(
+      "EndDate",
+      selectDuration === "30 days"
+        ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+        : selectDuration === "60 days"
+          ? new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString()
+          : new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
+    );
+    formData.append("CoverImage", coverImages[0]);
+    formData.append("EquityPercentage", equityOffered || 0);
+    formData.append("InvestorsProfitSharePercentage", founderProfitShare || 0);
+    formData.append(
+      "DurationInMonths",
+      contractDuration ? parseInt(contractDuration) : 0,
+    );
+    formData.append(
+      "ProfitDistributionFrequency",
+      payoutFrequency === "Monthly"
+        ? 1
+        : payoutFrequency === "Quarterly"
+          ? 3
+          : payoutFrequency === "Semi-annually"
+            ? 6
+            : 12,
+    );
+
+    rewardTiers.forEach((tier, index) => {
+      formData.append(`RewardTiers[${index}][title]`, tier.gift);
+      formData.append(`RewardTiers[${index}][description]`, tier.gift);
+      formData.append(`RewardTiers[${index}][amount]`, tier.amount);
+      formData.append(`RewardTiers[${index}][maxBackers]`, tier.quantity);
+    });
+
+    documents.forEach((doc) => {
+      formData.append("MediaFiles", doc);
+    });
+
+    try {
+      await createProject(formData);
+      setIsSubmitted(true);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const renderStepContent = () => {
     if (currentStep === 1) {
       return (
@@ -138,6 +210,7 @@ function CreateProject() {
     if (currentStep === 2) {
       return (
         <Step2ProjectDetails
+          setCurrentStep={setCurrentStep}
           projectTitle={projectTitle}
           setProjectTitle={setProjectTitle}
           category={category}
@@ -163,6 +236,10 @@ function CreateProject() {
       return (
         <Step3DealDetails
           selectedFunding={selectedFunding}
+          fundingGoal={fundingGoal} // ✅
+          minContribution={minContribution} // ✅
+          selectDuration={selectDuration} // ✅
+          setCurrentStep={setCurrentStep} // ✅ عشان زرار Change يشتغل
           rewardTiers={rewardTiers}
           setRewardTiers={setRewardTiers}
           equityOffered={equityOffered}
@@ -208,7 +285,7 @@ function CreateProject() {
           coverImages={coverImages}
           documents={documents}
           videoUrl={videoUrl}
-          
+          setCurrentStep={setCurrentStep}
         />
       );
     }
@@ -225,8 +302,6 @@ function CreateProject() {
           <DiamondIcon />
           <span>InvesTry</span>
         </div>
-
-        {/* ✅ هنا التعديل */}
         <button onClick={handleExit} className="exit_dash">
           Exit to Dashboard
         </button>
@@ -237,7 +312,6 @@ function CreateProject() {
           <span>
             Dashboard / Projects / <b>Create Project</b>
           </span>
-
           <h1>Create a new project</h1>
           <span>{stepDescriptions[currentStep - 1]}</span>
         </div>
@@ -259,9 +333,10 @@ function CreateProject() {
             {currentStep === 5 ? (
               <button
                 className="next_step submit_btn"
-                onClick={() => setIsSubmitted(true)}
+                onClick={handleSubmit}
+                disabled={isLoading}
               >
-                Create
+                {isLoading ? "Creating..." : "Create"}
               </button>
             ) : (
               <button className="next_step" onClick={handleNextStep}>
