@@ -2,28 +2,34 @@ import axios from "axios";
 import { GoogleLogin } from "@react-oauth/google";
 
 export default function GoogleLoginButton({ onError, onSuccess, role }) {
-
   const handleSuccess = async (credentialResponse) => {
     try {
       const idToken = credentialResponse.credential;
 
-      const endpoint = role === "founder"
-        ? "https://investry.runasp.net/api/auth/signin-google-founder"
-        : "https://investry.runasp.net/api/auth/signin-google-investor";
-
-      const res = await axios.post(endpoint, { IdToken: idToken });
+      const endpoint =
+        role === "founder"
+          ? "https://investry.runasp.net/api/Auth/signin-google-founder"
+          : "https://investry.runasp.net/api/Auth/signin-google-investor";
+      const res = await axios.post(endpoint, { idToken });
       const { token, roles } = res.data.data;
 
       localStorage.setItem("token", token);
       localStorage.setItem("role", roles?.[0]);
 
       onSuccess({ token, roles });
-
     } catch (err) {
+      console.log("Google Error:", err.response?.data);
+
       // ✅ لو الايميل متسجل قبل كده
-      const msg = err.response?.data?.message || err.response?.data?.errors?.[0]?.message;
-      if (msg?.toLowerCase().includes("already") || msg?.toLowerCase().includes("exist")) {
-        onError("This Google account is already registered. Please login instead.");
+      const msg =
+        err.response?.data?.message || err.response?.data?.errors?.[0]?.message;
+      if (
+        msg?.toLowerCase().includes("already") ||
+        msg?.toLowerCase().includes("exist")
+      ) {
+        onError(
+          "This Google account is already registered. Please login instead.",
+        );
       } else {
         onError("Google login failed. Please try again.");
       }
