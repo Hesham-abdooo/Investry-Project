@@ -175,12 +175,14 @@ function CreateProject() {
             : 12,
     );
 
-    rewardTiers.forEach((tier, index) => {
-      formData.append(`RewardTiers[${index}][title]`, tier.gift);
-      formData.append(`RewardTiers[${index}][description]`, tier.gift);
-      formData.append(`RewardTiers[${index}][amount]`, tier.amount);
-      formData.append(`RewardTiers[${index}][maxBackers]`, tier.quantity);
-    });
+    if (selectedFunding === "Reward-Based") {
+      rewardTiers.forEach((tier, index) => {
+        formData.append(`RewardTiers[${index}][title]`, tier.gift);
+        formData.append(`RewardTiers[${index}][description]`, tier.gift);
+        formData.append(`RewardTiers[${index}][amount]`, tier.amount);
+        formData.append(`RewardTiers[${index}][maxBackers]`, tier.quantity);
+      });
+    }
 
     documents.forEach((doc) => {
       formData.append("MediaFiles", doc);

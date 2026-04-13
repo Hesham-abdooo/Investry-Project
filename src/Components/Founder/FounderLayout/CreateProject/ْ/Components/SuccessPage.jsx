@@ -1,8 +1,10 @@
 import React from "react";
-import { useNavigate } from "react-router-dom"; //
+import { useNavigate } from "react-router-dom";
 import DiamondIcon from "./DiamondIcon";
 
 const SuccessPage = () => {
+  const navigate = useNavigate();
+
   return (
     <>
       <div className="topBar">
@@ -11,14 +13,20 @@ const SuccessPage = () => {
           <span>InvesTry</span>
         </div>
       </div>
+
       <div className="success_page">
         <div className="success_card">
           <div className="success_icon">✓</div>
+
           <h2 className="success_title">
             Your project has been published and your campaign has started
             successfully.
           </h2>
-          <p className="success_subtitle">Go to My Projects to view details.</p>
+
+          <p className="success_subtitle">
+            Go to My Projects to view details.
+          </p>
+
           <button
             type="button"
             className="success_btn"
