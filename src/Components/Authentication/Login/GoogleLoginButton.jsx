@@ -14,8 +14,8 @@ export default function GoogleLoginButton({ onError, onSuccess, role }) {
       const { token, roles } = res.data.data;
 
       localStorage.setItem("token", token);
-      localStorage.setItem("role", roles?.[0]);
-
+      const roleName = roles?.[0] || role;
+      localStorage.setItem("role", roleName);
       onSuccess({ token, roles });
     } catch (err) {
       console.log("Google Error:", err.response?.data);

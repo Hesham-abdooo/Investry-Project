@@ -47,15 +47,14 @@ export default function SignUp() {
       !form.phone ||
       !form.password ||
       !form.confirm
-    ) {
+    )
       return setError("Please fill all fields.");
-    }
 
     if (form.password !== form.confirm)
       return setError("Passwords do not match.");
     if (!agreed) return setError("Please accept the Terms & Conditions.");
-    setLoading(true);
 
+    setLoading(true);
     try {
       const endpoint =
         role === "founder"
@@ -182,28 +181,16 @@ export default function SignUp() {
 
             <LoginDivider />
             <div className="mb-3">
-              {/* ✅ التعديل هنا بس */}
               <GoogleLoginButton
                 role={role}
-                onSuccess={(data) => {
-                  const userRole = (
-                    data.roles?.[0] || data.roles
-                  )?.toLowerCase();
-                  if (userRole !== role) {
-                    setError(
-                      `This Google account is already registered as a ${userRole}. Please login instead.`,
-                    );
-                    return;
-                  }
-                  if (userRole === "founder") {
-                    navigate("/founder/founderDashboard");
-                  } else {
-                    navigate("/investor/investorDashboard");
-                  }
+                onSuccess={() => {
+                  if (role === "founder") navigate("/founder/founderDashboard");
+                  else navigate("/investor/investorDashboard");
                 }}
                 onError={(msg) => setError(msg)}
               />
             </div>
+
             <p className="text-center text-xs text-gray-400 mt-3">
               Already have an account?{" "}
               <Link
