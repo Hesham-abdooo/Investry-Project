@@ -22,7 +22,7 @@ export default function Login() {
       const res = await axios.post(
         "https://investry.runasp.net/api/Auth/login",
         { email, password },
-        { withCredentials: true }
+        { withCredentials: true },
       );
 
       const { token, roles } = res.data.data;
@@ -35,14 +35,20 @@ export default function Login() {
       } else if (roles[0] === "Founder") {
         navigate("/founder/founderDashboard");
       }
-
     } catch (err) {
       const msg = err.response?.data?.errors?.[0]?.message;
-
-      // ⭐ FIX IMPORTANT
-      if (msg?.toLowerCase().includes("email is not confirmed")) {
+      // لو الايميل مش confirmed
+      if (msg?.toLowerCase().includes("not confirmed")) {
+        // نخزن الايميل عشان resend
         localStorage.setItem("email", email);
-        navigate("/email-check");
+        // رسالة ألطف للمستخدم
+        setError(
+          "Please confirm your email first. Redirecting to verification page...",
+        );
+        // بعد 3 ثواني نوديه صفحة  email check
+        setTimeout(() => {
+          navigate("/email-check");
+        }, 3000);
         return;
       }
 
