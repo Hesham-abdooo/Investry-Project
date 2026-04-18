@@ -22,16 +22,16 @@ export default function GoogleLoginButton({ onError, onSuccess, role }) {
 
       // ✅ لو الايميل متسجل قبل كده
       const msg =
-        err.response?.data?.message || err.response?.data?.errors?.[0]?.message;
-      if (
-        msg?.toLowerCase().includes("already") ||
-        msg?.toLowerCase().includes("exist")
-      ) {
+        err.response?.data?.message ||
+        err.response?.data?.errors?.[0]?.message ||
+        "";
+
+      if (msg.includes("entity changes")) {
         onError(
-          "This Google account is already registered. Please login instead.",
+          "This email is already registered with another role. Please login instead.",
         );
       } else {
-        onError("Google login failed. Please try again.");
+        onError(msg || "Google login failed. Please try again.");
       }
     }
   };

@@ -1,60 +1,27 @@
-import React from "react";
-import "./FounderSideBar.module.css";
+import React, { useState } from "react";
+import { Outlet } from "react-router-dom";
+import FounderSideBar from "../../Components/Founder/FounderSideBar/FounderSideBar";
+import { FaBars } from "react-icons/fa";
 
-import { Link, useLocation } from "react-router-dom";
-import {
-  FaHome,
-  FaFolder,
-  FaWallet,
-  FaChartBar,
-  FaQuestionCircle,
-  FaUserCog,
-  FaSignOutAlt,
-  FaPlusSquare,
-} from "react-icons/fa";
-import Logo from "../../Basics/Logo";
-import LogoutButton from "../../Authentication/Login/LogoutButton";
+export default function Founder() {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
-const menu = [
-  { label: "Overview", icon: FaHome, path: "/founder" },
-  { label: "My Projects", icon: FaFolder, path: "projects" },
-  { label: "Wallet & Escrow", icon: FaWallet, path: "wallet" },
-  { label: "Analytics", icon: FaChartBar, path: "analytics" },
-  { label: "Support Center", icon: FaQuestionCircle, path: "support" },
-  { label: "Profile & KYC", icon: FaUserCog, path: "profile" },
-];
-
-const NavItem = ({ label, icon: Icon, path }) => {
-  const active = useLocation().pathname === path;
   return (
-    <Link
-      to={path}
-      className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all
-      ${active ? "bg-yellow-50 text-yellow-500 font-medium" : "text-gray-500 hover:bg-gray-50"}`}
-    >
-      <Icon size={16} />
-      {label}
-    </Link>
-  );
-};
+    <div className="min-h-screen flex bg-gray-50">
+      <FounderSideBar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-export default function FounderSideBar() {
-  return (
-    <div className="flex flex-col w-full h-full px-3 py-5 gap-1">
-      <Logo />
+      <div className="flex-1 overflow-auto px-4 md:px-6 py-4">
+        {/* Hamburger - موبايل بس */}
+        <button
+        
+          className="md:hidden mb-4 p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
+          onClick={() => setSidebarOpen(true)}
+        >
+          <FaBars size={20} />
+        </button>
 
-      <Link
-        to="/createProject"
-        className="flex items-center gap-2 bg-gray-900 text-white text-sm py-2 px-3 rounded-lg mb-4"
-      >
-        <FaPlusSquare size={14} /> Create Project
-      </Link>
-
-      {menu.map((item) => (
-        <NavItem key={item.path} {...item} />
-      ))}
-
-      <LogoutButton />
+        <Outlet />
+      </div>
     </div>
   );
 }

@@ -131,6 +131,7 @@ function CreateProject() {
     const formData = new FormData();
 
     formData.append("Title", projectTitle);
+    formData.append("Category", category); // ← ضيف دي
     formData.append("ShortDescription", projectDescription);
     formData.append("LongDescription", projectDescription);
     formData.append(
@@ -300,10 +301,8 @@ function CreateProject() {
   return (
     <>
       <div className="topBar">
-        <div className="logo">
-          <DiamondIcon />
-          <span>InvesTry</span>
-        </div>
+        <DiamondIcon />
+
         <button onClick={handleExit} className="exit_dash">
           Exit to Dashboard
         </button>

@@ -13,16 +13,17 @@ import NotFound from "../Pages/NotFound/NotFound";
 
 import Investor from "../Pages/Investor/Investor.jsx";
 import InvestorDashboard from "../Components/Investor/InvestorLayout/InvestorDashboard.jsx";
-import Founder from "../Pages/Founder/Founder.jsx";
-import FounderDasboard from "../Components/Founder/FounderLayout/FounderDasboard.jsx";
 
-import LogOut from "../Pages/LogOut/LogOut.jsx";
-import FounderProjects from "../Components/Founder/FounderLayout/FounderProjects.jsx";
-import FounderWallet from "../Components/Founder/FounderLayout/FounderWallet.jsx";
-import FounderAnalytics from "../Components/Founder/FounderLayout/FounderAnalytics.jsx";
-import FounderSupport from "../Components/Founder/FounderLayout/FounderSupport.jsx";
-import FounderProfile from "../Components/Founder/FounderLayout/FounderProfile.jsx";
+import FounderDasboard from "../Pages/Founder/FounderDashboard.jsx";
+
+
+import FounderWallet from "../Pages/Founder/FounderWallet.jsx";
+import FounderAnalytics from "../Pages/Founder/FounderAnalytics.jsx";
+import FounderSupport from "../Pages/Founder/FounderSupport.jsx";
+import FounderProfile from "../Pages/Founder/FounderProfile.jsx";
 import FounderCreateProject from "../Components/Founder/FounderLayout/CreateProject/FounderCreateProject.jsx";
+import FounderLayout from "../Components/Layouts/Founder/FounderLayout.jsx";
+import FounderProjects from "../Pages/Founder/FounderProjects.jsx";
 
 const routes = createBrowserRouter([
   // ! Routing Landing page
@@ -52,11 +53,11 @@ const routes = createBrowserRouter([
   //! Routing Founder Page
   {
     path: "/founder",
-    element: <Founder />,
+    element: <FounderLayout/>,
     children: [
       { index: true, element: <FounderDasboard /> },
       { path: "FounderDashboard", element: <FounderDasboard /> },
-      { path: "projects", element: <FounderProjects /> },
+      { path: "projects", element: <FounderProjects/>},
       { path: "wallet", element: <FounderWallet /> },
       { path: "analytics", element: <FounderAnalytics /> },
       { path: "support", element: <FounderSupport /> },
