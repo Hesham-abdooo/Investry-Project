@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 
 
 const DiamondIcon = () => (
@@ -8,14 +9,30 @@ const DiamondIcon = () => (
   </svg>
 )
 
-export default function Logo() {
-  return (
+export default function Logo({ to, variant = "dark" }) {
+  const textColor = variant === "light" ? "text-white" : "text-[#1a2340]"
+
+  const content = (
     <div className="flex items-center gap-2">
             <DiamondIcon />
             <span className="text-xl font-bold tracking-tight">
-              <span className="text-[#1a2340]">Inves</span>
+              <span className={textColor}>Inves</span>
               <span className="text-[#C9A84C]">Try</span>
             </span>
           </div>
   )
+
+  if (to) {
+    return (
+      <Link
+        to={to}
+        className="no-underline cursor-pointer"
+        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+      >
+        {content}
+      </Link>
+    )
+  }
+
+  return content
 }

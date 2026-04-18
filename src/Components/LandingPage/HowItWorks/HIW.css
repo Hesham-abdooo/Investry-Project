@@ -1,9 +1,22 @@
+/* ========================= GLOBAL RESPONSIVE RULE ========================= */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Prevent sections from hiding behind the sticky navbar when scrolling via anchor links */
+#How-It-Works,
+#funding-models,
+#explore {
+  scroll-margin-top: 80px;
+}
+
 .background {
     display: flex;
     justify-content: center;
     align-items: center;
     width: 100%;
-    height: 640px;
+    min-height: 640px;
     background: linear-gradient(130deg,#d4a017,#1A3673);
     gap: 150px;
 }
@@ -12,7 +25,8 @@
     font-weight: bold;
     font-family: "Nimbus Sans", sans-serif;
     margin: 0;
-    width: 544px;
+    max-width: 544px;
+    width: 100%;
 }
 #he{
     color: #ffffff;
@@ -25,7 +39,8 @@
     margin-top: 110px;
     color: #FFFFFFCC;
     font-family: "Inter", sans-serif;
-    width: 544px;
+    max-width: 544px;
+    width: 100%;
 }
 .start_btn{
     margin-top: 14px;
@@ -59,12 +74,93 @@
     color: #0F2044;
     transition: 0.3s;
 }
+
+/* ========================= HERO SECTION — RESPONSIVE ========================= */
+
+/* ---------- Tablet (≤ 1024px) ---------- */
+@media (max-width: 1024px) {
+  .background {
+    gap: 60px;
+    padding: 60px 40px;
+  }
+}
+
+/* ---------- Mobile (≤ 768px) ---------- */
+@media (max-width: 768px) {
+  .background {
+    flex-direction: column;
+    min-height: auto;
+    padding: 56px 24px 40px;
+    gap: 36px;
+    text-align: center;
+  }
+
+  .content h1 {
+    font-size: 36px;
+    max-width: 100%;
+  }
+
+  .content p {
+    font-size: 1rem;
+    margin-top: 24px;
+    max-width: 100%;
+  }
+
+  .start_btn {
+    width: 100%;
+    display: block;
+    padding: 14px 24px;
+  }
+
+  .explore_btn {
+    width: 100%;
+    display: block;
+    margin: 8px 0 0 0;
+    padding: 14px 24px;
+  }
+
+  .live_campaigns,
+  .Active_backers {
+    display: flex;
+    justify-content: center;
+  }
+
+  .live_campaigns img,
+  .Active_backers img {
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+/* ---------- Small Mobile (≤ 480px) ---------- */
+@media (max-width: 480px) {
+  .background {
+    padding: 48px 16px 32px;
+    gap: 28px;
+  }
+
+  .content h1 {
+    font-size: 28px;
+  }
+
+  .content p {
+    font-size: 0.95rem;
+    margin-top: 16px;
+  }
+
+  .start_btn,
+  .explore_btn {
+    font-size: 0.9rem;
+    padding: 12px 20px;
+  }
+}
+
 /*--------------------------------------------------------------------------------------------------------*/
 .hiw_bg{
     display: flex;
     flex-direction: column;
     background-color:#F8FAFC;
-    height: 533px;
+    min-height: 533px;
     width: 100%;
     justify-content: center;
     align-items: center;
@@ -74,7 +170,7 @@
     align-items: center;
     display: flex;
     flex-direction: column;
-    
+    padding: 0 20px;
 }
 .hiw_head h1{
     font-family: "Nimbus Sans", sans-serif;
@@ -159,6 +255,89 @@
   color:#8a8a8a;
   margin-top:8px;
 }
+
+/* ========================= HOW IT WORKS — RESPONSIVE ========================= */
+
+/* ---------- Tablet (≤ 1024px) ---------- */
+@media (max-width: 1024px) {
+  .hiw_bg {
+    padding: 50px 20px;
+  }
+  .steps-container {
+    max-width: 100%;
+    gap: 20px;
+  }
+}
+
+/* ---------- Mobile (≤ 768px) ---------- */
+@media (max-width: 768px) {
+  .hiw_bg {
+    min-height: auto;
+    padding: 50px 20px;
+  }
+
+  .hiw_head h1 {
+    font-size: 28px;
+    text-align: center;
+  }
+
+  .hiw_head p {
+    font-size: 14px;
+    text-align: center;
+    max-width: 100%;
+  }
+
+  .steps {
+    padding: 40px 10px;
+  }
+
+  .steps-container {
+    flex-direction: column;
+    gap: 40px;
+    align-items: center;
+  }
+
+  .steps-container::before {
+    display: none;
+  }
+
+  .step {
+    width: 100%;
+    max-width: 320px;
+  }
+}
+
+/* ---------- Small Mobile (≤ 480px) ---------- */
+@media (max-width: 480px) {
+  .hiw_bg {
+    padding: 40px 16px;
+  }
+
+  .hiw_head h1 {
+    font-size: 24px;
+  }
+
+  .hiw_head p {
+    font-size: 13px;
+  }
+
+  .steps {
+    padding: 30px 8px;
+  }
+
+  .step {
+    max-width: 280px;
+  }
+
+  .step h3 {
+    font-size: 16px;
+  }
+
+  .step p {
+    font-size: 13px;
+  }
+}
+
 /*------------------------------------------------FUNDING MODELS-----------------------------------------------*/
 .FM-head{
   justify-content: center;
@@ -182,23 +361,24 @@ font-family: "Inter", sans-serif;
 }
 .funds{
   display: flex;
-  padding:60px 110px;
+  padding: 60px 110px;
   justify-content: space-around;
   flex-wrap: wrap;
+  gap: 20px;
 }
 .cards-container{
   position: relative;
   background-color: #F8FAFC;
   margin-top: 5px;
-  padding: 30px ;
+  padding: 30px;
   border: 0px solid hsl(0, 0%, 80%);
   border-radius: 5px;
   box-shadow: 5px 5px 5px hsla(0, 0%, 0%, 0.1);
   display: flex;
-  width: 300px;
-  height: 300px;
-  align-items: center; 
-    
+  max-width: 300px;
+  width: 100%;
+  min-height: 300px;
+  align-items: center;
 }
 .cards img{
   padding-bottom:15px;
@@ -223,10 +403,88 @@ font-family: "Inter", sans-serif;
 .cards a:hover{
 text-decoration: underline;
 }
+
+/* ========================= FUNDING MODELS — RESPONSIVE ========================= */
+
+/* ---------- Tablet (≤ 1024px) ---------- */
+@media (max-width: 1024px) {
+  .funds {
+    padding: 40px 40px;
+  }
+}
+
+/* ---------- Mobile (≤ 768px) ---------- */
+@media (max-width: 768px) {
+  .FM-head {
+    padding: 40px 20px 0;
+  }
+
+  .FM-head h1 {
+    font-size: 28px;
+    text-align: center;
+  }
+
+  .FM-head p {
+    font-size: 14px;
+    text-align: center;
+    padding: 0 10px;
+  }
+
+  .funds {
+    flex-direction: column;
+    padding: 30px 20px;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .cards-container {
+    max-width: 400px;
+    width: 100%;
+    min-height: auto;
+  }
+
+  .cards h1 {
+    font-size: 24px;
+  }
+}
+
+/* ---------- Small Mobile (≤ 480px) ---------- */
+@media (max-width: 480px) {
+  .FM-head {
+    padding: 30px 16px 0;
+  }
+
+  .FM-head h1 {
+    font-size: 24px;
+  }
+
+  .FM-head p {
+    font-size: 13px;
+  }
+
+  .funds {
+    padding: 24px 16px;
+    gap: 16px;
+  }
+
+  .cards-container {
+    max-width: 100%;
+    padding: 24px;
+  }
+
+  .cards h1 {
+    font-size: 22px;
+  }
+
+  .cards p {
+    font-size: 14px;
+  }
+}
+
 /*------------------------------------------Featured Campaigns------------------------------------------*/
 .featured_bg{
   width: 100%;
-  height: 790px;
+  min-height: 790px;
   background-color: #F8FAFC;
 }
 .featured-head{
@@ -247,11 +505,13 @@ text-decoration: underline;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  align-items: center;
   border: 2px solid #d4a017;
   border-radius: 5px;
   height: 45px;
   width: 200px;
-  color: #d4a017 ;
+  color: #d4a017;
+  cursor: pointer;
 }
 .feat-btn:hover{
   background-color: #D4A017;
@@ -266,6 +526,97 @@ text-decoration: underline;
   align-items: center;
 }
 
+/* ========================= FEATURED CAMPAIGNS — RESPONSIVE ========================= */
+
+/* ---------- Tablet (≤ 1024px) ---------- */
+@media (max-width: 1024px) {
+  .featured_bg {
+    min-height: auto;
+    padding: 40px 0 60px;
+  }
+
+  .featured-head {
+    margin-top: 40px;
+    padding: 0 30px;
+  }
+
+  .feat-container img {
+    max-width: 100%;
+    height: auto;
+    padding: 0 20px;
+  }
+}
+
+/* ---------- Mobile (≤ 768px) ---------- */
+@media (max-width: 768px) {
+  .featured_bg {
+    min-height: auto;
+    padding: 40px 0 40px;
+  }
+
+  .featured-head {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 16px;
+    margin-top: 0;
+    padding: 0 20px;
+  }
+
+  .feat-head h1 {
+    font-size: 28px;
+  }
+
+  .feat-head p {
+    font-size: 14px;
+  }
+
+  .feat-btn {
+    width: 100%;
+    max-width: 250px;
+  }
+
+  .feat-container {
+    margin-top: 16px;
+  }
+
+  .feat-container img {
+    max-width: 100%;
+    height: auto;
+    padding: 0 16px;
+  }
+}
+
+/* ---------- Small Mobile (≤ 480px) ---------- */
+@media (max-width: 480px) {
+  .featured_bg {
+    padding: 30px 0;
+  }
+
+  .featured-head {
+    padding: 0 16px;
+    gap: 12px;
+  }
+
+  .feat-head h1 {
+    font-size: 24px;
+  }
+
+  .feat-head p {
+    font-size: 13px;
+  }
+
+  .feat-btn {
+    max-width: 220px;
+    height: 40px;
+    font-size: 14px;
+  }
+
+  .feat-container img {
+    padding: 0 12px;
+  }
+}
+
 /*--------------------------------------------------------------------------------------------*/
 .overview{
   display: flex;
@@ -274,7 +625,7 @@ text-decoration: underline;
   align-items: center;
   background-color: #d4a017;
   width: 100%;
-  height: 270px;
+  min-height: 270px;
   flex-wrap: wrap;
 }
 .view{
@@ -293,6 +644,55 @@ text-decoration: underline;
   color: #FFFFFFCC;
   font-family: "Inter", sans-serif;
 }
+
+/* ========================= OVERVIEW STATS — RESPONSIVE ========================= */
+
+/* ---------- Tablet (≤ 1024px) ---------- */
+@media (max-width: 1024px) {
+  .overview {
+    padding: 60px 40px;
+  }
+}
+
+/* ---------- Mobile (≤ 768px) ---------- */
+@media (max-width: 768px) {
+  .overview {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    padding: 48px 24px;
+    min-height: auto;
+  }
+
+  .view {
+    text-align: center;
+  }
+
+  .view h1 {
+    font-size: 30px;
+  }
+
+  .view p {
+    font-size: 14px;
+  }
+}
+
+/* ---------- Small Mobile (≤ 480px) ---------- */
+@media (max-width: 480px) {
+  .overview {
+    gap: 24px;
+    padding: 36px 16px;
+  }
+
+  .view h1 {
+    font-size: 24px;
+  }
+
+  .view p {
+    font-size: 13px;
+  }
+}
+
 /*----------------------------------------TRUST & SECURITY--------------------------------------------*/
 .T-head{
     justify-content: center;
@@ -324,8 +724,8 @@ text-decoration: underline;
   gap: 30px;
   display:flex;
   justify-content:space-between;
+  flex-wrap: wrap;
   position:relative;
-  
 }
 
 .ts{
@@ -361,4 +761,114 @@ text-decoration: underline;
   font-size:14px;
   color:#8a8a8a;
   margin-top:8px;
+}
+
+/* ========================= TRUST & SECURITY — RESPONSIVE ========================= */
+
+/* ---------- Tablet (≤ 1024px) ---------- */
+@media (max-width: 1024px) {
+  .T-head {
+    padding-top: 80px;
+  }
+
+  .security-EX {
+    padding: 40px 20px;
+  }
+
+  .sec-container {
+    padding-left: 40px;
+    padding-right: 40px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+  }
+
+  .ts {
+    width: 100%;
+  }
+}
+
+/* ---------- Mobile (≤ 768px) ---------- */
+@media (max-width: 768px) {
+  .T-head {
+    padding: 60px 20px 20px;
+    text-align: center;
+  }
+
+  .T-head h1 {
+    font-size: 28px;
+  }
+
+  .T-head p {
+    font-size: 14px;
+    padding: 0 10px;
+  }
+
+  .security-EX {
+    padding: 20px 16px 40px;
+  }
+
+  .sec-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    padding: 0;
+    gap: 24px;
+  }
+
+  .ts {
+    width: 100%;
+  }
+
+  .T-icons {
+    width: 52px;
+    height: 52px;
+    font-size: 28px;
+  }
+
+  .ts h3 {
+    font-size: 16px;
+    margin-top: 12px;
+  }
+
+  .ts p {
+    font-size: 13px;
+  }
+}
+
+/* ---------- Small Mobile (≤ 480px) ---------- */
+@media (max-width: 480px) {
+  .T-head {
+    padding: 48px 16px 16px;
+  }
+
+  .T-head h1 {
+    font-size: 24px;
+  }
+
+  .T-head p {
+    font-size: 13px;
+  }
+
+  .security-EX {
+    padding: 16px 12px 36px;
+  }
+
+  .sec-container {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .T-icons {
+    width: 48px;
+    height: 48px;
+    font-size: 24px;
+  }
+
+  .ts h3 {
+    font-size: 15px;
+  }
+
+  .ts p {
+    font-size: 12px;
+  }
 }

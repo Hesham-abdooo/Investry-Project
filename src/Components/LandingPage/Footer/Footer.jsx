@@ -6,7 +6,7 @@ import { HiOutlineGlobeAlt } from "react-icons/hi";
 const platformLinks = [
   { label: "Browse Campaigns", href: "#" },
   { label: "Start a Project", href: "#" },
-  { label: "How it Works", href: "#how-it-works" },
+  { label: "How it Works", href: "#How-It-Works" },
   { label: "Pricing & Fees", href: "#" },
 ];
 
@@ -100,7 +100,7 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-6 py-5 flex flex-col-reverse md:flex-row items-center justify-between gap-4">
         <p className="text-gray-500 text-sm">© 2025 InvesTry Platform. All rights reserved.</p>
 
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-6 flex-wrap justify-center">
           <span className="text-gray-400 font-light text-sm hover:text-white transition-colors cursor-pointer">Privacy Policy</span>
           <span  className="text-gray-400 font-light text-sm hover:text-white transition-colors cursor-pointer">Terms of Service</span>
 

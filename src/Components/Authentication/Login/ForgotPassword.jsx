@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { HiOutlineMail, HiArrowLeft } from "react-icons/hi";
 import { Link } from "react-router-dom";
 import axios from "axios";
-import TopBar from "../../Basics/TopBar";
+import Logo from "../../Basics/Logo";
 
 
 
@@ -63,58 +63,11 @@ export default function ForgotPassword() {
 
   
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
 
-      {/* ===== Left Side (Desktop Only) ===== */}
-      <div className="hidden lg:flex lg:w-1/2 bg-[#C9A84C] flex-col justify-between p-12 min-h-screen">
-
-        {/* Logo */}
-        <div className="flex items-center gap-2">
-          <div className="bg-[#1a2340] rounded-lg p-2 flex items-center justify-center">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="9" stroke="#C9A84C" strokeWidth="2" />
-              <path d="M12 7v5l3 3" stroke="#C9A84C" strokeWidth="2" strokeLinecap="round" />
-            </svg>
-          </div>
-          <span className="text-white text-lg font-bold tracking-tight">InvesTry</span>
-        </div>
-
-        {/* Center text */}
-        <div>
-          <h1 className="text-5xl font-bold text-white leading-tight mb-4">
-            Regain access to<br />your account.
-          </h1>
-          <p className="text-white/80 text-base leading-relaxed max-w-xs">
-            Don't worry, it happens. Follow the simple steps to securely restore access to your Sharia-compliant crowdfunding portfolio.
-          </p>
-        </div>
-
-        {/* Bottom — Trusted */}
-        <div className="flex items-center gap-3">
-          <div className="flex -space-x-2">
-            <div className="w-8 h-8 rounded-full border-2 border-white overflow-hidden">
-              <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="investor" className="w-full h-full object-cover" />
-            </div>
-            <div className="w-8 h-8 rounded-full border-2 border-white overflow-hidden">
-              <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="investor" className="w-full h-full object-cover" />
-            </div>
-            <div className="w-8 h-8 rounded-full border-2 border-white overflow-hidden">
-              <img src="https://randomuser.me/api/portraits/men/85.jpg" alt="investor" className="w-full h-full object-cover" />
-            </div>
-          </div>
-          <span className="text-white text-sm font-medium">Trusted by 8,200+ investors</span>
-        </div>
-      </div>
-
-      {/* ===== Right Side ===== */}
-      <div className="w-full lg:w-1/2 bg-gray-50 flex flex-col min-h-screen">
-
-        {/* Top bar */}
-    <TopBar/>
-
-        {/* Card */}
-        <div className="flex-1 flex items-center justify-center px-6 lg:px-10 py-8">
-          <div className="w-full max-w-md bg-white rounded-2xl shadow-sm border border-gray-100 p-8 lg:p-10">
+      {/* Card */}
+      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 py-8">
+        <div className="w-full max-w-md bg-white rounded-2xl shadow-sm border border-gray-100 p-8 sm:p-10">
 
             {!success ? (
               <>
@@ -224,6 +177,5 @@ export default function ForgotPassword() {
           </div>
         </div>
       </div>
-    </div>
   );
 }

@@ -17,7 +17,7 @@ export default function LoginLeftSide() {
 
       <div className="relative z-10 flex items-center gap-2">
         <div className="rounded-lg p-2">
-          <Logo />
+          <Logo to="/" variant="light" />
         </div>
       </div>
 

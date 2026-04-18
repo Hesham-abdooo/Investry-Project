@@ -41,7 +41,7 @@ function HIW(){
     </div>
 
 {/**--------------------------------------------------HOW IT WORKS--------------------------------------------------- */}
-        <div className="hiw_bg">
+        <div id="How-It-Works" className="hiw_bg">
             <div className='hiw_head'>
             <h1>How it works</h1>
             <p>Join thousands of founders and investors building the future together in three
@@ -74,7 +74,7 @@ function HIW(){
 </div>
 {/*-----------------------------------------------FUNDING MODLES----------------------------------------- */}
 
-  <div className='FM-head'>
+  <div id="funding-models" className='FM-head'>
     <h1>Funding Models</h1>
     <p>Choose the investment path that aligns with your goals and values.</p>
   </div>
@@ -107,7 +107,7 @@ function HIW(){
 
   {/*-------------------------------------------Featured Campaigns------------------------------------------*/}
 
-<div className='featured_bg'>
+<div id="explore" className='featured_bg'>
   <div className='featured-head'>
     <div className='feat-head'>
     <h1>Featured Campaigns</h1>

@@ -1,10 +1,6 @@
 import React from 'react'
 
-
-
-
-
-
+import Logo from "../../Basics/Logo";
 import bgImage from "../../../assets/WhatsApp Image 2026-03-05 at 3.15.35 AM.jpg";
 
 export default function SignUpLeftSide() {
@@ -19,16 +15,8 @@ export default function SignUpLeftSide() {
     >
       <div className="absolute inset-0 bg-linear-to-b from-[#0d1526ee] via-[#1a2340cc] to-[#1a2340dd]" />
 
-      <div className="relative z-10 flex items-center gap-3">
-        <div
-          className="w-11 h-11 rounded-xl flex items-center justify-center"
-          style={{ background: "#f59e0b" }}
-        >
-          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth={2.2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-          </svg>
-        </div>
-        <span className="text-white text-2xl font-bold tracking-tight">InvesTry</span>
+      <div className="relative z-10">
+        <Logo to="/" variant="light" />
       </div>
 
       <div className="relative z-10">
