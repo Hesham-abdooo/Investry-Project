@@ -18,7 +18,7 @@ export default function EmailCheck() {
 
     try {
       await axios.post(
-        "https://investry.runasp.net/api/Auth/resend-confirmation-email",
+        "http://investry.runasp.net/api/Auth/resend-confirmation-email",
         { email },
       );
 

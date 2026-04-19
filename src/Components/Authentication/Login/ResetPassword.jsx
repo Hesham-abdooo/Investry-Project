@@ -67,7 +67,7 @@ export default function ResetPassword() {
       setLoading(true);
 
       const { data } = await axios.post(
-        "https://investry.runasp.net/api/Auth/reset-password",
+        "http://investry.runasp.net/api/Auth/reset-password",
         {
           userId: userId,
           token: encodeURIComponent(token),

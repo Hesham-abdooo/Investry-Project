@@ -8,8 +8,8 @@ export default function GoogleLoginButton({ onError, onSuccess, role }) {
 
       const endpoint =
         role === "founder"
-          ? "https://investry.runasp.net/api/Auth/signin-google-founder"
-          : "https://investry.runasp.net/api/Auth/signin-google-investor";
+          ? "http://investry.runasp.net/api/Auth/signin-google-founder"
+          : "http://investry.runasp.net/api/Auth/signin-google-investor";
       const res = await axios.post(endpoint, { idToken });
       const { token, roles } = res.data.data;
 

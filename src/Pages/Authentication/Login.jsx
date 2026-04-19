@@ -20,7 +20,7 @@ export default function Login() {
 
     try {
       const res = await axios.post(
-        "https://investry.runasp.net/api/Auth/login",
+        "http://investry.runasp.net/api/Auth/login",
         { email, password },
         { withCredentials: true },
       );

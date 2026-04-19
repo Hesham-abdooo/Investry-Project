@@ -37,7 +37,7 @@ export default function ForgotPassword() {
   try {
 
     await axios.post(
-      "https://investry.runasp.net/api/Auth/forgot-password",
+      "http://investry.runasp.net/api/Auth/forgot-password",
       {
         email: trimmedEmail,
       }

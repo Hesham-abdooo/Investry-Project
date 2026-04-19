@@ -57,12 +57,8 @@ export default function FounderProjects() {
     const matchType = typeFilter ? p.fundingModel === typeFilter : true;
     return matchSearch && matchType;
   });
-console.log("Projects:", projects);
-console.log("Filtered:", filteredProjects);
-
-
-
-
+  console.log("Projects:", projects);
+  console.log("Filtered:", filteredProjects);
 
   return (
     <div className="p-4 md:p-6">

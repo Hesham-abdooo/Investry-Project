@@ -22,7 +22,7 @@ export default function EmailConfirm() {
     }
 
     axios
-      .get("https://investry.runasp.net/api/auth/confirm-email", {
+      .get("http://investry.runasp.net/api/auth/confirm-email", {
         params: { userId, token },
       })
       .then((res) => {

@@ -9,7 +9,7 @@ import Step3DealDetails from "./ْ/Components/Steps/Step3DealDetails";
 import Step4MediaDocs from "./ْ/Components/Steps/Step4MediaDocs";
 import Step5Review from "./ْ/Components/Steps/Step5Review";
 import SuccessPage from "./ْ/Components/SuccessPage";
-import DiamondIcon from "./ْ/Components/DiamondIcon";
+import Logo from "../../../Basics/Logo.jsx"
 
 import { createProject } from "./Services/Service.js";
 import "./FounderCREATE.css";
@@ -301,7 +301,7 @@ function CreateProject() {
   return (
     <>
       <div className="topBar">
-        <DiamondIcon />
+       <Logo/>
 
         <button onClick={handleExit} className="exit_dash">
           Exit to Dashboard

@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import DiamondIcon from "./DiamondIcon";
+import Logo from "../../../../../Basics/Logo";
+
 
 const SuccessPage = () => {
   const navigate = useNavigate();
@@ -9,7 +10,7 @@ const SuccessPage = () => {
     <>
       <div className="topBar">
         <div className="logo">
-          <DiamondIcon />
+          <Logo/>
           <span>InvesTry</span>
         </div>
       </div>

@@ -10,7 +10,7 @@ const handleLogout = async () => {
     const token = localStorage.getItem("token"); // جيب الـ token
 
     await axios.post(
-      "https://investry.runasp.net/api/Auth/logout",
+      "http://investry.runasp.net/api/Auth/logout",
       {},
       {
         withCredentials: true,

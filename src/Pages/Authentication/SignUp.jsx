@@ -58,8 +58,8 @@ export default function SignUp() {
     try {
       const endpoint =
         role === "founder"
-          ? "https://investry.runasp.net/api/Auth/register-founder"
-          : "https://investry.runasp.net/api/Auth/register-investor";
+          ? "http://investry.runasp.net/api/Auth/register-founder"
+          : "http://investry.runasp.net/api/Auth/register-investor";
 
       const res = await axios.post(endpoint, {
         firstName: form.firstName,
