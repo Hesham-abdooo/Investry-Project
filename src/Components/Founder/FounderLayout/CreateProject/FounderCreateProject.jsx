@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { IoAlertCircleOutline } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 import Stepper from "./ْ/Components/Stepper";
 import Step1FundingModel from "./ْ/Components/Steps/Step1FundingModel";
@@ -9,13 +10,15 @@ import Step3DealDetails from "./ْ/Components/Steps/Step3DealDetails";
 import Step4MediaDocs from "./ْ/Components/Steps/Step4MediaDocs";
 import Step5Review from "./ْ/Components/Steps/Step5Review";
 import SuccessPage from "./ْ/Components/SuccessPage";
-import Logo from "../../../Basics/Logo.jsx"
+import Logo from "../../../Basics/Logo.jsx";
 
 import { createProject } from "./Services/Service.js";
 import "./FounderCREATE.css";
 
 function CreateProject() {
   const navigate = useNavigate();
+
+  const [kycStatus, setKycStatus] = useState(null);
 
   const [selectedFunding, setSelectedFunding] = useState(null);
   const [selectDuration, setSelectDuration] = useState(null);
@@ -45,6 +48,23 @@ function CreateProject() {
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
 
+  /* ── جيب الـ KYC status لما الصفحة تفتح ── */
+  useEffect(() => {
+    const fetchKyc = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await axios.get(
+          "https://investry.runasp.net/api/Accounts/profile",
+          { headers: { Authorization: `Bearer ${token}` } },
+        );
+        setKycStatus(res.data?.data?.kycStatus);
+      } catch (err) {
+        console.error("Failed to fetch KYC status", err);
+      }
+    };
+    fetchKyc();
+  }, []);
+
   const stepDescriptions = [
     "Choose the funding model that fits your project.",
     "Add project details.",
@@ -66,8 +86,21 @@ function CreateProject() {
     const newErrors = {};
 
     if (currentStep === 1) {
-      if (!selectedFunding)
+      /* ── 1. لازم يختار funding model الأول ── */
+      if (!selectedFunding) {
         newErrors.selectedFunding = "Please select a funding model";
+        setErrors(newErrors);
+        return;
+      }
+
+      /* ── 2. بعدين نشيك KYC ── */
+      if (kycStatus !== "Approved") {
+        window.alert(
+          "⚠️ KYC Verification Required\n\nYou need to complete your KYC verification before creating a project.\n\nYou will be redirected to your profile to verify your identity.",
+        );
+        setTimeout(() => navigate("/founder/profile"), 1500);
+        return;
+      }
     }
 
     if (currentStep === 2) {
@@ -131,7 +164,7 @@ function CreateProject() {
     const formData = new FormData();
 
     formData.append("Title", projectTitle);
-    formData.append("Category", category); // ← ضيف دي
+    formData.append("CategoryIds[0]", category);
     formData.append("ShortDescription", projectDescription);
     formData.append("LongDescription", projectDescription);
     formData.append(
@@ -147,7 +180,7 @@ function CreateProject() {
     formData.append(
       "StartDate",
       startDateOption === "immediately"
-        ? new Date(Date.now() + 60 * 1000).toISOString() // ✅ بعد دقيقة
+        ? new Date(Date.now() + 10 * 60 * 1000).toISOString()
         : new Date(scheduledDate).toISOString(),
     );
     formData.append(
@@ -239,10 +272,10 @@ function CreateProject() {
       return (
         <Step3DealDetails
           selectedFunding={selectedFunding}
-          fundingGoal={fundingGoal} // ✅
-          minContribution={minContribution} // ✅
-          selectDuration={selectDuration} // ✅
-          setCurrentStep={setCurrentStep} // ✅ عشان زرار Change يشتغل
+          fundingGoal={fundingGoal}
+          minContribution={minContribution}
+          selectDuration={selectDuration}
+          setCurrentStep={setCurrentStep}
           rewardTiers={rewardTiers}
           setRewardTiers={setRewardTiers}
           equityOffered={equityOffered}
@@ -301,8 +334,7 @@ function CreateProject() {
   return (
     <>
       <div className="topBar">
-       <Logo/>
-
+        <Logo />
         <button onClick={handleExit} className="exit_dash">
           Exit to Dashboard
         </button>

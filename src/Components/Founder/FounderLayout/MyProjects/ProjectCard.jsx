@@ -79,19 +79,20 @@ export default function ProjectCard({
 
       {/* Content */}
       <div className="p-4">
-        <h3 className="font-bold text-base mb-1" style={{ color: "#D4A017" }}>
+        <h3 className="font-bold text-base mb-3" style={{ color: "#D4A017" }}>
           {project.title}
         </h3>
 
         {/* Category */}
-        <p className="text-gray-400 text-xs mb-2">
+        <p className="text-gray-500 text-sm font-medium mb-3">
           {project.category ?? "No category"}
         </p>
 
-        <p className="text-gray-500 text-sm mb-3">
-          {getFundingLabel(project.fundingModel)}
-        </p>
-
+        {project.fundingModel && (
+          <p className="text-gray-500 text-sm mb-3">
+            {getFundingLabel(project.fundingModel)}
+          </p>
+        )}
         {/* Progress */}
         <div className="flex justify-between items-center mb-1">
           <span className="font-bold text-sm" style={{ color: "#D4A017" }}>
@@ -116,7 +117,7 @@ export default function ProjectCard({
             style={{
               width: `${Math.min(project.fundingProgressPercentage ?? 0, 100)}%`,
               backgroundColor: getProgressColor(
-                project.fundingProgressPercentage ?? 0
+                project.fundingProgressPercentage ?? 0,
               ),
             }}
           />

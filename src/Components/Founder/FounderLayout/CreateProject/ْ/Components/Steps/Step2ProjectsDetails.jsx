@@ -1,4 +1,5 @@
 import React from 'react';
+import axios from 'axios';
 import { CiCircleCheck } from "react-icons/ci";
 
 const Step2ProjectDetails = ({
@@ -13,6 +14,17 @@ const Step2ProjectDetails = ({
   startDateOption, setStartDateOption,
   scheduledDate, setScheduledDate, errors
 }) => {
+
+  const [categories, setCategories] = React.useState([]);
+
+  React.useEffect(() => {
+    axios.get('https://investry.runasp.net/api/Categories')
+      .then(res => {
+        if (res.data.success) setCategories(res.data.data);
+      })
+      .catch(err => console.error('Failed to fetch categories:', err));
+  }, []);
+
   return (
     <>
       <div className='current_model'>
@@ -52,11 +64,9 @@ const Step2ProjectDetails = ({
                     onChange={(e) => setCategory(e.target.value)}
                   >
                     <option value="">Select a category</option>
-                    <option value="Technology & Environment">Technology & Environment</option>
-                    <option value="Health & Wellness">Health & Wellness</option>
-                    <option value="Education">Education</option>
-                    <option value="Finance">Finance</option>
-                    <option value="Real Estate">Real Estate</option>
+                    {categories.map(cat => (
+                      <option key={cat.id} value={cat.id}>{cat.name}</option>
+                    ))}
                   </select>
                 </div>
                 {errors.category && <p className="error_msg">{errors.category}</p>}
