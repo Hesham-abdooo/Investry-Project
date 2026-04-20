@@ -15,7 +15,7 @@ export default function FounderProjects() {
     try {
       const token = localStorage.getItem("token");
       const res = await axiosInstance.get(
-        "/api/Projects/my-projects",
+        "/Projects/my-projects",
         { headers: { Authorization: `Bearer ${token}` } },
       );
       console.log("PROJECTS:", res.data.data);

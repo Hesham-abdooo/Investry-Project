@@ -12,8 +12,8 @@ export default function FounderProfile() {
   const [firstName, setFirstName]             = useState("");
   const [lastName, setLastName]               = useState("");
 
-  const [profileImage, setProfileImage]       = useState(null);   // base64 preview
-  const [selectedFile, setSelectedFile]       = useState(null);   // الملف الفعلي
+  const [profileImage, setProfileImage]       = useState(null);
+  const [selectedFile, setSelectedFile]       = useState(null);
 
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword]         = useState("");
@@ -52,8 +52,8 @@ export default function FounderProfile() {
           setFirstName(data.firstName  || "");
           setLastName(data.lastName    || "");
           setProfileImage(data.profilePictureUrl || null);
-          const status = data.kycStatus;
-          if (status === "Verified" || status === true) setKycVerified(true);
+          // ✅ الصح: نقارن بـ "Approved" بس
+          if (data.kycStatus === "Approved") setKycVerified(true);
         }
       } catch (err) {
         console.error("Failed to fetch profile:", err);
@@ -71,7 +71,8 @@ export default function FounderProfile() {
         try {
           const res    = await api.get("/Accounts/profile");
           const status = res.data?.data?.kycStatus;
-          if (status === "Verified" || status === true) setKycVerified(true);
+          // ✅ الصح: نقارن بـ "Approved" بس
+          if (status === "Approved") setKycVerified(true);
         } catch { /* silent */ }
       }
     };
@@ -104,7 +105,7 @@ export default function FounderProfile() {
     return Object.keys(e).length === 0;
   };
 
-  /* ── Save: only send requests for what actually changed ── */
+  /* ── Save ── */
   const handleSave = async () => {
     if (!validate()) return;
 
@@ -113,7 +114,6 @@ export default function FounderProfile() {
     setSaveSuccess(false);
 
     try {
-      /* 1. Upload image — only if user picked a new file */
       if (selectedFile) {
         const formData = new FormData();
         formData.append("File", selectedFile);
@@ -122,7 +122,6 @@ export default function FounderProfile() {
         });
       }
 
-      /* 2. Update name — only if first or last name changed */
       const nameChanged =
         firstName !== (profileData?.firstName || "") ||
         lastName  !== (profileData?.lastName  || "");
@@ -131,7 +130,6 @@ export default function FounderProfile() {
         await api.patch("/Accounts", { firstName, lastName });
       }
 
-      /* 3. Change password — only if user filled the password fields */
       if (newPassword) {
         await api.post("/Accounts/change-password", {
           currentPassword,
@@ -140,7 +138,6 @@ export default function FounderProfile() {
         });
       }
 
-      /* لو مفيش أي تغيير خالص */
       if (!selectedFile && !nameChanged && !newPassword) {
         setSaveError("No changes to save.");
         return;
@@ -394,7 +391,6 @@ export default function FounderProfile() {
         {/* ══ Bottom Actions ══ */}
         <div className="flex flex-col gap-3">
 
-          {/* Save success */}
           {saveSuccess && (
             <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-100 text-sm font-medium text-emerald-700">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -404,7 +400,6 @@ export default function FounderProfile() {
             </div>
           )}
 
-          {/* Save error */}
           {saveError && (
             <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-red-50 border border-red-100 text-sm font-medium text-red-600">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -440,7 +435,7 @@ export default function FounderProfile() {
 }
 
 
-/* ─── Card components (outside FounderProfile to prevent remount on every keystroke) ─── */
+/* ─── Card components ─── */
 
 function Card({ children }) {
   return (

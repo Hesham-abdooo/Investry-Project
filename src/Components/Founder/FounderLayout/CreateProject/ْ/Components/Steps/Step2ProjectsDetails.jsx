@@ -1,6 +1,7 @@
 import React from 'react';
 import axios from 'axios';
 import { CiCircleCheck } from "react-icons/ci";
+import axiosInstance from '../../../../../../../Api/axiosInstance';
 
 const Step2ProjectDetails = ({
   selectedFunding,
@@ -18,7 +19,7 @@ const Step2ProjectDetails = ({
   const [categories, setCategories] = React.useState([]);
 
   React.useEffect(() => {
-    axios.get('https://investry.runasp.net/api/Categories')
+    axiosInstance.get('/Categories')
       .then(res => {
         if (res.data.success) setCategories(res.data.data);
       })

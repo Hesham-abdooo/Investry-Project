@@ -52,13 +52,11 @@ function CreateProject() {
     const fetchKyc = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axiosInstance.get(
-          "/api/Accounts/profile",
-          { headers: { Authorization: `Bearer ${token}` } },
-        );
-        setKycStatus(res.data?.data?.kycStatus);
+        const res = await axiosInstance.get("/Accounts/profile", {});
+        setKycStatus(res.data?.data?.kycStatus ?? "Unknown");
       } catch (err) {
         console.error("Failed to fetch KYC status", err);
+        setKycStatus("Unknown");
       }
     };
     fetchKyc();
@@ -92,8 +90,16 @@ function CreateProject() {
         return;
       }
 
-      /* ── 2. بعدين نشيك KYC ── */
-      if (kycStatus !== "Approved") {
+      /* ── 2. لو الـ KYC status لسه بيتحمل ── */
+      if (kycStatus === null) {
+        window.alert(
+          "Checking your KYC status, please wait a moment and try again.",
+        );
+        return;
+      }
+
+      /* ── 3. بعدين نشيك KYC ── */
+      if (kycStatus?.toLowerCase() !== "approved") {
         window.alert(
           "⚠️ KYC Verification Required\n\nYou need to complete your KYC verification before creating a project.\n\nYou will be redirected to your profile to verify your identity.",
         );
