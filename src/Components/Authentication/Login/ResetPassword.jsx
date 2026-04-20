@@ -6,9 +6,7 @@ import {
   HiEyeOff,
 } from "react-icons/hi";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import axios from "axios";
-import TopBar from "../../Basics/TopBar";
-import Logo from "../../Basics/Logo";
+import axiosInstance from "../../../Api/axiosInstance";
 
 export default function ResetPassword() {
   const [searchParams] = useSearchParams();
@@ -66,8 +64,8 @@ export default function ResetPassword() {
     try {
       setLoading(true);
 
-      const { data } = await axios.post(
-        "http://investry.runasp.net/api/Auth/reset-password",
+      const { data } = await axiosInstance.post(
+        "/Auth/reset-password",
         {
           userId: userId,
           token: encodeURIComponent(token),

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import ProjectFilters from "../../Components/Founder/FounderLayout/MyProjects/ProjectFilters";
 import ProjectsGrid from "../../Components/Founder/FounderLayout/MyProjects/ProjectGrid";
+import axiosInstance from "../../Api/axiosInstance";
 
 export default function FounderProjects() {
   const [projects, setProjects] = useState([]);
@@ -14,8 +14,8 @@ export default function FounderProjects() {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get(
-        "https://investry.runasp.net/api/Projects/my-projects",
+      const res = await axiosInstance.get(
+        "/api/Projects/my-projects",
         { headers: { Authorization: `Bearer ${token}` } },
       );
       console.log("PROJECTS:", res.data.data);

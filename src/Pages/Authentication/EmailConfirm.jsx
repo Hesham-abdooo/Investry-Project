@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import axios from "axios";
+import axiosInstance from "../../Api/axiosInstance";
 
 export default function EmailConfirm() {
   const navigate = useNavigate();
@@ -21,8 +21,8 @@ export default function EmailConfirm() {
       return;
     }
 
-    axios
-      .get("http://investry.runasp.net/api/auth/confirm-email", {
+    axiosInstance
+      .get("/auth/confirm-email", {
         params: { userId, token },
       })
       .then((res) => {

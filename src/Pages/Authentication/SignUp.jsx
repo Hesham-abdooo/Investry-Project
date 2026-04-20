@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
 import TopBar from "../../Components/Basics/TopBar";
 import SignUpLeftSide from "../../Components/Authentication/Signup/SignUpLeftSide";
 import LoginDivider from "../../Components/Authentication/Login/LoginDivider";
@@ -13,6 +12,7 @@ import InputField, {
 } from "../../Components/Authentication/Signup/InputField";
 import PasswordField from "../../Components/Authentication/Signup/PasswordField";
 import TermsCheckbox from "../../Components/Authentication/Signup/TermsCheckbox";
+import axiosInstance from "../../Api/axiosInstance";
 
 export default function SignUp() {
   const navigate = useNavigate();
@@ -58,10 +58,10 @@ export default function SignUp() {
     try {
       const endpoint =
         role === "founder"
-          ? "http://investry.runasp.net/api/Auth/register-founder"
-          : "http://investry.runasp.net/api/Auth/register-investor";
+          ? "/Auth/register-founder"
+          : "/Auth/register-investor";
 
-      const res = await axios.post(endpoint, {
+      const res = await axiosInstance.post(endpoint, {
         firstName: form.firstName,
         lastName: form.lastName,
         userName: form.userName,

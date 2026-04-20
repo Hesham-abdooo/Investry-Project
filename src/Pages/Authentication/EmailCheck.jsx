@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
+import axiosInstance from "../../Api/axiosInstance";
 
 export default function EmailCheck() {
   const [status, setStatus] = useState("idle");
@@ -17,8 +17,8 @@ export default function EmailCheck() {
     setStatus("loading");
 
     try {
-      await axios.post(
-        "http://investry.runasp.net/api/Auth/resend-confirmation-email",
+      await axiosInstance.post(
+        "/Auth/resend-confirmation-email",
         { email },
       );
 

@@ -1,16 +1,18 @@
-import axios from "axios";
 import { GoogleLogin } from "@react-oauth/google";
+import axiosInstance from "../../../Api/axiosInstance";
 
 export default function GoogleLoginButton({ onError, onSuccess, role }) {
   const handleSuccess = async (credentialResponse) => {
     try {
       const idToken = credentialResponse.credential;
 
+      const normalizedRole = role?.toLowerCase();
+
       const endpoint =
-        role === "founder"
-          ? "http://investry.runasp.net/api/Auth/signin-google-founder"
-          : "http://investry.runasp.net/api/Auth/signin-google-investor";
-      const res = await axios.post(endpoint, { idToken });
+        normalizedRole === "founder"
+          ? "/Auth/signin-google-founder"
+          : "/Auth/signin-google-investor";
+      const res = await axiosInstance.post(endpoint, { idToken });
       const { token, roles } = res.data.data;
 
       localStorage.setItem("token", token);

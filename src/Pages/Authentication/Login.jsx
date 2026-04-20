@@ -1,4 +1,5 @@
 import React from "react";
+import axiosInstance from "../../../src/Api/axiosInstance.js";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -19,11 +20,10 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const res = await axios.post(
-        "https://investry.runasp.net/api/Auth/login",
-        { email, password },
-        { withCredentials: true },
-      );
+      const res = await axiosInstance.post("/Auth/login", {
+        email,
+        password,
+      });
 
       const { token, roles } = res.data.data;
       localStorage.setItem("token", token);
@@ -38,7 +38,9 @@ export default function Login() {
       const msg = err.response?.data?.errors?.[0]?.message;
       if (msg?.toLowerCase().includes("not confirmed")) {
         localStorage.setItem("email", email);
-        setError("Please confirm your email first. Redirecting to verification page...");
+        setError(
+          "Please confirm your email first. Redirecting to verification page...",
+        );
         setTimeout(() => navigate("/email-check"), 3000);
         return;
       }

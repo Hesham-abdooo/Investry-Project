@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { IoAlertCircleOutline } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
-
 import Stepper from "./ْ/Components/Stepper";
 import Step1FundingModel from "./ْ/Components/Steps/Step1FundingModel";
 import Step2ProjectDetails from "./ْ/Components/Steps/Step2ProjectsDetails";
@@ -14,6 +12,7 @@ import Logo from "../../../Basics/Logo.jsx";
 
 import { createProject } from "./Services/Service.js";
 import "./FounderCREATE.css";
+import axiosInstance from "../../../../Api/axiosInstance.js";
 
 function CreateProject() {
   const navigate = useNavigate();
@@ -53,8 +52,8 @@ function CreateProject() {
     const fetchKyc = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get(
-          "https://investry.runasp.net/api/Accounts/profile",
+        const res = await axiosInstance.get(
+          "/api/Accounts/profile",
           { headers: { Authorization: `Bearer ${token}` } },
         );
         setKycStatus(res.data?.data?.kycStatus);

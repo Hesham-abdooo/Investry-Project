@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { HiOutlineMail, HiArrowLeft } from "react-icons/hi";
 import { Link } from "react-router-dom";
-import axios from "axios";
-import Logo from "../../Basics/Logo";
+import axiosInstance from "../../../Api/axiosInstance";
 
 
 
@@ -36,8 +35,8 @@ export default function ForgotPassword() {
 
   try {
 
-    await axios.post(
-      "http://investry.runasp.net/api/Auth/forgot-password",
+    await axiosInstance.post(
+      "/Auth/forgot-password",
       {
         email: trimmedEmail,
       }
