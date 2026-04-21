@@ -42,3 +42,17 @@ html {
 }
 /* Todo End Global Styles */
 
+/* ── Founder Dashboard Responsive ── */
+@media (max-width: 900px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+@media (max-width: 640px) {
+  .stats-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .actions-grid {
+    grid-template-columns: 1fr !important;
+  }
+}

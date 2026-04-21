@@ -1,36 +1,40 @@
 import React from "react";
+import { FiMoreVertical, FiTrash2, FiExternalLink } from "react-icons/fi";
 
 const getStatusLabel = (status) => {
-  if (status === "PendingReview") return "Pending Review";
+  if (status === "PendingReview") return "Pending";
   if (status === "Active") return "Active";
   if (status === "Completed") return "Completed";
   return status ?? "—";
 };
 
+const getStatusStyle = (status) => {
+  if (status === "Active")
+    return { bg: "#E8F5E9", color: "#2E7D32", border: "#C8E6C9" };
+  if (status === "Completed")
+    return { bg: "#E3F2FD", color: "#1565C0", border: "#BBDEFB" };
+  if (status === "PendingReview")
+    return { bg: "#FEF9EC", color: "#D4A017", border: "rgba(212,160,23,0.2)" };
+  return { bg: "#F3F4F6", color: "#9CA3AF", border: "#E5E7EB" };
+};
+
 const getFundingLabel = (model) => {
-  if (model === "Reward") return "Reward-Based";
-  if (model === "Equity") return "Equity-Based";
+  if (model === "Reward") return "Reward";
+  if (model === "Equity") return "Equity";
   if (model === "Mudarabah") return "Mudarabah";
   return model ?? "—";
 };
 
-const getProgressColor = (progress) => {
-  if (progress >= 100) return "#34d399";
-  if (progress > 0) return "#0F2044";
-  return "#e5e7eb";
+const getFundingBadge = (model) => {
+  if (model === "Equity")
+    return { bg: "#0F2044", color: "#fff" };
+  return { bg: "#FEF9EC", color: "#D4A017" };
 };
 
 const formatAmount = (val) => {
   const num = Number(val);
   if (isNaN(num)) return "0";
   return num.toLocaleString();
-};
-
-const getStatusStyle = (status) => {
-  if (status === "Active") return { color: "#0F2044", fontWeight: 600 };
-  if (status === "Completed") return { color: "#34d399", fontWeight: 600 };
-  if (status === "PendingReview") return { color: "#D4A017", fontWeight: 600 };
-  return { color: "#9ca3af" };
 };
 
 export default function ProjectCard({
@@ -45,35 +49,135 @@ export default function ProjectCard({
       : `https://investry.runasp.net${project.coverImageUrl}`
     : "https://images.unsplash.com/photo-1486325212027-8081e485255e?w=400&h=200&fit=crop";
 
+  const progress = Math.min(project.fundingProgressPercentage ?? 0, 100);
+  const statusStyle = getStatusStyle(project.projectStatus);
+  const fundingBadge = getFundingBadge(project.fundingModel);
+
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <div
+      style={{
+        backgroundColor: "white",
+        borderRadius: 16,
+        border: "1.5px solid #f0f0f0",
+        overflow: "hidden",
+        boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+        display: "flex",
+        flexDirection: "column",
+        transition: "box-shadow 0.25s ease, transform 0.25s ease",
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.08)";
+        e.currentTarget.style.transform = "translateY(-2px)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.boxShadow = "0 1px 4px rgba(0,0,0,0.04)";
+        e.currentTarget.style.transform = "translateY(0)";
+      }}
+    >
       {/* Image */}
-      <div
-        className="relative w-full"
-        style={{
-          aspectRatio: "16/9",
-          backgroundImage: `url(${imageUrl})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-      >
-        {/* Menu Button */}
-        <div className="absolute top-3 right-3">
+      <div style={{ position: "relative", aspectRatio: "16/9", overflow: "hidden" }}>
+        <img
+          src={imageUrl}
+          alt={project.title}
+          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+        />
+        {/* Status Badge */}
+        <span
+          style={{
+            position: "absolute",
+            top: 12,
+            left: 12,
+            fontSize: 10,
+            fontWeight: 700,
+            padding: "4px 10px",
+            borderRadius: 6,
+            backgroundColor: statusStyle.bg,
+            color: statusStyle.color,
+            border: `1px solid ${statusStyle.border}`,
+            letterSpacing: 0.3,
+            textTransform: "uppercase",
+          }}
+        >
+          {getStatusLabel(project.projectStatus)}
+        </span>
+
+        {/* Funding Badge */}
+        <span
+          style={{
+            position: "absolute",
+            top: 12,
+            right: 48,
+            fontSize: 10,
+            fontWeight: 700,
+            padding: "4px 10px",
+            borderRadius: 6,
+            backgroundColor: fundingBadge.bg,
+            color: fundingBadge.color,
+            letterSpacing: 0.3,
+            textTransform: "uppercase",
+          }}
+        >
+          {getFundingLabel(project.fundingModel)}
+        </span>
+
+        {/* Menu */}
+        <div style={{ position: "absolute", top: 10, right: 10 }}>
           <button
-            className="bg-white rounded-full w-8 h-8 flex items-center justify-center shadow text-gray-500 hover:text-gray-800"
-            onClick={() =>
-              setOpenMenuId(openMenuId === project.id ? null : project.id)
-            }
+            onClick={() => setOpenMenuId(openMenuId === project.id ? null : project.id)}
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: 8,
+              backgroundColor: "rgba(255,255,255,0.9)",
+              backdropFilter: "blur(4px)",
+              border: "none",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#64748b",
+              transition: "all 0.2s ease",
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "white"; e.currentTarget.style.color = "#0F2044"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.9)"; e.currentTarget.style.color = "#64748b"; }}
           >
-            ⋮
+            <FiMoreVertical size={15} />
           </button>
           {openMenuId === project.id && (
-            <div className="absolute right-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-100 z-10">
+            <div
+              style={{
+                position: "absolute",
+                right: 0,
+                marginTop: 4,
+                backgroundColor: "white",
+                borderRadius: 12,
+                boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+                border: "1.5px solid #f0f0f0",
+                overflow: "hidden",
+                zIndex: 10,
+                minWidth: 160,
+              }}
+            >
               <button
-                className="flex items-center gap-2 px-4 py-2 text-red-500 text-sm hover:bg-red-50 w-full"
                 onClick={() => onDelete(project.id)}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  padding: "10px 16px",
+                  fontSize: 13,
+                  fontWeight: 500,
+                  color: "#ef4444",
+                  border: "none",
+                  background: "none",
+                  cursor: "pointer",
+                  width: "100%",
+                  transition: "background 0.2s",
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#fef2f2"}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
               >
-                🗑 Delete project
+                <FiTrash2 size={14} /> Delete Project
               </button>
             </div>
           )}
@@ -81,57 +185,41 @@ export default function ProjectCard({
       </div>
 
       {/* Content */}
-      <div className="p-4">
-        <h3 className="font-bold text-base mb-3" style={{ color: "#D4A017" }}>
+      <div style={{ padding: "16px 20px 20px", display: "flex", flexDirection: "column", flex: 1 }}>
+        {/* Category */}
+        <span style={{ fontSize: 10, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>
+          {project.category ?? "No category"}
+        </span>
+
+        {/* Title */}
+        <h3 style={{ fontSize: 15, fontWeight: 700, color: "#0F2044", margin: "0 0 14px", lineHeight: 1.4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
           {project.title}
         </h3>
 
-        {/* Category */}
-        <p className="text-gray-500 text-sm font-medium mb-3">
-          {project.category ?? "No category"}
-        </p>
-
-        {project.fundingModel && (
-          <p className="text-gray-500 text-sm mb-3">
-            {getFundingLabel(project.fundingModel)}
-          </p>
-        )}
         {/* Progress */}
-        <div className="flex justify-between items-center mb-1">
-          <span className="font-bold text-sm" style={{ color: "#D4A017" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6 }}>
+          <span style={{ fontSize: 14, fontWeight: 700, color: "#D4A017" }}>
             EGP {formatAmount(project.currentAmount)}
           </span>
-          <span
-            className="text-sm font-bold"
-            style={{
-              color:
-                project.fundingProgressPercentage >= 100
-                  ? "#34d399"
-                  : "#374151",
-            }}
-          >
-            {project.fundingProgressPercentage ?? 0}%
+          <span style={{ fontSize: 12, fontWeight: 600, color: progress >= 100 ? "#059669" : "#0F2044" }}>
+            {progress}%
           </span>
         </div>
 
-        <div className="w-full bg-gray-100 rounded-full h-1.5 mb-3">
+        <div style={{ width: "100%", height: 6, borderRadius: 4, backgroundColor: "#f3f4f6", marginBottom: 6, overflow: "hidden" }}>
           <div
-            className="h-1.5 rounded-full"
             style={{
-              width: `${Math.min(project.fundingProgressPercentage ?? 0, 100)}%`,
-              backgroundColor: getProgressColor(
-                project.fundingProgressPercentage ?? 0,
-              ),
+              height: "100%",
+              borderRadius: 4,
+              width: `${progress}%`,
+              backgroundColor: progress >= 100 ? "#059669" : "#D4A017",
+              transition: "width 0.7s ease-out",
             }}
           />
         </div>
 
-        <div className="flex justify-between items-center text-xs text-gray-400">
+        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#94a3b8", fontWeight: 500 }}>
           <span>Target: EGP {formatAmount(project.targetAmount)}</span>
-          {/* projectStatus مش status */}
-          <span style={getStatusStyle(project.projectStatus)}>
-            {getStatusLabel(project.projectStatus)}
-          </span>
         </div>
       </div>
     </div>
