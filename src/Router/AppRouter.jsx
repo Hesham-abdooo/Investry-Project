@@ -1,5 +1,4 @@
 import React from "react";
-
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 import LandingPage from "../Pages/LandingPage/LandingPage";
@@ -15,8 +14,6 @@ import Investor from "../Pages/Investor/Investor.jsx";
 import InvestorDashboard from "../Components/Investor/InvestorLayout/InvestorDashboard.jsx";
 
 import FounderDasboard from "../Pages/Founder/FounderDashboard.jsx";
-
-
 import FounderWallet from "../Pages/Founder/FounderWallet.jsx";
 import FounderAnalytics from "../Pages/Founder/FounderAnalytics.jsx";
 import FounderSupport from "../Pages/Founder/FounderSupport.jsx";
@@ -25,52 +22,68 @@ import FounderCreateProject from "../Components/Founder/FounderLayout/CreateProj
 import FounderLayout from "../Components/Layouts/Founder/FounderLayout.jsx";
 import FounderProjects from "../Pages/Founder/FounderProjects.jsx";
 
+import ProtectedRoute from "../../src/Components/Routes/ProtectedRoute.jsx";
+
 const routes = createBrowserRouter([
-  // ! Routing Landing page
+  // Landing
   {
     path: "/",
     element: <LandingPage />,
   },
 
-  // ! Routing Auth pages
+  // Auth
   { path: "/login", element: <Login /> },
   { path: "/signup", element: <SignUp /> },
-
-  // !
   { path: "/email-check", element: <EmailCheck /> },
   { path: "/email-confirm", element: <EmailConfirm /> },
 
-  //! Routing Investor Page
+  // Investor
   {
     path: "/investor",
-    element: <Investor />,
+    element: (
+      <ProtectedRoute allowedRoles={["investor"]}>
+        <Investor />
+      </ProtectedRoute>
+    ),
     children: [
       { index: true, element: <InvestorDashboard /> },
-      { path: "investorDashboard", element: <InvestorDashboard /> },
+      { path: "dashboard", element: <InvestorDashboard /> },
     ],
   },
 
-  //! Routing Founder Page
+  // Founder
   {
     path: "/founder",
-    element: <FounderLayout/>,
+    element: (
+      <ProtectedRoute allowedRoles={["founder"]}>
+        <FounderLayout />
+      </ProtectedRoute>
+    ),
     children: [
       { index: true, element: <FounderDasboard /> },
-      { path: "FounderDashboard", element: <FounderDasboard /> },
-      { path: "projects", element: <FounderProjects/>},
+      { path: "projects", element: <FounderProjects /> },
       { path: "wallet", element: <FounderWallet /> },
       { path: "analytics", element: <FounderAnalytics /> },
       { path: "support", element: <FounderSupport /> },
       { path: "profile", element: <FounderProfile /> },
     ],
   },
-  { path: "/createProject", element: <FounderCreateProject /> },
 
-  //! Routing Forgot,Reset Password
+  // 🔥 مهم: نحمي create project
+  {
+    path: "/createProject",
+    element: (
+      <ProtectedRoute allowedRoles={["founder"]}>
+        <FounderCreateProject />
+      </ProtectedRoute>
+    ),
+  },
+
+  // Forgot / Reset
   { path: "/forgot-password", element: <ForgotPassword /> },
   { path: "/reset-password", element: <ResetPassword /> },
 
-  //! Routing NotFound Page
+  // NotFound
   { path: "*", element: <NotFound /> },
 ]);
 

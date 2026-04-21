@@ -26,13 +26,16 @@ export default function Login() {
       });
 
       const { token, roles } = res.data.data;
-      localStorage.setItem("token", token);
-      localStorage.setItem("role", roles[0]);
 
-      if (roles[0] === "Investor") {
-        navigate("/investor/investorDashboard");
-      } else if (roles[0] === "Founder") {
-        navigate("/founder/founderDashboard");
+      localStorage.setItem("token", token);
+      localStorage.setItem("role", roles[0].toLowerCase()); // 👈 هنا الحل
+
+      const role = roles[0].toLowerCase();
+
+      if (role === "investor") {
+        navigate("/investor");
+      } else if (role === "founder") {
+        navigate("/founder");
       }
     } catch (err) {
       const msg = err.response?.data?.errors?.[0]?.message;
