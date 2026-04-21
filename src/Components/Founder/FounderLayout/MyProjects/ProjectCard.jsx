@@ -48,12 +48,15 @@ export default function ProjectCard({
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
       {/* Image */}
-      <div className="relative">
-        <img
-          src={imageUrl}
-          alt={project.title}
-          className="w-full h-44 object-cover"
-        />
+      <div
+        className="relative w-full"
+        style={{
+          aspectRatio: "16/9",
+          backgroundImage: `url(${imageUrl})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
         {/* Menu Button */}
         <div className="absolute top-3 right-3">
           <button

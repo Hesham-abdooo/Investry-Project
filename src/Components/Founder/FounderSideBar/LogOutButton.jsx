@@ -1,34 +1,33 @@
-import axios from "axios";
 import { FaSignOutAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import axiosInstance from "../../../Api/axiosInstance";
 
 export default function LogOutButton() {
   const navigate = useNavigate();
 
-const handleLogout = async () => {
-  try {
-    const token = localStorage.getItem("token"); // جيب الـ token
+  const handleLogout = async () => {
+    try {
+      const token = localStorage.getItem("token");
 
-    await axios.post(
-      "https://investry.runasp.net/api/Auth/logout",
-      {},
-      {
-        withCredentials: true,
-        headers: {
-          Authorization: `Bearer ${token}`, // ابعته في الـ header
+      await axiosInstance.post(
+        "/Auth/logout",
+
+        {
+          withCredentials: true,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         },
-      }
-    );
-
-    console.log("Logout success");
-  } catch (err) {
-    console.log("Logout error:", err.response?.data);
-  } finally {
-    localStorage.removeItem("token");
-    localStorage.removeItem("role");
-    navigate("/login");
-  }
-};
+      );
+    } catch (err) {
+      // ignore
+    } finally {
+      localStorage.removeItem("token");
+      localStorage.removeItem("role");
+      localStorage.removeItem("refreshToken");
+      navigate("/login");
+    }
+  };
 
   return (
     <button

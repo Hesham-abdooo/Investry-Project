@@ -58,6 +58,7 @@ export default function FounderProjects() {
     return matchSearch && matchType;
   });
   console.log("Projects:", projects);
+  console.log("funding models:", projects.map(p => p.fundingModel));
   console.log("Filtered:", filteredProjects);
 
   return (
