@@ -736,7 +736,7 @@ function DashboardSkeleton() {
   const bg = "#f3f4f6";
 
   return (
-    <div style={{ padding: "8px 0", maxWidth: 960 }}>
+    <div style={{ padding: "8px 0" }}>
       <style>{`@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }`}</style>
 
       {/* Welcome skeleton */}
