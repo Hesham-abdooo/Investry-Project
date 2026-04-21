@@ -77,7 +77,7 @@ function CreateProject() {
       "Are you sure you want to exit? Your progress may not be saved.",
     );
     if (confirmExit) {
-      navigate("/founder/FounderDashboard");
+      navigate("/founder");
     }
   };
 
