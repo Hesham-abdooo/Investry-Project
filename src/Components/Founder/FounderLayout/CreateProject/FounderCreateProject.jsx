@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { IoAlertCircleOutline } from "react-icons/io5";
+import { FiShield, FiX } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import Stepper from "./ْ/Components/Stepper";
 import Step1FundingModel from "./ْ/Components/Steps/Step1FundingModel";
@@ -46,6 +47,7 @@ function CreateProject() {
   const [videoUrl, setVideoUrl] = useState("");
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [kycModal, setKycModal] = useState({ show: false, type: '' });
 
   /* ── جيب الـ KYC status لما الصفحة تفتح ── */
   useEffect(() => {
@@ -92,18 +94,13 @@ function CreateProject() {
 
       /* ── 2. لو الـ KYC status لسه بيتحمل ── */
       if (kycStatus === null) {
-        window.alert(
-          "Checking your KYC status, please wait a moment and try again.",
-        );
+        setKycModal({ show: true, type: 'loading' });
         return;
       }
 
       /* ── 3. بعدين نشيك KYC ── */
       if (kycStatus?.toLowerCase() !== "approved") {
-        window.alert(
-          "⚠️ KYC Verification Required\n\nYou need to complete your KYC verification before creating a project.\n\nYou will be redirected to your profile to verify your identity.",
-        );
-        setTimeout(() => navigate("/founder/profile"), 1500);
+        setKycModal({ show: true, type: 'required' });
         return;
       }
     }
@@ -251,6 +248,7 @@ function CreateProject() {
     if (currentStep === 2) {
       return (
         <Step2ProjectDetails
+          selectedFunding={selectedFunding}
           setCurrentStep={setCurrentStep}
           projectTitle={projectTitle}
           setProjectTitle={setProjectTitle}
@@ -382,13 +380,6 @@ function CreateProject() {
               </button>
             )}
 
-            <button
-              className="save_draft"
-              onClick={() => alert("Saved as draft")}
-            >
-              Save as draft
-            </button>
-
             <button className="cancel" onClick={handleExit}>
               Cancel
             </button>
@@ -400,6 +391,44 @@ function CreateProject() {
           </span>
         </div>
       </div>
+
+      {/* ── KYC Modal ── */}
+      {kycModal.show && (
+        <div className="kyc_modal_overlay" onClick={() => setKycModal({ show: false, type: '' })}>
+          <div className="kyc_modal" onClick={(e) => e.stopPropagation()}>
+            <button className="kyc_modal_close" onClick={() => setKycModal({ show: false, type: '' })}>
+              <FiX />
+            </button>
+            <div className="kyc_modal_icon">
+              <FiShield />
+            </div>
+            {kycModal.type === 'loading' ? (
+              <>
+                <h3 className="kyc_modal_title">Checking Verification</h3>
+                <p className="kyc_modal_text">
+                  We're checking your KYC verification status. Please wait a moment and try again.
+                </p>
+                <button className="kyc_modal_btn" onClick={() => setKycModal({ show: false, type: '' })}>
+                  Try Again
+                </button>
+              </>
+            ) : (
+              <>
+                <h3 className="kyc_modal_title">KYC Verification Required</h3>
+                <p className="kyc_modal_text">
+                  You need to complete your identity verification before creating a project. This ensures trust and security for all users on the platform.
+                </p>
+                <button className="kyc_modal_btn" onClick={() => navigate("/founder/profile")}>
+                  Verify Identity
+                </button>
+                <button className="kyc_modal_btn_secondary" onClick={() => setKycModal({ show: false, type: '' })}>
+                  Cancel
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </>
   );
 }

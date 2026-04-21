@@ -1,4 +1,5 @@
 import React from 'react';
+import { FiImage, FiUploadCloud, FiFile, FiTrash2, FiLink } from "react-icons/fi";
 
 const Step4MediaDocs = ({
   coverImages, setCoverImages,
@@ -57,7 +58,9 @@ const Step4MediaDocs = ({
             onDrop={handleCoverImageDrop}
             onClick={() => document.getElementById('coverImageInput').click()}
           >
-            <div className='upload_icon upload_icon_image'>🖼</div>
+            <div className='upload_icon upload_icon_image'>
+              <FiUploadCloud />
+            </div>
             <p className='upload_text'><span className='upload_link'>Click to upload</span> or drag and drop</p>
             <p className='upload_hint'>SVG, PNG, JPG or GIF (max. 5MB)</p>
             <input
@@ -75,13 +78,17 @@ const Step4MediaDocs = ({
           {coverImages.map((img, index) => (
             <div className='uploaded_file' key={index}>
               <div className='uploaded_file_info'>
-                <span className='file_icon file_icon_img'>🖼</span>
+                <span className='file_icon file_icon_img'>
+                  <FiImage />
+                </span>
                 <div className='file_details'>
                   <span className='file_name'>{img.name}</span>
                   <span className='file_size'>{formatFileSize(img.size)}</span>
                 </div>
               </div>
-              <button type='button' className='file_remove' onClick={() => removeImage(index)}>🗑</button>
+              <button type='button' className='file_remove' onClick={() => removeImage(index)}>
+                <FiTrash2 />
+              </button>
             </div>
           ))}
         </div>
@@ -90,13 +97,16 @@ const Step4MediaDocs = ({
           <label className='tier_label'>
             Promotional Video URL <span style={{ color: '#94a3b8', fontWeight: 400 }}>(Optional)</span>
           </label>
-          <input
-            type='text'
-            className='tier_input'
-            placeholder='e.g. https://youtube.com/watch?v=...'
-            value={videoUrl}
-            onChange={(e) => setVideoUrl(e.target.value)}
-          />
+          <div className='video_input_wrapper'>
+            <span className='video_link_icon'><FiLink /></span>
+            <input
+              type='text'
+              className='tier_input video_input'
+              placeholder='e.g. https://youtube.com/watch?v=...'
+              value={videoUrl}
+              onChange={(e) => setVideoUrl(e.target.value)}
+            />
+          </div>
           <p className='equity_helper_text'>Adding a video can increase funding success by up to 30%. Provide a valid YouTube or Vimeo link.</p>
         </div>
       </div>
@@ -113,7 +123,9 @@ const Step4MediaDocs = ({
             onDrop={handleDocumentsDrop}
             onClick={() => document.getElementById('documentsInput').click()}
           >
-            <div className='upload_icon upload_icon_doc'>📄</div>
+            <div className='upload_icon upload_icon_doc'>
+              <FiUploadCloud />
+            </div>
             <p className='upload_text'><span className='upload_link'>Click to upload</span> or drag and drop</p>
             <p className='upload_hint'>PDF documents only (max. 15MB per file)</p>
             <input
@@ -131,13 +143,17 @@ const Step4MediaDocs = ({
           {documents.map((doc, index) => (
             <div className='uploaded_file' key={index}>
               <div className='uploaded_file_info'>
-                <span className='file_icon file_icon_doc'>📄</span>
+                <span className='file_icon file_icon_doc'>
+                  <FiFile />
+                </span>
                 <div className='file_details'>
                   <span className='file_name'>{doc.name}</span>
                   <span className='file_size'>{formatFileSize(doc.size)}</span>
                 </div>
               </div>
-              <button type='button' className='file_remove' onClick={() => removeDocument(index)}>🗑</button>
+              <button type='button' className='file_remove' onClick={() => removeDocument(index)}>
+                <FiTrash2 />
+              </button>
             </div>
           ))}
         </div>

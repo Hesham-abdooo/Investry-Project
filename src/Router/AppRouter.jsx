@@ -13,6 +13,8 @@ import NotFound from "../Pages/NotFound/NotFound";
 
 import Investor from "../Pages/Investor/Investor.jsx";
 import InvestorDashboard from "../Components/Investor/InvestorLayout/InvestorDashboard.jsx";
+import InvestorWallet from "../Components/Investor/InvestorLayout/InvestorWallet.jsx";
+import ProjectDetails from "../Components/Investor/InvestorLayout/ProjectDetails.jsx";
 
 import FounderDasboard from "../Pages/Founder/FounderDashboard.jsx";
 
@@ -47,6 +49,8 @@ const routes = createBrowserRouter([
     children: [
       { index: true, element: <InvestorDashboard /> },
       { path: "investorDashboard", element: <InvestorDashboard /> },
+      { path: "wallet", element: <InvestorWallet /> },
+      { path: "project/:id", element: <ProjectDetails /> },
     ],
   },
 

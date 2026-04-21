@@ -1,5 +1,5 @@
 import React from 'react';
-import { FiPieChart } from "react-icons/fi";
+import { FiPieChart, FiEdit2 } from "react-icons/fi";
 
 const Step5Review = ({
   selectedFunding,
@@ -33,44 +33,32 @@ const Step5Review = ({
 
   const previewImageUrl = coverImages.length > 0 ? URL.createObjectURL(coverImages[0]) : null;
 
-  const sectionStyle = { backgroundColor: 'white', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '24px 28px', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' };
-  const headerStyle = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', paddingBottom: '14px', borderBottom: '1px solid #f0f0f0' };
-  const titleRowStyle = { display: 'flex', alignItems: 'center', gap: '10px' };
-  const iconStyle = { width: '28px', height: '28px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f0f4ff', fontSize: '14px', flexShrink: 0 };
-  const sectionTitleStyle = { fontSize: '16px', fontWeight: 700, color: '#1f2937', margin: 0, fontFamily: '"Nimbus Sans", sans-serif' };
-  const editBtnStyle = { background: 'none', border: 'none', color: '#0F2044', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: '"Nimbus Sans", sans-serif', display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 12px', borderRadius: '6px' };
-  const rowStyle = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '12px' };
-  const fieldStyle = { display: 'flex', flexDirection: 'column', gap: '4px' };
-  const labelStyle = { fontSize: '10px', fontWeight: 700, color: '#9ca3af', letterSpacing: '0.5px', textTransform: 'uppercase', fontFamily: '"Nimbus Sans", sans-serif' };
-  const valueStyle = { fontSize: '14px', fontWeight: 500, color: '#1f2937', fontFamily: '"Nimbus Sans", sans-serif' };
-  const highlightStyle = { ...valueStyle, color: '#D4A017', fontWeight: 700 };
-
   const renderDealDetails = () => {
     if (selectedFunding === 'Equity-Based') return (
-      <div style={{ ...rowStyle, marginBottom: '0' }}>
-        <div style={fieldStyle}>
-          <span style={labelStyle}>EQUITY OFFERED</span>
-          <span style={highlightStyle}>{equityOffered}%</span>
+      <div className='review_row' style={{ marginBottom: 0 }}>
+        <div className='review_field'>
+          <span className='review_field_label'>EQUITY OFFERED</span>
+          <span className='review_field_value review_highlight'>{equityOffered}%</span>
         </div>
       </div>
     );
     if (selectedFunding === 'Reward-Based') return (
-      <div style={{ ...rowStyle, marginBottom: '0' }}>
-        <div style={fieldStyle}>
-          <span style={labelStyle}>REWARD TIERS</span>
-          <span style={highlightStyle}>{rewardTiers.length} tier{rewardTiers.length !== 1 ? 's' : ''}</span>
+      <div className='review_row' style={{ marginBottom: 0 }}>
+        <div className='review_field'>
+          <span className='review_field_label'>REWARD TIERS</span>
+          <span className='review_field_value review_highlight'>{rewardTiers.length} tier{rewardTiers.length !== 1 ? 's' : ''}</span>
         </div>
       </div>
     );
     if (selectedFunding === 'Mudarabah') return (
-      <div style={{ ...rowStyle, marginBottom: '0' }}>
-        <div style={fieldStyle}>
-          <span style={labelStyle}>FOUNDER PROFIT SHARE</span>
-          <span style={highlightStyle}>{founderProfitShare}%</span>
+      <div className='review_row' style={{ marginBottom: 0 }}>
+        <div className='review_field'>
+          <span className='review_field_label'>FOUNDER PROFIT SHARE</span>
+          <span className='review_field_value review_highlight'>{founderProfitShare}%</span>
         </div>
-        <div style={fieldStyle}>
-          <span style={labelStyle}>CONTRACT DURATION</span>
-          <span style={valueStyle}>{contractDuration}</span>
+        <div className='review_field'>
+          <span className='review_field_label'>CONTRACT DURATION</span>
+          <span className='review_field_value'>{contractDuration}</span>
         </div>
       </div>
     );
@@ -78,131 +66,127 @@ const Step5Review = ({
   };
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '32px', alignItems: 'start', marginTop: '10px' }}>
+    <div className='review_container'>
 
       {/* Left Column */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <div className='review_left'>
 
         {/* Funding Model */}
-        <div style={sectionStyle}>
-          <div style={headerStyle}>
-            <div style={titleRowStyle}>
-              <div style={iconStyle}>⚙</div>
-              <h3 style={sectionTitleStyle}>Funding model</h3>
-            </div>
-            <button type="button" style={editBtnStyle} onClick={() => setCurrentStep(1)}>✏ Edit</button>
+        <div className='review_section'>
+          <div className='review_section_header'>
+            <h3 className='review_section_title'>Funding Model</h3>
+            <button type="button" className='review_edit_btn' onClick={() => setCurrentStep(1)}>
+              <FiEdit2 size={13} /> Edit
+            </button>
           </div>
-          <div style={{ ...rowStyle, marginBottom: '0' }}>
-            <div style={fieldStyle}>
-              <span style={labelStyle}>MODEL</span>
-              <span style={valueStyle}>{selectedFunding}</span>
+          <div className='review_row' style={{ marginBottom: 0 }}>
+            <div className='review_field'>
+              <span className='review_field_label'>MODEL</span>
+              <span className='review_field_value'>{selectedFunding}</span>
             </div>
           </div>
         </div>
 
         {/* Project Details */}
-        <div style={sectionStyle}>
-          <div style={headerStyle}>
-            <div style={titleRowStyle}>
-              <div style={iconStyle}>📋</div>
-              <h3 style={sectionTitleStyle}>Project details</h3>
-            </div>
-            <button type="button" style={editBtnStyle} onClick={() => setCurrentStep(2)}>✏ Edit</button>
+        <div className='review_section'>
+          <div className='review_section_header'>
+            <h3 className='review_section_title'>Project Details</h3>
+            <button type="button" className='review_edit_btn' onClick={() => setCurrentStep(2)}>
+              <FiEdit2 size={13} /> Edit
+            </button>
           </div>
-          <div style={{ ...rowStyle, gridTemplateColumns: '1fr' }}>
-            <div style={fieldStyle}>
-              <span style={labelStyle}>PROJECT TITLE</span>
-              <span style={valueStyle}>{projectTitle}</span>
-            </div>
-          </div>
-          <div style={rowStyle}>
-            <div style={fieldStyle}>
-              <span style={labelStyle}>CATEGORY</span>
-              <span style={valueStyle}>{category}</span>
-            </div>
-            <div style={fieldStyle}>
-              <span style={labelStyle}>FUNDING GOAL</span>
-              <span style={highlightStyle}>EGP {formatNumber(fundingGoal)}</span>
+          <div className='review_row' style={{ gridTemplateColumns: '1fr' }}>
+            <div className='review_field'>
+              <span className='review_field_label'>PROJECT TITLE</span>
+              <span className='review_field_value'>{projectTitle}</span>
             </div>
           </div>
-          <div style={{ ...rowStyle, marginBottom: '0' }}>
-            <div style={fieldStyle}>
-              <span style={labelStyle}>MIN. CONTRIBUTION</span>
-              <span style={valueStyle}>EGP {formatNumber(minContribution)}</span>
+          <div className='review_row'>
+            <div className='review_field'>
+              <span className='review_field_label'>CATEGORY</span>
+              <span className='review_field_value'>{category}</span>
             </div>
-            <div style={fieldStyle}>
-              <span style={labelStyle}>DURATION</span>
-              <span style={valueStyle}>{selectDuration}</span>
+            <div className='review_field'>
+              <span className='review_field_label'>FUNDING GOAL</span>
+              <span className='review_field_value review_highlight'>EGP {formatNumber(fundingGoal)}</span>
+            </div>
+          </div>
+          <div className='review_row' style={{ marginBottom: 0 }}>
+            <div className='review_field'>
+              <span className='review_field_label'>MIN. CONTRIBUTION</span>
+              <span className='review_field_value'>EGP {formatNumber(minContribution)}</span>
+            </div>
+            <div className='review_field'>
+              <span className='review_field_label'>DURATION</span>
+              <span className='review_field_value'>{selectDuration}</span>
             </div>
           </div>
         </div>
 
         {/* Deal Details */}
-        <div style={sectionStyle}>
-          <div style={headerStyle}>
-            <div style={titleRowStyle}>
-              <div style={iconStyle}>📊</div>
-              <h3 style={sectionTitleStyle}>Deal details</h3>
-            </div>
-            <button type="button" style={editBtnStyle} onClick={() => setCurrentStep(3)}>✏ Edit</button>
+        <div className='review_section'>
+          <div className='review_section_header'>
+            <h3 className='review_section_title'>Deal Details</h3>
+            <button type="button" className='review_edit_btn' onClick={() => setCurrentStep(3)}>
+              <FiEdit2 size={13} /> Edit
+            </button>
           </div>
           {renderDealDetails()}
         </div>
 
         {/* Media & Documents */}
-        <div style={sectionStyle}>
-          <div style={headerStyle}>
-            <div style={titleRowStyle}>
-              <div style={iconStyle}>📎</div>
-              <h3 style={sectionTitleStyle}>Media & documents</h3>
-            </div>
-            <button type="button" style={editBtnStyle} onClick={() => setCurrentStep(4)}>✏ Edit</button>
+        <div className='review_section'>
+          <div className='review_section_header'>
+            <h3 className='review_section_title'>Media & Documents</h3>
+            <button type="button" className='review_edit_btn' onClick={() => setCurrentStep(4)}>
+              <FiEdit2 size={13} /> Edit
+            </button>
           </div>
-          <div style={rowStyle}>
-            <div style={fieldStyle}>
-              <span style={labelStyle}>IMAGES</span>
-              <span style={valueStyle}>{coverImages.length} Uploaded</span>
+          <div className='review_row'>
+            <div className='review_field'>
+              <span className='review_field_label'>IMAGES</span>
+              <span className='review_field_value'>{coverImages.length} Uploaded</span>
             </div>
-            <div style={fieldStyle}>
-              <span style={labelStyle}>VIDEO</span>
-              <span style={valueStyle}>{videoUrl ? 'Link provided' : 'Not provided'}</span>
+            <div className='review_field'>
+              <span className='review_field_label'>VIDEO</span>
+              <span className='review_field_value'>{videoUrl ? 'Link provided' : 'Not provided'}</span>
             </div>
           </div>
-          <div style={{ ...rowStyle, marginBottom: '0' }}>
-            <div style={fieldStyle}>
-              <span style={labelStyle}>DOCUMENTS</span>
-              <span style={valueStyle}>{documents.length} Uploaded</span>
+          <div className='review_row' style={{ marginBottom: 0 }}>
+            <div className='review_field'>
+              <span className='review_field_label'>DOCUMENTS</span>
+              <span className='review_field_value'>{documents.length} Uploaded</span>
             </div>
           </div>
         </div>
       </div>
 
       {/* Right Column: Project Preview */}
-      <div style={{ position: 'sticky', top: '32px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        <span style={{ fontSize: '11px', fontWeight: 700, color: '#9ca3af', letterSpacing: '1px', textTransform: 'uppercase', fontFamily: '"Nimbus Sans", sans-serif' }}>PROJECT PREVIEW</span>
-        <div style={{ backgroundColor: 'white', border: '1px solid #e5e7eb', borderRadius: '14px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+      <div className='review_right'>
+        <span className='preview_header'>PROJECT PREVIEW</span>
+        <div className='preview_card'>
           {previewImageUrl ? (
-            <div style={{ position: 'relative', width: '100%', height: '180px', overflow: 'hidden', backgroundColor: '#f3f4f6' }}>
-              <img src={previewImageUrl} alt='Cover' style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-              <span style={{ position: 'absolute', bottom: '10px', left: '10px', display: 'flex', alignItems: 'center', gap: '5px', backgroundColor: 'rgba(15,32,68,0.8)', color: 'white', fontSize: '11px', fontWeight: 600, padding: '5px 10px', borderRadius: '6px', fontFamily: '"Nimbus Sans", sans-serif', backdropFilter: 'blur(4px)' }}>
-                <FiPieChart style={{ fontSize: '12px' }} /> {selectedFunding}
+            <div className='preview_image_wrapper'>
+              <img src={previewImageUrl} alt='Cover' className='preview_image' />
+              <span className='preview_badge'>
+                <FiPieChart size={12} /> {selectedFunding}
               </span>
             </div>
           ) : (
-            <div style={{ width: '100%', height: '180px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f3f4f6', color: '#9ca3af', fontSize: '14px', fontFamily: '"Nimbus Sans", sans-serif' }}>
+            <div className='preview_image_placeholder'>
               <span>No image uploaded</span>
             </div>
           )}
-          <div style={{ padding: '18px 20px 22px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <span style={{ fontSize: '10px', fontWeight: 700, color: '#D4A017', letterSpacing: '0.5px', textTransform: 'uppercase', fontFamily: '"Nimbus Sans", sans-serif' }}>{category || 'CATEGORY'}</span>
-            <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#0F2044', margin: 0, lineHeight: '1.4', fontFamily: '"Nimbus Sans", sans-serif' }}>{projectTitle || 'Project Title'}</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginTop: '6px' }}>
-              <span style={{ fontSize: '11px', color: '#9ca3af', fontFamily: '"Nimbus Sans", sans-serif' }}>Funding Goal</span>
-              <span style={{ fontSize: '20px', fontWeight: 800, color: '#0F2044', fontFamily: '"Nimbus Sans", sans-serif' }}>{formatGoalShort(fundingGoal)}</span>
+          <div className='preview_body'>
+            <span className='preview_category'>{category || 'CATEGORY'}</span>
+            <h3 className='preview_title'>{projectTitle || 'Project Title'}</h3>
+            <div className='preview_goal'>
+              <span className='preview_goal_label'>Funding Goal</span>
+              <span className='preview_goal_value'>{formatGoalShort(fundingGoal)}</span>
             </div>
           </div>
         </div>
-        <p style={{ fontSize: '12px', color: '#9ca3af', textAlign: 'center', fontFamily: '"Nimbus Sans", sans-serif', margin: 0, fontStyle: 'italic' }}>This is how your project might appear in the marketplace.</p>
+        <p className='preview_note'>This is how your project might appear in the marketplace.</p>
       </div>
     </div>
   );
