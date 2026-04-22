@@ -17,7 +17,7 @@ import axiosInstance from "../../Api/axiosInstance";
 export default function SignUp() {
   const navigate = useNavigate();
 
-  const [role, setRole] = useState("investor");
+  const [role, setRole] = useState(""); // ← مفيش حاجة selected بالـ default
   const [showPwd, setShowPwd] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [agreed, setAgreed] = useState(false);
@@ -38,6 +38,9 @@ export default function SignUp() {
 
   const handleSignUp = async () => {
     setError("");
+
+    // ← validation للـ role الأول
+    if (!role) return setError("Please select a role (Founder or Investor).");
 
     if (
       !form.firstName ||
