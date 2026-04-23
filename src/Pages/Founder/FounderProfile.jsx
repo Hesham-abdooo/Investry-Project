@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { FiArrowLeft, FiCamera, FiUser, FiLock, FiEye, FiEyeOff, FiCheck, FiAlertCircle, FiShield } from "react-icons/fi";
+import axiosInstance from "../../Api/axiosInstance";
 
 export default function FounderProfile() {
   const navigate = useNavigate();
@@ -34,25 +35,17 @@ export default function FounderProfile() {
 
   const fileInputRef = useRef(null);
 
-  /* ── Axios instance ── */
-  const token = localStorage.getItem("token");
-  const api   = axios.create({
-    baseURL: "https://investry.runasp.net/api",
-    headers: { Authorization: `Bearer ${token}` },
-  });
-
   /* ── Fetch profile on mount ── */
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const res  = await api.get("/Accounts/profile");
+        const res  = await axiosInstance.get("/Accounts/profile");
         const data = res.data?.data;
         if (data) {
           setProfileData(data);
           setFirstName(data.firstName  || "");
           setLastName(data.lastName    || "");
           setProfileImage(data.profilePictureUrl || null);
-          // ✅ الصح: نقارن بـ "Approved" بس
           if (data.kycStatus === "Approved") setKycVerified(true);
         }
       } catch (err) {
@@ -69,9 +62,8 @@ export default function FounderProfile() {
     const handleVisibility = async () => {
       if (document.visibilityState === "visible" && !kycVerified) {
         try {
-          const res    = await api.get("/Accounts/profile");
+          const res    = await axiosInstance.get("/Accounts/profile");
           const status = res.data?.data?.kycStatus;
-          // ✅ الصح: نقارن بـ "Approved" بس
           if (status === "Approved") setKycVerified(true);
         } catch { /* silent */ }
       }
@@ -80,7 +72,7 @@ export default function FounderProfile() {
     return () => document.removeEventListener("visibilitychange", handleVisibility);
   }, [kycVerified]);
 
-  /* ── Pick image locally (no upload yet) ── */
+  /* ── Pick image locally ── */
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -108,48 +100,40 @@ export default function FounderProfile() {
   /* ── Save ── */
   const handleSave = async () => {
     if (!validate()) return;
-
     setSaving(true);
     setSaveError("");
     setSaveSuccess(false);
-
     try {
       if (selectedFile) {
         const formData = new FormData();
         formData.append("File", selectedFile);
-        await api.post("/Accounts/upload-profile-picture", formData, {
+        await axiosInstance.post("/Accounts/upload-profile-picture", formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
       }
-
       const nameChanged =
         firstName !== (profileData?.firstName || "") ||
         lastName  !== (profileData?.lastName  || "");
-
       if (nameChanged) {
-        await api.patch("/Accounts", { firstName, lastName });
+        await axiosInstance.patch("/Accounts", { firstName, lastName });
       }
-
       if (newPassword) {
-        await api.post("/Accounts/change-password", {
+        await axiosInstance.post("/Accounts/change-password", {
           currentPassword,
           newPassword,
           confirmNewPassword: confirmPassword,
         });
       }
-
       if (!selectedFile && !nameChanged && !newPassword) {
         setSaveError("No changes to save.");
         return;
       }
-
       setSaveSuccess(true);
       setSelectedFile(null);
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
       setTimeout(() => setSaveSuccess(false), 3000);
-
     } catch (err) {
       console.error(err);
       const msg =
@@ -182,7 +166,7 @@ export default function FounderProfile() {
     setKycLoading(true);
     setKycError("");
     try {
-      const res = await api.post("/Kyc/create-session");
+      const res = await axiosInstance.post("/Kyc/create-session");
       const { success, data, errors: apiErrors } = res.data;
       if (!success || !data?.verificationUrl) {
         setKycError(apiErrors?.[0]?.message || "Failed to start KYC. Please try again.");
@@ -199,347 +183,227 @@ export default function FounderProfile() {
     }
   };
 
-  /* ── Shared classes ── */
-  const inp = (err) =>
-    `w-full px-3.5 py-2.5 text-sm text-slate-800 bg-white border rounded-xl
-     placeholder:text-slate-400 outline-none transition-all
-     focus:border-[#C9A84C] focus:ring-2 focus:ring-[#C9A84C]/20
-     ${err ? "border-red-400 ring-2 ring-red-400/20" : "border-slate-200 hover:border-slate-300"}`;
-
-  const inpDisabled =
-    "w-full px-3.5 py-2.5 text-sm text-slate-400 bg-slate-50 border border-slate-200 rounded-xl outline-none cursor-not-allowed";
-
-  const lbl =
-    "flex items-center gap-1.5 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2";
-
   /* ── Loading skeleton ── */
   if (loadingProfile) {
     return (
-      <div className="w-full py-6 flex flex-col gap-4">
+      <div style={{ padding: "8px 0" }}>
+        <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}`}</style>
+        <div style={{ animation: "pulse 1.5s ease-in-out infinite", width: 120, height: 20, borderRadius: 8, backgroundColor: "#f3f4f6", marginBottom: 8 }} />
+        <div style={{ animation: "pulse 1.5s ease-in-out infinite", width: 200, height: 12, borderRadius: 6, backgroundColor: "#f3f4f6", marginBottom: 24 }} />
         {[1, 2, 3].map((i) => (
-          <div key={i} className="bg-white border border-slate-100 rounded-2xl h-32 animate-pulse" />
+          <div key={i} style={{ animation: "pulse 1.5s ease-in-out infinite", height: 120, borderRadius: 16, backgroundColor: "white", border: "1.5px solid #f0f0f0", marginBottom: 16 }} />
         ))}
       </div>
     );
   }
 
   return (
-    <div className="w-full py-6">
-
-      {/* ── Page title ── */}
-      <div className="mb-6">
-        <button
-          type="button"
-          onClick={() => navigate("/founder")}
-          className="inline-flex items-center gap-1.5 text-xs font-medium text-[#C9A84C] hover:text-[#b8963f] bg-transparent border-none cursor-pointer p-0 mb-2 transition-colors"
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M19 12H5"/><polyline points="12 19 5 12 12 5"/>
-          </svg>
-          Back to Home
+    <div style={{ padding: "8px 0" }}>
+      {/* ── Page Header ── */}
+      <div style={{ marginBottom: 24 }}>
+        <button type="button" onClick={() => navigate("/founder")}
+          style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 600, color: "#D4A017", backgroundColor: "transparent", border: "none", cursor: "pointer", padding: 0, marginBottom: 8, transition: "opacity 0.2s" }}>
+          <FiArrowLeft size={14} /> Back to Overview
         </button>
-        <h1 className="text-xl font-bold text-slate-900 tracking-tight">Edit Profile</h1>
+        <h1 style={{ fontSize: 24, fontWeight: 700, color: "#0F2044", margin: 0 }}>Profile & KYC</h1>
+        <p style={{ fontSize: 14, color: "#94a3b8", margin: "4px 0 0" }}>Manage your account and verification</p>
       </div>
 
-      <div className="flex flex-col gap-4">
+      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
 
         {/* ══ Row 1 — Picture + KYC ══ */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 
           {/* Profile Picture */}
-          <Card>
-            <CardHead title="Profile Picture" />
-            <div className="px-5 py-5 flex items-center gap-4">
-              <div className="relative shrink-0">
-                <div className="w-16 h-16 rounded-2xl overflow-hidden bg-slate-100 border border-slate-200 flex items-center justify-center">
-                  {profileImage ? (
-                    <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
-                  ) : (
-                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                      <circle cx="12" cy="7" r="4"/>
-                    </svg>
-                  )}
-                </div>
+          <Card title="Profile Picture" icon={<FiCamera size={14} style={{ color: "#D4A017" }} />}>
+            <div style={{ padding: 20, display: "flex", alignItems: "center", gap: 16 }}>
+              <div style={{ width: 64, height: 64, borderRadius: 16, overflow: "hidden", backgroundColor: "#FEF9EC", border: "2px solid #f0f0f0", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                {profileImage ? (
+                  <img src={profileImage} alt="Profile" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                ) : (
+                  <FiUser size={24} style={{ color: "#D4A017" }} />
+                )}
               </div>
               <div>
-                <p className="text-sm font-medium text-slate-700 mb-0.5">Profile photo</p>
-                {selectedFile && (
-                  <p className="text-xs text-[#C9A84C] mb-1">New photo selected — will upload on Save</p>
+                <p style={{ fontSize: 14, fontWeight: 600, color: "#0F2044", margin: "0 0 2px" }}>Profile photo</p>
+                {selectedFile ? (
+                  <p style={{ fontSize: 12, color: "#D4A017", margin: "0 0 10px" }}>New photo selected — will upload on Save</p>
+                ) : (
+                  <p style={{ fontSize: 12, color: "#94a3b8", margin: "0 0 10px" }}>JPG, PNG or GIF · Max 5MB</p>
                 )}
-                {!selectedFile && (
-                  <p className="text-xs text-slate-400 mb-3">JPG, PNG or GIF · Max 5MB</p>
-                )}
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current.click()}
-                  className="px-3.5 py-1.5 text-xs font-semibold text-[#C9A84C] border border-[#C9A84C]/40 rounded-lg bg-[#C9A84C]/5 hover:bg-[#C9A84C]/10 transition-colors cursor-pointer mt-1"
-                >
+                <button type="button" onClick={() => fileInputRef.current.click()}
+                  style={{ fontSize: 12, fontWeight: 600, color: "#D4A017", backgroundColor: "#FEF9EC", border: "1.5px solid rgba(212,160,23,0.2)", borderRadius: 10, padding: "6px 16px", cursor: "pointer", transition: "all 0.2s" }}>
                   Change photo
                 </button>
-                <input type="file" ref={fileInputRef} onChange={handleImageChange} accept="image/*" className="hidden" />
+                <input type="file" ref={fileInputRef} onChange={handleImageChange} accept="image/*" style={{ display: "none" }} />
               </div>
             </div>
           </Card>
 
           {/* KYC */}
-          <Card>
-            <CardHead title="KYC Verification" sub="Identity verification status" />
-            <div className="px-5 py-5">
-              <KycStatusBlock
-                status={profileData?.kycStatus}
-                kycLoading={kycLoading}
-                kycError={kycError}
-                onStart={handleKycStart}
-              />
+          <Card title="KYC Verification" sub="Identity verification status" icon={<FiShield size={14} style={{ color: "#D4A017" }} />}>
+            <div style={{ padding: 20 }}>
+              <KycStatusBlock status={profileData?.kycStatus} kycLoading={kycLoading} kycError={kycError} onStart={handleKycStart} />
             </div>
           </Card>
         </div>
 
         {/* ══ Account Information ══ */}
-        <Card>
-          <CardHead title="Account Information" sub="Managed by the system · Contact support to make changes" />
-          <div className="px-5 py-5 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
-            <div>
-              <label className={lbl}>Email <LockIcon /></label>
-              <input type="email" value={profileData?.email || ""} disabled className={inpDisabled} />
-            </div>
-            <div>
-              <label className={lbl}>Username <LockIcon /></label>
-              <input type="text" value={profileData?.userName || ""} disabled className={inpDisabled} />
-            </div>
-            <div>
-              <label className={lbl}>Phone <LockIcon /></label>
-              <input type="tel" value={profileData?.phoneNumber || ""} disabled className={inpDisabled} />
-            </div>
+        <Card title="Account Information" sub="Managed by the system · Contact support to make changes" icon={<FiLock size={14} style={{ color: "#94a3b8" }} />}>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3" style={{ padding: 20 }}>
+            <InputField label="Email" value={profileData?.email || ""} disabled locked />
+            <InputField label="Username" value={profileData?.userName || ""} disabled locked />
+            <InputField label="Phone" value={profileData?.phoneNumber || ""} disabled locked />
           </div>
         </Card>
 
         {/* ══ Personal Information ══ */}
-        <Card>
-          <CardHead title="Personal Information" sub="Update your display name" />
-          <div className="px-5 py-5 grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div>
-              <label htmlFor="firstName" className={lbl}>First Name</label>
-              <input id="firstName" type="text" value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                placeholder="Enter first name"
-                className={inp(errors.firstName)} />
-              {errors.firstName && <p className="mt-1.5 text-xs text-red-500 font-medium">{errors.firstName}</p>}
-            </div>
-            <div>
-              <label htmlFor="lastName" className={lbl}>Last Name</label>
-              <input id="lastName" type="text" value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                placeholder="Enter last name"
-                className={inp(errors.lastName)} />
-              {errors.lastName && <p className="mt-1.5 text-xs text-red-500 font-medium">{errors.lastName}</p>}
-            </div>
+        <Card title="Personal Information" sub="Update your display name" icon={<FiUser size={14} style={{ color: "#D4A017" }} />}>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2" style={{ padding: 20 }}>
+            <InputField label="First Name" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Enter first name" error={errors.firstName} />
+            <InputField label="Last Name" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Enter last name" error={errors.lastName} />
           </div>
         </Card>
 
         {/* ══ Change Password ══ */}
-        <Card>
-          <CardHead title="Change Password" sub="Leave blank if you don't want to change your password" />
-          <div className="px-5 py-5 flex flex-col gap-4">
+        <Card title="Change Password" sub="Leave blank if you don't want to change" icon={<FiLock size={14} style={{ color: "#D4A017" }} />}>
+          <div style={{ padding: 20, display: "flex", flexDirection: "column", gap: 16 }}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="currentPassword" className={lbl}>Current Password</label>
-                <div className="relative">
-                  <input id="currentPassword"
-                    type={showCurrentPassword ? "text" : "password"}
-                    value={currentPassword}
-                    onChange={(e) => setCurrentPassword(e.target.value)}
-                    placeholder="Enter current password"
-                    className={inp(errors.currentPassword) + " pr-11"} />
-                  <EyeToggle show={showCurrentPassword} onToggle={() => setShowCurrentPassword(!showCurrentPassword)} />
-                </div>
-                {errors.currentPassword && <p className="mt-1.5 text-xs text-red-500 font-medium">{errors.currentPassword}</p>}
-              </div>
+              <PasswordField label="Current Password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} show={showCurrentPassword} onToggle={() => setShowCurrentPassword(!showCurrentPassword)} placeholder="Enter current password" error={errors.currentPassword} />
             </div>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div>
-                <label htmlFor="newPassword" className={lbl}>New Password</label>
-                <div className="relative">
-                  <input id="newPassword"
-                    type={showNewPassword ? "text" : "password"}
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="Min. 8 characters"
-                    className={inp(errors.newPassword) + " pr-11"} />
-                  <EyeToggle show={showNewPassword} onToggle={() => setShowNewPassword(!showNewPassword)} />
-                </div>
-                {errors.newPassword && <p className="mt-1.5 text-xs text-red-500 font-medium">{errors.newPassword}</p>}
-              </div>
-              <div>
-                <label htmlFor="confirmPassword" className={lbl}>Confirm New Password</label>
-                <div className="relative">
-                  <input id="confirmPassword"
-                    type={showConfirmPassword ? "text" : "password"}
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Repeat new password"
-                    className={inp(errors.confirmPassword) + " pr-11"} />
-                  <EyeToggle show={showConfirmPassword} onToggle={() => setShowConfirmPassword(!showConfirmPassword)} />
-                </div>
-                {errors.confirmPassword && <p className="mt-1.5 text-xs text-red-500 font-medium">{errors.confirmPassword}</p>}
-              </div>
+              <PasswordField label="New Password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} show={showNewPassword} onToggle={() => setShowNewPassword(!showNewPassword)} placeholder="Min. 8 characters" error={errors.newPassword} />
+              <PasswordField label="Confirm New Password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} show={showConfirmPassword} onToggle={() => setShowConfirmPassword(!showConfirmPassword)} placeholder="Repeat new password" error={errors.confirmPassword} />
             </div>
           </div>
         </Card>
 
         {/* ══ Bottom Actions ══ */}
-        <div className="flex flex-col gap-3">
-
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           {saveSuccess && (
-            <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-100 text-sm font-medium text-emerald-700">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="20 6 9 17 4 12"/>
-              </svg>
-              Profile saved successfully!
+            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 16px", borderRadius: 12, backgroundColor: "#ECFDF5", border: "1.5px solid #C8E6C9", fontSize: 13, fontWeight: 600, color: "#2E7D32" }}>
+              <FiCheck size={15} /> Profile saved successfully!
             </div>
           )}
-
           {saveError && (
-            <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-red-50 border border-red-100 text-sm font-medium text-red-600">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-              </svg>
-              {saveError}
+            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 16px", borderRadius: 12, backgroundColor: "#FEF2F2", border: "1.5px solid #FECACA", fontSize: 13, fontWeight: 600, color: "#DC2626" }}>
+              <FiAlertCircle size={15} /> {saveError}
             </div>
           )}
-
-          <div className="flex flex-col-reverse gap-2 md:flex-row md:justify-end md:gap-3 pb-2">
+          <div className="flex flex-col-reverse gap-2 md:flex-row md:justify-end md:gap-3" style={{ paddingBottom: 8 }}>
             <button type="button" onClick={handleCancel} disabled={saving}
-              className="w-full md:w-auto px-6 py-2.5 text-sm font-medium text-slate-500 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all cursor-pointer disabled:opacity-50">
+              style={{ padding: "10px 24px", fontSize: 13, fontWeight: 600, color: "#94a3b8", backgroundColor: "white", border: "1.5px solid #f0f0f0", borderRadius: 12, cursor: "pointer", transition: "all 0.2s", opacity: saving ? 0.5 : 1 }}>
               Cancel
             </button>
             <button type="button" onClick={handleSave} disabled={saving}
-              className="w-full md:w-auto px-6 py-2.5 text-sm font-semibold text-white bg-slate-900 border-none rounded-xl hover:bg-slate-800 active:scale-[0.98] transition-all shadow-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
-              {saving ? (
-                <span className="inline-flex items-center justify-center gap-2">
-                  <svg className="animate-spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <circle cx="12" cy="12" r="10" strokeOpacity="0.25"/>
-                    <path d="M12 2a10 10 0 0 1 10 10"/>
-                  </svg>
-                  Saving...
-                </span>
-              ) : "Save changes"}
+              style={{ padding: "10px 24px", fontSize: 13, fontWeight: 700, color: "white", backgroundColor: "#0F2044", border: "none", borderRadius: 12, cursor: saving ? "not-allowed" : "pointer", transition: "all 0.25s", opacity: saving ? 0.6 : 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+              {saving ? "Saving..." : "Save changes"}
             </button>
           </div>
         </div>
-
       </div>
     </div>
   );
 }
 
+/* ═══════════════════════════════════════════════════════ */
+/* ══  REUSABLE COMPONENTS                             ══ */
+/* ═══════════════════════════════════════════════════════ */
 
-/* ─── Card components ─── */
-
-function Card({ children }) {
+function Card({ title, sub, icon, children }) {
   return (
-    <div className="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">
+    <div style={{ backgroundColor: "white", borderRadius: 16, border: "1.5px solid #f0f0f0", overflow: "hidden" }}>
+      <div style={{ padding: "16px 20px", borderBottom: "1px solid #f5f5f5", display: "flex", alignItems: "center", gap: 8 }}>
+        {icon}
+        <div>
+          <p style={{ fontSize: 14, fontWeight: 600, color: "#0F2044", margin: 0 }}>{title}</p>
+          {sub && <p style={{ fontSize: 11, color: "#94a3b8", margin: "2px 0 0" }}>{sub}</p>}
+        </div>
+      </div>
       {children}
     </div>
   );
 }
 
-function CardHead({ title, sub }) {
+const inputBase = {
+  width: "100%", padding: "10px 14px", fontSize: 13, fontWeight: 500, color: "#0F2044",
+  backgroundColor: "white", border: "1.5px solid #f0f0f0", borderRadius: 12,
+  outline: "none", transition: "all 0.2s", fontFamily: "inherit",
+};
+
+function InputField({ label, value, onChange, placeholder, error, disabled, locked }) {
   return (
-    <div className="px-5 pt-5 pb-4 border-b border-slate-100">
-      <p className="text-sm font-semibold text-slate-900">{title}</p>
-      {sub && <p className="text-xs text-slate-400 mt-0.5">{sub}</p>}
+    <div>
+      <label style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, color: "#94a3b8", marginBottom: 6 }}>
+        {label} {locked && <FiLock size={10} />}
+      </label>
+      <input type="text" value={value} onChange={onChange} placeholder={placeholder} disabled={disabled}
+        style={{ ...inputBase, backgroundColor: disabled ? "#FAFBFC" : "white", color: disabled ? "#94a3b8" : "#0F2044", cursor: disabled ? "not-allowed" : "text", borderColor: error ? "#FECACA" : "#f0f0f0" }}
+        onFocus={(e) => { if (!disabled) { e.target.style.borderColor = "#D4A017"; e.target.style.boxShadow = "0 0 0 3px rgba(212,160,23,0.1)"; } }}
+        onBlur={(e) => { e.target.style.borderColor = error ? "#FECACA" : "#f0f0f0"; e.target.style.boxShadow = "none"; }} />
+      {error && <p style={{ fontSize: 11, color: "#DC2626", fontWeight: 500, margin: "4px 0 0" }}>{error}</p>}
     </div>
   );
 }
 
-/* ─── Icons ─── */
-
-function EyeToggle({ show, onToggle }) {
+function PasswordField({ label, value, onChange, show, onToggle, placeholder, error }) {
   return (
-    <button type="button" onClick={onToggle} aria-label="Toggle password visibility"
-      className="absolute right-3.5 top-1/2 -translate-y-1/2 bg-transparent border-none cursor-pointer p-0.5 opacity-40 hover:opacity-80 transition-opacity flex items-center">
-      {show ? (
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#475569" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
-        </svg>
-      ) : (
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#475569" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
-          <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
-          <line x1="1" y1="1" x2="23" y2="23"/>
-          <path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/>
-        </svg>
-      )}
-    </button>
+    <div>
+      <label style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, color: "#94a3b8", marginBottom: 6 }}>{label}</label>
+      <div style={{ position: "relative" }}>
+        <input type={show ? "text" : "password"} value={value} onChange={onChange} placeholder={placeholder}
+          style={{ ...inputBase, paddingRight: 40, borderColor: error ? "#FECACA" : "#f0f0f0" }}
+          onFocus={(e) => { e.target.style.borderColor = "#D4A017"; e.target.style.boxShadow = "0 0 0 3px rgba(212,160,23,0.1)"; }}
+          onBlur={(e) => { e.target.style.borderColor = error ? "#FECACA" : "#f0f0f0"; e.target.style.boxShadow = "none"; }} />
+        <button type="button" onClick={onToggle}
+          style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 2, display: "flex", opacity: 0.4 }}>
+          {show ? <FiEye size={16} color="#0F2044" /> : <FiEyeOff size={16} color="#0F2044" />}
+        </button>
+      </div>
+      {error && <p style={{ fontSize: 11, color: "#DC2626", fontWeight: 500, margin: "4px 0 0" }}>{error}</p>}
+    </div>
   );
 }
 
-function LockIcon() {
-  return (
-    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="11" width="18" height="11" rx="2"/>
-      <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-    </svg>
-  );
-}
-
-/* ─── KYC Status Block ─── */
+/* ═══════════════════════════════════════════════════════ */
+/* ══  KYC STATUS BLOCK                                ══ */
+/* ═══════════════════════════════════════════════════════ */
 
 const KYC_CONFIG = {
   Approved: {
-    bg: "bg-emerald-50", border: "border-emerald-100",
-    iconBg: "bg-emerald-100", iconStroke: "#059669",
-    title: "text-emerald-800", sub: "text-emerald-600",
-    badgeBg: "bg-emerald-100", badgeText: "text-emerald-700", dot: "bg-emerald-500",
+    bg: "#ECFDF5", border: "#C8E6C9", iconBg: "#C8E6C9", iconColor: "#2E7D32",
+    title: "#2E7D32", sub: "#4CAF50", dotColor: "#059669",
     label: "APPROVED", subText: "Your identity has been confirmed",
-    icon: <polyline points="20 6 9 17 4 12" />,
     showButton: false,
   },
   Pending: {
-    bg: "bg-amber-50", border: "border-amber-100",
-    iconBg: "bg-amber-100", iconStroke: "#d97706",
-    title: "text-amber-800", sub: "text-amber-600",
-    badgeBg: "bg-amber-100", badgeText: "text-amber-700", dot: "bg-amber-400",
+    bg: "#FEF9EC", border: "rgba(212,160,23,0.2)", iconBg: "rgba(212,160,23,0.15)", iconColor: "#D4A017",
+    title: "#D4A017", sub: "#94a3b8", dotColor: "#D4A017",
     label: "PENDING", subText: "Complete KYC to unlock all features",
-    icon: <><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></>,
     showButton: true,
   },
   InReview: {
-    bg: "bg-blue-50", border: "border-blue-100",
-    iconBg: "bg-blue-100", iconStroke: "#2563eb",
-    title: "text-blue-800", sub: "text-blue-600",
-    badgeBg: "bg-blue-100", badgeText: "text-blue-700", dot: "bg-blue-400",
+    bg: "#EFF6FF", border: "#BFDBFE", iconBg: "#DBEAFE", iconColor: "#2563EB",
+    title: "#1E40AF", sub: "#3B82F6", dotColor: "#3B82F6",
     label: "IN REVIEW", subText: "Your documents are being reviewed",
-    icon: <><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>,
     showButton: false,
   },
   Declined: {
-    bg: "bg-red-50", border: "border-red-100",
-    iconBg: "bg-red-100", iconStroke: "#dc2626",
-    title: "text-red-800", sub: "text-red-600",
-    badgeBg: "bg-red-100", badgeText: "text-red-700", dot: "bg-red-500",
+    bg: "#FEF2F2", border: "#FECACA", iconBg: "#FEE2E2", iconColor: "#DC2626",
+    title: "#DC2626", sub: "#EF4444", dotColor: "#DC2626",
     label: "DECLINED", subText: "Your verification was declined. Please resubmit.",
-    icon: <><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></>,
     showButton: true,
   },
   Resubmitted: {
-    bg: "bg-purple-50", border: "border-purple-100",
-    iconBg: "bg-purple-100", iconStroke: "#7c3aed",
-    title: "text-purple-800", sub: "text-purple-600",
-    badgeBg: "bg-purple-100", badgeText: "text-purple-700", dot: "bg-purple-400",
-    label: "RESUBMITTED", subText: "Your resubmission is under review. You can resubmit again if needed.",
-    icon: <><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.85"/></>,
+    bg: "#F5F3FF", border: "#DDD6FE", iconBg: "#EDE9FE", iconColor: "#7C3AED",
+    title: "#6D28D9", sub: "#8B5CF6", dotColor: "#8B5CF6",
+    label: "RESUBMITTED", subText: "Your resubmission is under review.",
     showButton: true,
   },
   Expired: {
-    bg: "bg-slate-50", border: "border-slate-200",
-    iconBg: "bg-slate-200", iconStroke: "#64748b",
-    title: "text-slate-700", sub: "text-slate-500",
-    badgeBg: "bg-slate-200", badgeText: "text-slate-600", dot: "bg-slate-400",
+    bg: "#F9FAFB", border: "#E5E7EB", iconBg: "#F3F4F6", iconColor: "#6B7280",
+    title: "#374151", sub: "#9CA3AF", dotColor: "#9CA3AF",
     label: "EXPIRED", subText: "Your verification has expired. Please restart.",
-    icon: <><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></>,
     showButton: true,
   },
 };
@@ -548,42 +412,27 @@ function KycStatusBlock({ status, kycLoading, kycError, onStart }) {
   const cfg = KYC_CONFIG[status] || KYC_CONFIG["Pending"];
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className={`flex items-center gap-3 p-4 rounded-xl border ${cfg.bg} ${cfg.border}`}>
-        <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${cfg.iconBg}`}>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={cfg.iconStroke} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            {cfg.icon}
-          </svg>
+    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", borderRadius: 12, backgroundColor: cfg.bg, border: `1.5px solid ${cfg.border}` }}>
+        <div style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: cfg.iconBg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <FiShield size={16} style={{ color: cfg.iconColor }} />
         </div>
-        <div className="flex-1 min-w-0">
-          <p className={`text-sm font-semibold ${cfg.title}`}>{status || "Pending"}</p>
-          <p className={`text-xs ${cfg.sub}`}>{cfg.subText}</p>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{ fontSize: 13, fontWeight: 600, color: cfg.title, margin: "0 0 2px" }}>{status || "Pending"}</p>
+          <p style={{ fontSize: 11, color: cfg.sub, margin: 0 }}>{cfg.subText}</p>
         </div>
-        <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-full tracking-wide shrink-0 ${cfg.badgeBg} ${cfg.badgeText}`}>
-          <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
+        <span style={{ fontSize: 9, fontWeight: 700, padding: "4px 10px", borderRadius: 6, backgroundColor: cfg.iconBg, color: cfg.title, textTransform: "uppercase", letterSpacing: 0.5, display: "inline-flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
+          <span style={{ width: 5, height: 5, borderRadius: "50%", backgroundColor: cfg.dotColor }} />
           {cfg.label}
         </span>
       </div>
 
-      {kycError && <p className="text-xs text-red-500 font-medium px-1">{kycError}</p>}
+      {kycError && <p style={{ fontSize: 11, color: "#DC2626", fontWeight: 500, margin: 0, paddingLeft: 4 }}>{kycError}</p>}
 
       {cfg.showButton && (
-        <button
-          type="button"
-          disabled={kycLoading}
-          onClick={onStart}
-          className={`w-full py-2.5 rounded-xl text-sm font-semibold border-none transition-all duration-200
-            ${kycLoading ? "bg-slate-100 text-slate-400 cursor-not-allowed" : "bg-slate-900 text-white hover:bg-slate-800 active:scale-[0.98] shadow-sm cursor-pointer"}`}
-        >
-          {kycLoading ? (
-            <span className="inline-flex items-center justify-center gap-2">
-              <svg className="animate-spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <circle cx="12" cy="12" r="10" strokeOpacity="0.25"/>
-                <path d="M12 2a10 10 0 0 1 10 10"/>
-              </svg>
-              Creating session...
-            </span>
-          ) : status === "Declined" || status === "Expired" ? "Restart KYC Verification" : status === "Resubmitted" ? "Resubmit Again" : "Start KYC Verification"}
+        <button type="button" disabled={kycLoading} onClick={onStart}
+          style={{ width: "100%", padding: "10px 0", borderRadius: 12, fontSize: 13, fontWeight: 700, border: "none", transition: "all 0.25s", cursor: kycLoading ? "not-allowed" : "pointer", backgroundColor: kycLoading ? "#f3f4f6" : "#0F2044", color: kycLoading ? "#94a3b8" : "white" }}>
+          {kycLoading ? "Creating session..." : status === "Declined" || status === "Expired" ? "Restart KYC Verification" : status === "Resubmitted" ? "Resubmit Again" : "Start KYC Verification"}
         </button>
       )}
     </div>
