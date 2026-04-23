@@ -161,6 +161,7 @@ function mapProjectDetails(p) {
     payoutFrequency: p.payoutFrequency || null,
     // Reward Tiers
     rewardTiers: (p.rewardTiersDetails || []).map((t) => ({
+      id: t.id || null,
       gift: t.title || t.gift || "Reward",
       description: t.description || "",
       amount: t.amount || 0,
@@ -215,4 +216,14 @@ export async function getProjectById(id) {
     console.error("Failed to fetch project details:", err);
     return null;
   }
+}
+
+export async function investInProject({ projectId, amount, rewardTierId }) {
+  const token = localStorage.getItem("token");
+  const res = await axios.post(
+    `${API}/Investments/create-investment`,
+    { projectId, amount: Number(amount), rewardTierId: rewardTierId || null },
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  return res.data;
 }

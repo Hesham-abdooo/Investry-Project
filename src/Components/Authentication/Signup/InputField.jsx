@@ -65,7 +65,7 @@ export default function InputField({
           placeholder={placeholder}
           value={value}
           onChange={onChange}
-          className={`w-full pl-9 pr-10 py-2 text-sm text-[#1a2340] border border-gray-200 rounded-lg outline-none focus:border-[#1a2340] transition-colors placeholder:text-gray-300 bg-white ${extraClass}`}
+          className={`w-full pl-9 pr-10 py-2.5 text-sm text-[#1a2340] border border-gray-200 rounded-xl outline-none focus:border-[#C9A84C] focus:ring-2 focus:ring-[#C9A84C]/10 transition-all duration-200 placeholder:text-gray-300 bg-[#fafafa] hover:border-gray-300 ${extraClass}`}
         />
         {rightSlot && (
           <span className="absolute right-3 text-gray-400">{rightSlot}</span>

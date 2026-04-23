@@ -115,12 +115,13 @@ export default function ProjectCard({
           >
             View details
           </Link>
-          <button
-            className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-white transition-all duration-200 cursor-pointer hover:opacity-90"
+          <Link
+            to={`/investor/project/${id}#invest`}
+            className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-white transition-all duration-200 cursor-pointer hover:opacity-90 text-center"
             style={{ backgroundColor: "#0F2044" }}
           >
             Invest
-          </button>
+          </Link>
         </div>
       </div>
     </div>

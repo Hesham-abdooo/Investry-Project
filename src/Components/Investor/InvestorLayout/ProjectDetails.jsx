@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import {
   FaArrowLeft,
   FaFileAlt,
@@ -14,20 +14,71 @@ import {
   FaDownload,
   FaChartPie,
 } from "react-icons/fa";
-import { getProjectById } from "./projectService";
+import { FiCheck, FiAlertCircle, FiX, FiLoader } from "react-icons/fi";
+import { getProjectById, investInProject } from "./projectService";
 
 export default function ProjectDetails() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeImage, setActiveImage] = useState(0);
   const [investAmount, setInvestAmount] = useState("");
+  const [investing, setInvesting] = useState(false);
+  const [toast, setToast] = useState(null);
+  const [confirmModal, setConfirmModal] = useState(null);
+
+  const showToast = (type, message, action) => {
+    setToast({ type, message, action });
+    setTimeout(() => setToast(null), 5000);
+  };
+
+  const handleInvest = ({ amount, rewardTierId, tierName, shareInfo }) => {
+    setConfirmModal({
+      amount, tierName, shareInfo,
+      fundingType: project.fundingType,
+      projectTitle: project.title,
+      onConfirm: async () => {
+        setConfirmModal(null);
+        setInvesting(true);
+        try {
+          await investInProject({ projectId: project.id, amount: Number(amount), rewardTierId });
+          showToast("success", `Successfully invested EGP ${Number(amount).toLocaleString()}!`);
+          setInvestAmount("");
+          const updated = await getProjectById(id);
+          if (updated) setProject(updated);
+        } catch (err) {
+          const msg = err.response?.data?.errors?.[0]?.message || err.response?.data?.message || "";
+          const status = err.response?.status;
+          if (status === 401) {
+            showToast("error", "Please log in to invest.", { label: "Log In", onClick: () => navigate("/login") });
+          } else if (msg.toLowerCase().includes("balance") || msg.toLowerCase().includes("insufficient")) {
+            showToast("error", "Insufficient wallet balance.", { label: "Top Up Wallet", onClick: () => navigate("/investor/wallet") });
+          } else if (msg.toLowerCase().includes("already")) {
+            showToast("warning", msg || "You have already invested in this tier.");
+          } else {
+            showToast("error", msg || "Something went wrong. Please try again.");
+          }
+        } finally {
+          setInvesting(false);
+        }
+      },
+    });
+  };
 
   useEffect(() => {
     getProjectById(id)
       .then(setProject)
       .finally(() => setLoading(false));
   }, [id]);
+
+  useEffect(() => {
+    if (!loading && project && window.location.hash === "#invest") {
+      setTimeout(() => {
+        document.getElementById("invest")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 300);
+    }
+  }, [loading, project]);
 
   if (loading) {
     return (
@@ -327,7 +378,7 @@ export default function ProjectDetails() {
 
       {project.fundingType === "Reward" &&
         project.rewardTiers?.length > 0 && (
-          <div className="mb-10">
+          <div id="invest" className="mb-10">
             <h2
               className="text-lg font-bold mb-5"
               style={{ color: "#0F2044" }}
@@ -373,15 +424,12 @@ export default function ProjectDetails() {
                         </span>
                       ) : (
                         <button
-                          onClick={() =>
-                            alert(
-                              `Investing EGP ${tier.amount?.toLocaleString("en-US")} in "${tier.gift}" — Stripe integration coming soon`
-                            )
-                          }
-                          className="px-5 py-2 rounded-lg text-xs font-semibold text-white transition-all duration-200 cursor-pointer hover:opacity-90 shrink-0"
+                          onClick={() => handleInvest({ amount: tier.amount, rewardTierId: tier.id, tierName: tier.gift })}
+                          disabled={investing}
+                          className="px-5 py-2 rounded-lg text-xs font-semibold text-white transition-all duration-200 cursor-pointer hover:opacity-90 shrink-0 disabled:opacity-50"
                           style={{ backgroundColor: "#0F2044" }}
                         >
-                          Invest
+                          {investing ? "Processing..." : "Invest"}
                         </button>
                       )}
                     </div>
@@ -435,7 +483,7 @@ export default function ProjectDetails() {
         const isValid = amount >= (project.minContribution || 0) && amount > 0;
 
         return (
-          <div className="mb-10">
+          <div id="invest" className="mb-10">
             <h2
               className="text-lg font-bold mb-5"
               style={{ color: "#0F2044" }}
@@ -524,17 +572,16 @@ export default function ProjectDetails() {
                 <button
                   onClick={() =>
                     isValid
-                      ? alert(
-                          `Investing EGP ${Number(investAmount).toLocaleString("en-US")} for ${yourShare}% equity — Stripe integration coming soon`
-                        )
-                      : alert(`Please enter at least EGP ${(project.minContribution || 0).toLocaleString("en-US")}`)
+                      ? handleInvest({ amount: Number(investAmount), shareInfo: `${yourShare}% equity` })
+                      : showToast("warning", `Minimum investment is EGP ${(project.minContribution || 0).toLocaleString("en-US")}`)
                   }
-                  className="px-6 py-2.5 rounded-lg text-sm font-semibold text-white transition-all duration-200 cursor-pointer shrink-0"
+                  disabled={investing}
+                  className="px-6 py-2.5 rounded-lg text-sm font-semibold text-white transition-all duration-200 cursor-pointer shrink-0 disabled:opacity-50"
                   style={{
                     backgroundColor: isValid ? "#0F2044" : "#9CA3AF",
                   }}
                 >
-                  Invest
+                  {investing ? "Processing..." : "Invest"}
                 </button>
               </div>
             </div>
@@ -561,7 +608,7 @@ export default function ProjectDetails() {
         };
 
         return (
-          <div className="mb-10">
+          <div id="invest" className="mb-10">
             <h2
               className="text-lg font-bold mb-5"
               style={{ color: "#0F2044" }}
@@ -668,17 +715,16 @@ export default function ProjectDetails() {
                 <button
                   onClick={() =>
                     isValid
-                      ? alert(
-                          `Investing EGP ${Number(investAmount).toLocaleString("en-US")} for ${yourShare}% profit share — Stripe integration coming soon`
-                        )
-                      : alert(`Please enter at least EGP ${(project.minContribution || 0).toLocaleString("en-US")}`)
+                      ? handleInvest({ amount: Number(investAmount), shareInfo: `${yourShare}% profit share` })
+                      : showToast("warning", `Minimum investment is EGP ${(project.minContribution || 0).toLocaleString("en-US")}`)
                   }
-                  className="px-6 py-2.5 rounded-lg text-sm font-semibold text-white transition-all duration-200 cursor-pointer shrink-0"
+                  disabled={investing}
+                  className="px-6 py-2.5 rounded-lg text-sm font-semibold text-white transition-all duration-200 cursor-pointer shrink-0 disabled:opacity-50"
                   style={{
                     backgroundColor: isValid ? "#0F2044" : "#9CA3AF",
                   }}
                 >
-                  Invest
+                  {investing ? "Processing..." : "Invest"}
                 </button>
               </div>
 
@@ -699,6 +745,122 @@ export default function ProjectDetails() {
           </div>
         );
       })()}
+
+      {/* ══ CONFIRMATION MODAL ══ */}
+      {confirmModal && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "rgba(0,0,0,0.5)", padding: 16 }}>
+          <div style={{ backgroundColor: "white", borderRadius: 20, padding: "28px 24px", maxWidth: 400, width: "100%", boxShadow: "0 20px 60px rgba(0,0,0,0.15)" }}>
+            <div style={{ textAlign: "center", marginBottom: 20 }}>
+              <div style={{ width: 48, height: 48, borderRadius: 14, backgroundColor: "#FEF9EC", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
+                <FaHandHoldingUsd size={20} style={{ color: "#D4A017" }} />
+              </div>
+              <h3 style={{ fontSize: 18, fontWeight: 700, color: "#0F2044", margin: "0 0 6px" }}>Confirm Investment</h3>
+              <p style={{ fontSize: 12, color: "#94a3b8", margin: 0 }}>{confirmModal.projectTitle}</p>
+            </div>
+            <div style={{ backgroundColor: "#FAFBFC", borderRadius: 12, padding: 16, marginBottom: 20 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+                <span style={{ fontSize: 12, color: "#94a3b8" }}>Amount</span>
+                <span style={{ fontSize: 14, fontWeight: 700, color: "#D4A017" }}>EGP {Number(confirmModal.amount).toLocaleString()}</span>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: confirmModal.shareInfo ? 8 : 0 }}>
+                <span style={{ fontSize: 12, color: "#94a3b8" }}>Type</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: "#0F2044" }}>{confirmModal.fundingType}{confirmModal.tierName ? ` — ${confirmModal.tierName}` : ""}</span>
+              </div>
+              {confirmModal.shareInfo && (
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                  <span style={{ fontSize: 12, color: "#94a3b8" }}>Your Share</span>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: "#059669" }}>{confirmModal.shareInfo}</span>
+                </div>
+              )}
+            </div>
+            <div style={{ display: "flex", gap: 10 }}>
+              <button onClick={() => setConfirmModal(null)}
+                style={{ flex: 1, padding: "11px 0", borderRadius: 12, border: "1.5px solid #f0f0f0", backgroundColor: "white", fontSize: 13, fontWeight: 600, color: "#94a3b8", cursor: "pointer", fontFamily: "inherit" }}>
+                Cancel
+              </button>
+              <button onClick={confirmModal.onConfirm}
+                style={{ flex: 1, padding: "11px 0", borderRadius: 12, border: "none", backgroundColor: "#0F2044", fontSize: 13, fontWeight: 700, color: "white", cursor: "pointer", fontFamily: "inherit" }}>
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══ ALERT MODAL ══ */}
+      {toast && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 1100, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "rgba(0,0,0,0.45)", padding: 16, animation: "fadeIn 0.2s ease-out" }}
+          onClick={() => setToast(null)}>
+          <style>{`@keyframes fadeIn{from{opacity:0}to{opacity:1}} @keyframes scaleIn{from{transform:scale(0.9);opacity:0}to{transform:scale(1);opacity:1}} @keyframes countDown{from{width:100%}to{width:0%}}`}</style>
+          <div onClick={(e) => e.stopPropagation()}
+            style={{ backgroundColor: "white", borderRadius: 24, padding: "32px 28px", maxWidth: 380, width: "100%", boxShadow: "0 24px 80px rgba(0,0,0,0.2)", animation: "scaleIn 0.25s ease-out", position: "relative", overflow: "hidden", textAlign: "center" }}>
+
+            {/* Countdown bar */}
+            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 4 }}>
+              <div style={{
+                height: "100%", borderRadius: "0 4px 4px 0",
+                backgroundColor: toast.type === "success" ? "#059669" : toast.type === "error" ? "#DC2626" : "#D4A017",
+                animation: "countDown 5s linear forwards",
+              }} />
+            </div>
+
+            {/* Close X */}
+            <button onClick={() => setToast(null)}
+              style={{ position: "absolute", top: 14, right: 14, background: "none", border: "none", cursor: "pointer", opacity: 0.3, padding: 4 }}>
+              <FiX size={18} />
+            </button>
+
+            {/* Icon */}
+            <div style={{
+              width: 64, height: 64, borderRadius: 20, margin: "0 auto 18px",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              backgroundColor: toast.type === "success" ? "#ECFDF5" : toast.type === "error" ? "#FEF2F2" : "#FEF9EC",
+            }}>
+              {toast.type === "success" ? <FiCheck size={28} style={{ color: "#059669" }} /> :
+               toast.type === "error" ? <FiAlertCircle size={28} style={{ color: "#DC2626" }} /> :
+               <FiAlertCircle size={28} style={{ color: "#D4A017" }} />}
+            </div>
+
+            {/* Title */}
+            <h3 style={{
+              fontSize: 18, fontWeight: 700, margin: "0 0 8px",
+              color: toast.type === "success" ? "#059669" : toast.type === "error" ? "#DC2626" : "#D4A017",
+            }}>
+              {toast.type === "success" ? "Investment Successful!" : toast.type === "error" ? "Investment Failed" : "Attention Required"}
+            </h3>
+
+            {/* Message */}
+            <p style={{ fontSize: 14, color: "#64748b", margin: "0 0 24px", lineHeight: 1.6, padding: "0 8px" }}>
+              {toast.message}
+            </p>
+
+            {/* Buttons */}
+            <div style={{ display: "flex", gap: 10 }}>
+              {toast.action ? (
+                <>
+                  <button onClick={() => setToast(null)}
+                    style={{ flex: 1, padding: "12px 0", borderRadius: 12, border: "1.5px solid #f0f0f0", backgroundColor: "white", fontSize: 13, fontWeight: 600, color: "#94a3b8", cursor: "pointer", fontFamily: "inherit" }}>
+                    Close
+                  </button>
+                  <button onClick={() => { setToast(null); toast.action.onClick(); }}
+                    style={{ flex: 1, padding: "12px 0", borderRadius: 12, border: "none", fontSize: 13, fontWeight: 700, color: "white", cursor: "pointer", fontFamily: "inherit",
+                      backgroundColor: toast.type === "error" ? "#DC2626" : "#0F2044",
+                    }}>
+                    {toast.action.label}
+                  </button>
+                </>
+              ) : (
+                <button onClick={() => setToast(null)}
+                  style={{ width: "100%", padding: "12px 0", borderRadius: 12, border: "none", fontSize: 13, fontWeight: 700, color: "white", cursor: "pointer", fontFamily: "inherit",
+                    backgroundColor: toast.type === "success" ? "#059669" : toast.type === "error" ? "#DC2626" : "#D4A017",
+                  }}>
+                  {toast.type === "success" ? "Great!" : "Got it"}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
