@@ -126,6 +126,14 @@ export default function ProjectDetails() {
     100
   );
 
+  // Campaign is closed if fully funded, status is closed/failed, or no days left
+  const isCampaignClosed =
+    project.status === "FundingClosed" ||
+    project.status === "Failed" ||
+    project.status === "Completed" ||
+    project.raised >= project.target ||
+    project.daysLeft <= 0;
+
   return (
     <div className="p-4 md:p-6 max-w-5xl mx-auto">
       {/* ── Back Button ── */}
@@ -186,17 +194,14 @@ export default function ProjectDetails() {
             {project.documents?.map((doc, i) => (
               <a
                 key={i}
-                href="#"
-                download
-                onClick={(e) => {
-                  e.preventDefault();
-                  alert(`Downloading "${doc}" — will connect to API`);
-                }}
+                href={doc.url}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer group"
               >
                 <FaDownload size={11} className="text-gray-400 group-hover:text-[#D4A017] transition-colors" />
                 <span className="text-[10px] text-gray-500 font-medium group-hover:text-gray-700 transition-colors">
-                  {doc}
+                  {doc.name}
                 </span>
               </a>
             ))}
@@ -218,14 +223,25 @@ export default function ProjectDetails() {
 
             {/* Stats Grid */}
             <div className="grid grid-cols-2 gap-3 mb-4">
-              <div className="rounded-lg p-3" style={{ backgroundColor: "#FAFBFC" }}>
-                <p className="text-[9px] font-semibold uppercase tracking-widest text-gray-400 mb-0.5">
-                  Min. Contribution
-                </p>
-                <p className="text-sm font-bold" style={{ color: "#0F2044" }}>
-                  EGP {project.minContribution?.toLocaleString("en-US")}
-                </p>
-              </div>
+              {project.fundingType === "Reward" ? (
+                <div className="rounded-lg p-3" style={{ backgroundColor: "#FAFBFC" }}>
+                  <p className="text-[9px] font-semibold uppercase tracking-widest text-gray-400 mb-0.5">
+                    Reward Tiers
+                  </p>
+                  <p className="text-sm font-bold" style={{ color: "#0F2044" }}>
+                    {project.rewardTiers?.length || 0} {project.rewardTiers?.length === 1 ? "Tier" : "Tiers"}
+                  </p>
+                </div>
+              ) : (
+                <div className="rounded-lg p-3" style={{ backgroundColor: "#FAFBFC" }}>
+                  <p className="text-[9px] font-semibold uppercase tracking-widest text-gray-400 mb-0.5">
+                    Min. Contribution
+                  </p>
+                  <p className="text-sm font-bold" style={{ color: "#0F2044" }}>
+                    EGP {project.minContribution?.toLocaleString("en-US")}
+                  </p>
+                </div>
+              )}
               <div className="rounded-lg p-3" style={{ backgroundColor: "#FAFBFC" }}>
                 <p className="text-[9px] font-semibold uppercase tracking-widest text-gray-400 mb-0.5">
                   Duration
@@ -370,6 +386,84 @@ export default function ProjectDetails() {
             </span>
           </div>
         </div>
+
+        {/* ── Campaign Status Banner ── */}
+        {isCampaignClosed && (
+          <div
+            className="mt-5 rounded-xl overflow-hidden"
+            style={{
+              backgroundColor: project.status === "Failed" ? "#FFFBFB" : "#0F2044",
+              border: project.status === "Failed" ? "1px solid #FEE2E2" : "none",
+            }}
+          >
+            <div className="flex items-center gap-4 p-5">
+              {/* Icon */}
+              <div
+                className="flex h-12 w-12 items-center justify-center rounded-xl shrink-0"
+                style={{
+                  backgroundColor: project.status === "Failed"
+                    ? "#FEE2E2"
+                    : "rgba(212, 160, 23, 0.15)",
+                }}
+              >
+                {project.status === "Failed" ? (
+                  <FiAlertCircle size={22} style={{ color: "#DC2626" }} />
+                ) : (
+                  <FiCheck size={22} style={{ color: "#D4A017" }} />
+                )}
+              </div>
+
+              {/* Text */}
+              <div className="flex-1">
+                <p
+                  className="text-[15px] font-bold mb-1"
+                  style={{
+                    color: project.status === "Failed" ? "#DC2626" : "#D4A017",
+                  }}
+                >
+                  {project.status === "Failed"
+                    ? "Campaign Unsuccessful"
+                    : "🎉 Campaign Fully Funded!"}
+                </p>
+                <p
+                  className="text-[13px] leading-relaxed"
+                  style={{
+                    color: project.status === "Failed" ? "#94A3B8" : "rgba(255,255,255,0.6)",
+                  }}
+                >
+                  {project.status === "Failed"
+                    ? "This campaign did not reach its funding goal and is no longer accepting investments."
+                    : "This campaign has successfully reached its funding goal. No further investments are being accepted."}
+                </p>
+              </div>
+
+              {/* Badge */}
+              <div
+                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full shrink-0"
+                style={{
+                  backgroundColor: project.status === "Failed"
+                    ? "#FEE2E2"
+                    : "rgba(212, 160, 23, 0.15)",
+                }}
+              >
+                <div
+                  className="w-1.5 h-1.5 rounded-full"
+                  style={{
+                    backgroundColor: project.status === "Failed" ? "#DC2626" : "#D4A017",
+                  }}
+                />
+                <span
+                  className="text-[11px] font-bold uppercase tracking-wider"
+                  style={{
+                    color: project.status === "Failed" ? "#DC2626" : "#D4A017",
+                  }}
+                >
+                  {project.status === "Failed" ? "Closed" : "Funded"}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ══════════════════════════════════════════════ */}
@@ -418,7 +512,11 @@ export default function ProjectDetails() {
                       </div>
 
                       {/* Button */}
-                      {soldOut ? (
+                      {isCampaignClosed ? (
+                        <span className="px-5 py-2 rounded-lg text-xs font-semibold bg-gray-100 text-gray-400 cursor-not-allowed">
+                          {project.status === "Failed" ? "Campaign Ended" : "Fully Funded"}
+                        </span>
+                      ) : soldOut ? (
                         <span className="px-5 py-2 rounded-lg text-xs font-semibold bg-gray-100 text-gray-400 cursor-not-allowed">
                           Sold out
                         </span>
@@ -480,7 +578,7 @@ export default function ProjectDetails() {
         const yourShare = amount > 0
           ? ((amount / project.target) * project.equityOffered).toFixed(2)
           : "0.00";
-        const isValid = amount >= (project.minContribution || 0) && amount > 0;
+        const isValid = !isCampaignClosed && amount >= (project.minContribution || 0) && amount > 0;
 
         return (
           <div id="invest" className="mb-10">
@@ -569,20 +667,28 @@ export default function ProjectDetails() {
                     EGP {(project.minContribution || 0).toLocaleString("en-US")}
                   </span>
                 </p>
-                <button
-                  onClick={() =>
-                    isValid
-                      ? handleInvest({ amount: Number(investAmount), shareInfo: `${yourShare}% equity` })
-                      : showToast("warning", `Minimum investment is EGP ${(project.minContribution || 0).toLocaleString("en-US")}`)
-                  }
-                  disabled={investing}
-                  className="px-6 py-2.5 rounded-lg text-sm font-semibold text-white transition-all duration-200 cursor-pointer shrink-0 disabled:opacity-50"
-                  style={{
-                    backgroundColor: isValid ? "#0F2044" : "#9CA3AF",
-                  }}
-                >
-                  {investing ? "Processing..." : "Invest"}
-                </button>
+                {isCampaignClosed ? (
+                  <span
+                    className="px-6 py-2.5 rounded-lg text-sm font-semibold bg-gray-100 text-gray-400 cursor-not-allowed"
+                  >
+                    {project.status === "Failed" ? "Campaign Ended" : "Fully Funded"}
+                  </span>
+                ) : (
+                  <button
+                    onClick={() =>
+                      isValid
+                        ? handleInvest({ amount: Number(investAmount), shareInfo: `${yourShare}% equity` })
+                        : showToast("warning", `Minimum investment is EGP ${(project.minContribution || 0).toLocaleString("en-US")}`)
+                    }
+                    disabled={investing}
+                    className="px-6 py-2.5 rounded-lg text-sm font-semibold text-white transition-all duration-200 cursor-pointer shrink-0 disabled:opacity-50"
+                    style={{
+                      backgroundColor: isValid ? "#0F2044" : "#9CA3AF",
+                    }}
+                  >
+                    {investing ? "Processing..." : "Invest"}
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -598,11 +704,12 @@ export default function ProjectDetails() {
         const yourShare = amount > 0
           ? ((amount / project.target) * project.investorProfitShare).toFixed(2)
           : "0.00";
-        const isValid = amount >= (project.minContribution || 0) && amount > 0;
+        const isValid = !isCampaignClosed && amount >= (project.minContribution || 0) && amount > 0;
 
         const freqLabel = {
           Monthly: "every month",
           Quarterly: "every 3 months",
+          SemiAnnually: "every 6 months",
           "Semi-annually": "every 6 months",
           Annually: "every 12 months",
         };
@@ -712,20 +819,28 @@ export default function ProjectDetails() {
                     EGP {(project.minContribution || 0).toLocaleString("en-US")}
                   </span>
                 </p>
-                <button
-                  onClick={() =>
-                    isValid
-                      ? handleInvest({ amount: Number(investAmount), shareInfo: `${yourShare}% profit share` })
-                      : showToast("warning", `Minimum investment is EGP ${(project.minContribution || 0).toLocaleString("en-US")}`)
-                  }
-                  disabled={investing}
-                  className="px-6 py-2.5 rounded-lg text-sm font-semibold text-white transition-all duration-200 cursor-pointer shrink-0 disabled:opacity-50"
-                  style={{
-                    backgroundColor: isValid ? "#0F2044" : "#9CA3AF",
-                  }}
-                >
-                  {investing ? "Processing..." : "Invest"}
-                </button>
+                {isCampaignClosed ? (
+                  <span
+                    className="px-6 py-2.5 rounded-lg text-sm font-semibold bg-gray-100 text-gray-400 cursor-not-allowed"
+                  >
+                    {project.status === "Failed" ? "Campaign Ended" : "Fully Funded"}
+                  </span>
+                ) : (
+                  <button
+                    onClick={() =>
+                      isValid
+                        ? handleInvest({ amount: Number(investAmount), shareInfo: `${yourShare}% profit share` })
+                        : showToast("warning", `Minimum investment is EGP ${(project.minContribution || 0).toLocaleString("en-US")}`)
+                    }
+                    disabled={investing}
+                    className="px-6 py-2.5 rounded-lg text-sm font-semibold text-white transition-all duration-200 cursor-pointer shrink-0 disabled:opacity-50"
+                    style={{
+                      backgroundColor: isValid ? "#0F2044" : "#9CA3AF",
+                    }}
+                  >
+                    {investing ? "Processing..." : "Invest"}
+                  </button>
+                )}
               </div>
 
               <div className="border-t border-gray-100 pt-4">

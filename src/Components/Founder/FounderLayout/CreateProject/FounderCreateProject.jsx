@@ -186,12 +186,12 @@ function CreateProject() {
         : new Date(scheduledDate).toISOString(),
     );
     formData.append(
-      "EndDate",
+      "CampaignDurationInDays",
       selectDuration === "30 days"
-        ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+        ? 30
         : selectDuration === "60 days"
-          ? new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString()
-          : new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
+          ? 60
+          : 90,
     );
     formData.append("CoverImage", coverImages[0]);
     formData.append("EquityPercentage", equityOffered || 0);

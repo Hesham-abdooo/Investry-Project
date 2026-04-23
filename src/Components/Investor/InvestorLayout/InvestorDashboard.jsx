@@ -79,10 +79,12 @@ export default function InvestorDashboard() {
           >
             <option value="all">All Categories</option>
             <option value="Technology">Technology</option>
-            <option value="Health">Health</option>
+            <option value="Healthcare">Healthcare</option>
             <option value="Education">Education</option>
             <option value="Environment">Environment</option>
-            <option value="Food">Food</option>
+            <option value="Food & Beverage">Food & Beverage</option>
+            <option value="Fashion">Fashion</option>
+            <option value="Art & Culture">Art & Culture</option>
             <option value="Business">Business</option>
           </select>
           <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-400">
