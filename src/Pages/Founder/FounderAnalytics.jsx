@@ -2,10 +2,11 @@ import React, { useState, useEffect, useRef } from "react";
 import {
   FiDollarSign, FiTrendingUp, FiCheckCircle, FiAward,
   FiBriefcase, FiCpu, FiChevronDown, FiTarget,
-  FiAlertTriangle, FiMap, FiZap, FiStar,
+  FiAlertTriangle, FiMap, FiZap, FiStar, FiUsers,
 } from "react-icons/fi";
 import axiosInstance from "../../Api/axiosInstance";
 import { analyzeProject } from "./aiAdvisor";
+import { analyzeWithAI } from "./groqService";
 
 export default function FounderAnalytics() {
   const [projects, setProjects] = useState([]);
@@ -14,12 +15,35 @@ export default function FounderAnalytics() {
   const [analysis, setAnalysis] = useState(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [animatedScore, setAnimatedScore] = useState(0);
+  const [aiAnalysis, setAiAnalysis] = useState(null);
+  const [aiLoading, setAiLoading] = useState(false);
 
   useEffect(() => {
-    axiosInstance.get("/Projects/my-projects")
-      .then((r) => setProjects(r.data?.data || []))
-      .catch(console.error)
-      .finally(() => setLoading(false));
+    const fetchAll = async () => {
+      try {
+        const listRes = await axiosInstance.get("/Projects/my-projects");
+        const list = listRes.data?.data || [];
+
+        // Fetch details for each project (enriched data)
+        const detailed = await Promise.all(
+          list.map(async (p) => {
+            try {
+              const detailRes = await axiosInstance.get(`/Projects/${p.id}/details`);
+              return { ...p, ...(detailRes.data?.data || {}) };
+            } catch {
+              return p; // fallback to summary if details fail
+            }
+          })
+        );
+
+        setProjects(detailed);
+      } catch (err) {
+        console.error("Failed to load projects", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAll();
   }, []);
 
   const stats = {
@@ -27,6 +51,7 @@ export default function FounderAnalytics() {
     avgProgress: projects.length ? Math.round(projects.reduce((s, p) => s + (p.fundingProgressPercentage || 0), 0) / projects.length) : 0,
     fullyFunded: projects.filter((p) => (p.fundingProgressPercentage || 0) >= 100).length,
     best: projects.length ? projects.reduce((a, b) => (a.fundingProgressPercentage || 0) >= (b.fundingProgressPercentage || 0) ? a : b) : null,
+    totalInvestors: projects.reduce((s, p) => s + (p.numberOfInvestors || 0), 0),
   };
 
   const modelBreakdown = ["Reward", "Equity", "Mudarabah"].map((m) => {
@@ -46,7 +71,10 @@ export default function FounderAnalytics() {
     if (!proj) return;
     setAnalyzing(true);
     setAnalysis(null);
+    setAiAnalysis(null);
     setAnimatedScore(0);
+
+    // Rule-based analysis (instant with animation delay)
     setTimeout(() => {
       const result = analyzeProject(proj);
       setAnalysis(result);
@@ -60,6 +88,13 @@ export default function FounderAnalytics() {
         else setAnimatedScore(start);
       }, 30);
     }, 1800);
+
+    // Groq AI analysis (parallel, async)
+    setAiLoading(true);
+    analyzeWithAI(proj)
+      .then((result) => setAiAnalysis(result))
+      .catch(() => setAiAnalysis(null))
+      .finally(() => setAiLoading(false));
   };
 
   if (loading) return <AnalyticsSkeleton />;
@@ -75,19 +110,21 @@ export default function FounderAnalytics() {
       </div>
 
       {/* Stats */}
-      <div className="stats-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginBottom: 24 }}>
+      <div className="stats-grid" style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 16, marginBottom: 24 }}>
         <StatCard icon={FiDollarSign} label="Total Raised" value={`EGP ${stats.raised.toLocaleString()}`} color="#D4A017" bg="#FEF9EC" />
         <StatCard icon={FiTrendingUp} label="Avg Progress" value={`${stats.avgProgress}%`} color="#0F2044" bg="#F0F4F8" />
+        <StatCard icon={FiUsers} label="Total Investors" value={stats.totalInvestors} color="#3B82F6" bg="#EFF6FF" />
         <StatCard icon={FiCheckCircle} label="Fully Funded" value={stats.fullyFunded} color="#059669" bg="#ECFDF5" />
         <StatCard icon={FiAward} label="Best Performer" value={stats.best?.title || "—"} color="#D4A017" bg="#FEF9EC" small />
       </div>
 
       {/* Performance Table */}
       <SectionLabel text="Projects Performance" />
-      <div style={{ backgroundColor: "white", borderRadius: 16, border: "1.5px solid #f0f0f0", overflow: "hidden", marginBottom: 24 }}>
+      <div style={{ backgroundColor: "white", borderRadius: 16, border: "1.5px solid #f0f0f0", marginBottom: 24, overflowX: "auto" }}>
+        <div style={{ minWidth: 720 }}>
         {/* Table Header */}
-        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1.5fr 1.2fr 0.8fr", gap: 12, padding: "12px 20px", backgroundColor: "#FAFBFC", fontSize: 10, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: 0.5 }}>
-          <span>Project</span><span>Model</span><span>Progress</span><span>Raised</span><span>Status</span>
+        <div style={{ display: "grid", gridTemplateColumns: "2fr 0.8fr 1.3fr 1fr 0.7fr 0.7fr 0.7fr", gap: 12, padding: "12px 20px", backgroundColor: "#FAFBFC", fontSize: 10, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: 0.5 }}>
+          <span>Project</span><span>Model</span><span>Progress</span><span>Raised</span><span>Investors</span><span>Days Left</span><span>Status</span>
         </div>
         {sorted.length === 0 ? (
           <div style={{ padding: 40, textAlign: "center", color: "#94a3b8", fontSize: 14 }}>No projects to display</div>
@@ -95,7 +132,7 @@ export default function FounderAnalytics() {
           const prog = Math.min(p.fundingProgressPercentage || 0, 100);
           const img = p.coverImageUrl ? (p.coverImageUrl.startsWith("http") ? p.coverImageUrl : `https://investry.runasp.net${p.coverImageUrl}`) : null;
           return (
-            <div key={p.id} style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1.5fr 1.2fr 0.8fr", gap: 12, padding: "14px 20px", alignItems: "center", borderTop: "1px solid #f5f5f5", transition: "background 0.2s" }}
+            <div key={p.id} style={{ display: "grid", gridTemplateColumns: "2fr 0.8fr 1.3fr 1fr 0.7fr 0.7fr 0.7fr", gap: 12, padding: "14px 20px", alignItems: "center", borderTop: "1px solid #f5f5f5", transition: "background 0.2s" }}
               onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#FAFBFC"}
               onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "white"}>
               <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
@@ -112,10 +149,13 @@ export default function FounderAnalytics() {
                 <span style={{ fontSize: 11, fontWeight: 700, color: "#0F2044", minWidth: 28 }}>{prog}%</span>
               </div>
               <span style={{ fontSize: 12, fontWeight: 600, color: "#D4A017" }}>EGP {(Number(p.currentAmount) || 0).toLocaleString()}</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "#3B82F6" }}>{p.numberOfInvestors ?? "—"}</span>
+              <span style={{ fontSize: 11, fontWeight: 600, color: (p.daysRemaining || 0) <= 7 ? "#DC2626" : "#64748b" }}>{p.daysRemaining != null ? `${p.daysRemaining}d` : "—"}</span>
               <StatusBadge status={p.projectStatus} />
             </div>
           );
         })}
+        </div>
       </div>
 
       {/* Model Breakdown + Status */}
@@ -157,13 +197,13 @@ export default function FounderAnalytics() {
       </div>
 
       {/* AI ADVISOR */}
-      <AIAdvisorSection projects={projects} selectedId={selectedId} setSelectedId={setSelectedId} analysis={analysis} analyzing={analyzing} animatedScore={animatedScore} onAnalyze={handleAnalyze} />
+      <AIAdvisorSection projects={projects} selectedId={selectedId} setSelectedId={setSelectedId} analysis={analysis} analyzing={analyzing} animatedScore={animatedScore} onAnalyze={handleAnalyze} aiAnalysis={aiAnalysis} aiLoading={aiLoading} />
     </div>
   );
 }
 
 /* ══ AI ADVISOR SECTION ══ */
-function AIAdvisorSection({ projects, selectedId, setSelectedId, analysis, analyzing, animatedScore, onAnalyze }) {
+function AIAdvisorSection({ projects, selectedId, setSelectedId, analysis, analyzing, animatedScore, onAnalyze, aiAnalysis, aiLoading }) {
   const scoreColor = analysis?.color || "#94a3b8";
   const circumference = 2 * Math.PI * 54;
   const offset = circumference - (circumference * animatedScore) / 100;
@@ -175,7 +215,7 @@ function AIAdvisorSection({ projects, selectedId, setSelectedId, analysis, analy
 
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
         <FiCpu size={20} style={{ color: "#D4A017" }} />
-        <h2 style={{ fontSize: 20, fontWeight: 700, color: "white", margin: 0 }}>AI Project Advisor</h2>
+        <h2 style={{ fontSize: 20, fontWeight: 700, color: "white", margin: 0 }}>InvesTry Advisor</h2>
       </div>
       <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", margin: "0 0 24px" }}>Select a project and get AI-powered insights to maximize your success.</p>
 
@@ -243,6 +283,141 @@ function AIAdvisorSection({ projects, selectedId, setSelectedId, analysis, analy
               </div>
             ))}
           </div>
+
+          {/* ── Smart Suggestions ── */}
+          {analysis.smartSuggestions?.length > 0 && (
+            <div style={{ backgroundColor: "rgba(255,255,255,0.06)", borderRadius: 16, padding: 24 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+                <FiTarget size={16} style={{ color: "#D4A017" }} />
+                <h3 style={{ fontSize: 15, fontWeight: 700, color: "white", margin: 0 }}>Smart Suggestions</h3>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                {analysis.smartSuggestions.map((s, i) => (
+                  <div key={i} style={{ backgroundColor: "rgba(255,255,255,0.04)", borderRadius: 12, padding: "16px 18px", borderLeft: `3px solid ${s.impact === "HIGH" ? "#DC2626" : s.impact === "MEDIUM" ? "#D4A017" : "#059669"}` }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                      <span style={{ fontSize: 14, fontWeight: 600, color: "white" }}>{s.icon} {s.title}</span>
+                      <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 8px", borderRadius: 4, backgroundColor: s.impact === "HIGH" ? "rgba(220,38,38,0.2)" : s.impact === "MEDIUM" ? "rgba(212,160,23,0.2)" : "rgba(5,150,105,0.2)", color: s.impact === "HIGH" ? "#FCA5A5" : s.impact === "MEDIUM" ? "#D4A017" : "#059669", textTransform: "uppercase" }}>{s.impact}</span>
+                    </div>
+                    <div style={{ display: "flex", gap: 20, marginBottom: 6, flexWrap: "wrap" }}>
+                      <div>
+                        <span style={{ fontSize: 10, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", fontWeight: 600 }}>Current</span>
+                        <p style={{ fontSize: 13, color: "rgba(255,255,255,0.7)", margin: "2px 0 0", fontWeight: 500 }}>{s.current}</p>
+                      </div>
+                      <div>
+                        <span style={{ fontSize: 10, color: "rgba(212,160,23,0.7)", textTransform: "uppercase", fontWeight: 600 }}>Recommended</span>
+                        <p style={{ fontSize: 13, color: "#D4A017", margin: "2px 0 0", fontWeight: 600 }}>{s.recommended}</p>
+                      </div>
+                    </div>
+                    {s.tiers && (
+                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", margin: "8px 0" }}>
+                        {s.tiers.map((t, j) => (
+                          <span key={j} style={{ fontSize: 11, padding: "4px 10px", borderRadius: 6, backgroundColor: "rgba(212,160,23,0.1)", color: "#D4A017", fontWeight: 600 }}>EGP {t.price.toLocaleString()} — {t.label}</span>
+                        ))}
+                      </div>
+                    )}
+                    {s.missing && (
+                      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", margin: "8px 0" }}>
+                        {s.missing.map((m, j) => (
+                          <span key={j} style={{ fontSize: 10, padding: "3px 8px", borderRadius: 4, backgroundColor: "rgba(234,88,12,0.15)", color: "#FB923C", fontWeight: 600 }}>+ {m}</span>
+                        ))}
+                      </div>
+                    )}
+                    <p style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", margin: "6px 0 0", lineHeight: 1.4 }}>{s.reason}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ── AI Deep Analysis (Groq) ── */}
+          {(aiLoading || aiAnalysis) && (
+            <div style={{ background: "linear-gradient(135deg, rgba(212,160,23,0.08) 0%, rgba(15,32,68,0.2) 100%)", borderRadius: 16, padding: 24, border: "1px solid rgba(212,160,23,0.15)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+                  <FiCpu size={16} style={{ color: "#D4A017" }} />
+                  <h3 style={{ fontSize: 15, fontWeight: 700, color: "white", margin: 0 }}>AI Deep Analysis</h3>
+              </div>
+
+              {aiLoading && (
+                <div style={{ textAlign: "center", padding: "24px 0" }}>
+                  <div style={{ width: 40, height: 40, margin: "0 auto 12px", borderRadius: "50%", border: "3px solid rgba(212,160,23,0.2)", borderTopColor: "#D4A017", animation: "spin 0.8s linear infinite" }} />
+                  <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 13, margin: 0 }}>AI is analyzing your project...</p>
+                  <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+                </div>
+              )}
+
+              {aiAnalysis && !aiLoading && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                  {/* Overview */}
+                  {aiAnalysis.overview && (
+                    <div>
+                      <p style={{ fontSize: 10, fontWeight: 700, color: "rgba(212,160,23,0.7)", textTransform: "uppercase", letterSpacing: 0.5, margin: "0 0 6px" }}>💡 Overview</p>
+                      <p style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", margin: 0, lineHeight: 1.6 }}>{aiAnalysis.overview}</p>
+                    </div>
+                  )}
+
+                  {/* Suggested Description */}
+                  {aiAnalysis.suggestedDescription && (
+                    <div>
+                      <p style={{ fontSize: 10, fontWeight: 700, color: "rgba(212,160,23,0.7)", textTransform: "uppercase", letterSpacing: 0.5, margin: "0 0 6px" }}>📝 Suggested Description</p>
+                      <div style={{ backgroundColor: "rgba(0,0,0,0.2)", borderRadius: 10, padding: 14 }}>
+                        <p style={{ fontSize: 12, color: "rgba(255,255,255,0.65)", margin: 0, lineHeight: 1.6, whiteSpace: "pre-wrap" }}>{aiAnalysis.suggestedDescription}</p>
+                        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 10 }}>
+                          <button onClick={(e) => { navigator.clipboard.writeText(aiAnalysis.suggestedDescription); e.target.textContent = "✅ Copied!"; setTimeout(() => { e.target.textContent = "📋 Copy Text"; }, 1500); }} style={{ padding: "6px 14px", borderRadius: 8, border: "1px solid rgba(212,160,23,0.3)", backgroundColor: "rgba(212,160,23,0.1)", color: "#D4A017", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", transition: "all 0.2s" }}>📋 Copy Text</button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Target Advice */}
+                  {aiAnalysis.targetAdvice && (
+                    <div>
+                      <p style={{ fontSize: 10, fontWeight: 700, color: "rgba(212,160,23,0.7)", textTransform: "uppercase", letterSpacing: 0.5, margin: "0 0 6px" }}>🎯 Target Optimization</p>
+                      <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 6 }}>
+                        <div style={{ backgroundColor: "rgba(255,255,255,0.05)", borderRadius: 8, padding: "8px 14px" }}>
+                          <span style={{ fontSize: 9, color: "rgba(255,255,255,0.35)", textTransform: "uppercase" }}>Current</span>
+                          <p style={{ fontSize: 14, fontWeight: 700, color: "white", margin: "2px 0 0" }}>EGP {(aiAnalysis.targetAdvice.current || 0).toLocaleString()}</p>
+                        </div>
+                        <div style={{ backgroundColor: "rgba(212,160,23,0.1)", borderRadius: 8, padding: "8px 14px" }}>
+                          <span style={{ fontSize: 9, color: "rgba(212,160,23,0.6)", textTransform: "uppercase" }}>Recommended</span>
+                          <p style={{ fontSize: 14, fontWeight: 700, color: "#D4A017", margin: "2px 0 0" }}>EGP {(aiAnalysis.targetAdvice.recommendedMin || 0).toLocaleString()} — {(aiAnalysis.targetAdvice.recommendedMax || 0).toLocaleString()}</p>
+                        </div>
+                      </div>
+                      <p style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", margin: 0, lineHeight: 1.4 }}>{aiAnalysis.targetAdvice.reason}</p>
+                    </div>
+                  )}
+
+                  {/* Marketing Tips */}
+                  {aiAnalysis.marketingTips?.length > 0 && (
+                    <div>
+                      <p style={{ fontSize: 10, fontWeight: 700, color: "rgba(212,160,23,0.7)", textTransform: "uppercase", letterSpacing: 0.5, margin: "0 0 8px" }}>📢 Marketing Strategy</p>
+                      {aiAnalysis.marketingTips.map((tip, i) => (
+                        <div key={i} style={{ display: "flex", gap: 8, marginBottom: 6 }}>
+                          <div style={{ width: 5, height: 5, borderRadius: "50%", backgroundColor: "#D4A017", marginTop: 6, flexShrink: 0 }} />
+                          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", margin: 0, lineHeight: 1.5 }}>{tip}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Deal Optimization */}
+                  {aiAnalysis.dealOptimization && (
+                    <div>
+                      <p style={{ fontSize: 10, fontWeight: 700, color: "rgba(212,160,23,0.7)", textTransform: "uppercase", letterSpacing: 0.5, margin: "0 0 6px" }}>💰 Deal Optimization</p>
+                      <p style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", margin: 0, lineHeight: 1.6 }}>{aiAnalysis.dealOptimization}</p>
+                    </div>
+                  )}
+
+                  {/* Competitive Edge */}
+                  {aiAnalysis.competitiveEdge && (
+                    <div>
+                      <p style={{ fontSize: 10, fontWeight: 700, color: "rgba(212,160,23,0.7)", textTransform: "uppercase", letterSpacing: 0.5, margin: "0 0 6px" }}>⚡ Competitive Edge</p>
+                      <p style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", margin: 0, lineHeight: 1.6 }}>{aiAnalysis.competitiveEdge}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -271,8 +446,8 @@ function SectionLabel({ text }) {
 }
 
 function ModelBadge({ model }) {
-  const c = model === "Equity" ? { bg: "#0F2044", color: "#fff" } : model === "Mudarabah" ? { bg: "#ECFDF5", color: "#059669" } : { bg: "#FEF9EC", color: "#D4A017" };
-  return <span style={{ fontSize: 10, fontWeight: 700, padding: "3px 8px", borderRadius: 6, backgroundColor: c.bg, color: c.color, textTransform: "uppercase" }}>{model}</span>;
+  const c = model === "Equity" ? { bg: "#EEF2FF", color: "#4F46E5" } : model === "Mudarabah" ? { bg: "#ECFDF5", color: "#059669" } : { bg: "#FEF9EC", color: "#B8860B" };
+  return <span style={{ fontSize: 9, fontWeight: 700, padding: "3px 8px", borderRadius: 6, backgroundColor: c.bg, color: c.color, textTransform: "uppercase", letterSpacing: 0.3, whiteSpace: "nowrap" }}>{model}</span>;
 }
 
 function StatusBadge({ status }) {
@@ -381,8 +556,8 @@ function AnalyticsSkeleton() {
       <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}`}</style>
       <div style={{ ...p, width: 120, height: 20, borderRadius: 8, backgroundColor: b, marginBottom: 8 }} />
       <div style={{ ...p, width: 260, height: 12, borderRadius: 6, backgroundColor: b, marginBottom: 24 }} />
-      <div className="stats-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginBottom: 24 }}>
-        {[1,2,3,4].map((i) => <div key={i} style={{ ...p, height: 84, borderRadius: 16, backgroundColor: "white", border: "1.5px solid #f0f0f0" }} />)}
+      <div className="stats-grid" style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 16, marginBottom: 24 }}>
+        {[1,2,3,4,5].map((i) => <div key={i} style={{ ...p, height: 84, borderRadius: 16, backgroundColor: "white", border: "1.5px solid #f0f0f0" }} />)}
       </div>
       <div style={{ ...p, height: 200, borderRadius: 16, backgroundColor: "white", border: "1.5px solid #f0f0f0", marginBottom: 24 }} />
       <div style={{ ...p, height: 180, borderRadius: 20, background: "linear-gradient(135deg,#0F2044,#1a3260)" }} />

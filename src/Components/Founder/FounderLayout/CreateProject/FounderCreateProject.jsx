@@ -220,6 +220,12 @@ function CreateProject() {
       });
     }
 
+    // Send additional gallery images as MediaFiles
+    coverImages.slice(1).forEach((img) => {
+      formData.append("MediaFiles", img);
+    });
+
+    // Send documents as MediaFiles
     documents.forEach((doc) => {
       formData.append("MediaFiles", doc);
     });
