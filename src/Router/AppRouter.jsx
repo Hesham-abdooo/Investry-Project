@@ -23,6 +23,7 @@ import FounderProfile from "../Pages/Founder/FounderProfile.jsx";
 import FounderCreateProject from "../Components/Founder/FounderLayout/CreateProject/FounderCreateProject.jsx";
 import FounderLayout from "../Components/Layouts/Founder/FounderLayout.jsx";
 import FounderProjects from "../Pages/Founder/FounderProjects.jsx";
+import FounderProjectDetails from "../Pages/Founder/FounderProjectDetails.jsx";
 
 import ProtectedRoute from "../../src/Components/Routes/ProtectedRoute.jsx";
 
@@ -66,6 +67,7 @@ const routes = createBrowserRouter([
     children: [
       { index: true, element: <FounderDasboard /> },
       { path: "projects", element: <FounderProjects /> },
+      { path: "projects/:id", element: <FounderProjectDetails /> },
       { path: "wallet", element: <FounderWallet /> },
       { path: "analytics", element: <FounderAnalytics /> },
       { path: "support", element: <FounderSupport /> },

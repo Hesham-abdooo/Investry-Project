@@ -1,5 +1,6 @@
 import React from "react";
-import { FiMoreVertical, FiTrash2, FiExternalLink } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
+import { FiMoreVertical, FiTrash2, FiEye, FiEdit2 } from "react-icons/fi";
 
 const getStatusLabel = (status) => {
   if (status === "PendingReview") return "Pending";
@@ -43,6 +44,7 @@ export default function ProjectCard({
   openMenuId,
   setOpenMenuId,
 }) {
+  const navigate = useNavigate();
   const imageUrl = project.coverImageUrl
     ? project.coverImageUrl.startsWith("http")
       ? project.coverImageUrl
@@ -155,25 +157,28 @@ export default function ProjectCard({
                 border: "1.5px solid #f0f0f0",
                 overflow: "hidden",
                 zIndex: 10,
-                minWidth: 160,
+                minWidth: 170,
               }}
             >
               <button
+                onClick={() => { setOpenMenuId(null); navigate(`/founder/projects/${project.id}`); }}
+                style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 16px", fontSize: 13, fontWeight: 500, color: "#0F2044", border: "none", background: "none", cursor: "pointer", width: "100%", transition: "background 0.2s", fontFamily: "inherit" }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#f8fafc"}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+              >
+                <FiEye size={14} /> View Details
+              </button>
+              <button
+                onClick={() => { setOpenMenuId(null); navigate(`/founder/projects/${project.id}/edit`); }}
+                style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 16px", fontSize: 13, fontWeight: 500, color: "#0F2044", border: "none", background: "none", cursor: "pointer", width: "100%", transition: "background 0.2s", borderTop: "1px solid #f5f5f5", fontFamily: "inherit" }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#f8fafc"}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+              >
+                <FiEdit2 size={14} /> Edit Project
+              </button>
+              <button
                 onClick={() => onDelete(project.id)}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                  padding: "10px 16px",
-                  fontSize: 13,
-                  fontWeight: 500,
-                  color: "#ef4444",
-                  border: "none",
-                  background: "none",
-                  cursor: "pointer",
-                  width: "100%",
-                  transition: "background 0.2s",
-                }}
+                style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 16px", fontSize: 13, fontWeight: 500, color: "#ef4444", border: "none", background: "none", cursor: "pointer", width: "100%", transition: "background 0.2s", borderTop: "1px solid #f5f5f5", fontFamily: "inherit" }}
                 onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#fef2f2"}
                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
               >

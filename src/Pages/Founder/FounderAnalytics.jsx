@@ -121,10 +121,10 @@ export default function FounderAnalytics() {
       {/* Performance Table */}
       <SectionLabel text="Projects Performance" />
       <div style={{ backgroundColor: "white", borderRadius: 16, border: "1.5px solid #f0f0f0", marginBottom: 24, overflowX: "auto" }}>
-        <div style={{ minWidth: 720 }}>
+        <div style={{ minWidth: 750 }}>
         {/* Table Header */}
-        <div style={{ display: "grid", gridTemplateColumns: "2fr 0.8fr 1.3fr 1fr 0.7fr 0.7fr 0.7fr", gap: 12, padding: "12px 20px", backgroundColor: "#FAFBFC", fontSize: 10, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: 0.5 }}>
-          <span>Project</span><span>Model</span><span>Progress</span><span>Raised</span><span>Investors</span><span>Days Left</span><span>Status</span>
+        <div style={{ display: "grid", gridTemplateColumns: "minmax(160px,2.2fr) 90px minmax(100px,1.5fr) minmax(90px,1fr) 70px 65px 95px", gap: 10, padding: "12px 20px", backgroundColor: "#FAFBFC", fontSize: 10, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: 0.5, alignItems: "center" }}>
+          <span>Project</span><span>Model</span><span>Progress</span><span>Raised</span><span style={{ textAlign: "center" }}>Investors</span><span style={{ textAlign: "center" }}>Days Left</span><span style={{ textAlign: "center" }}>Status</span>
         </div>
         {sorted.length === 0 ? (
           <div style={{ padding: 40, textAlign: "center", color: "#94a3b8", fontSize: 14 }}>No projects to display</div>
@@ -132,7 +132,7 @@ export default function FounderAnalytics() {
           const prog = Math.min(p.fundingProgressPercentage || 0, 100);
           const img = p.coverImageUrl ? (p.coverImageUrl.startsWith("http") ? p.coverImageUrl : `https://investry.runasp.net${p.coverImageUrl}`) : null;
           return (
-            <div key={p.id} style={{ display: "grid", gridTemplateColumns: "2fr 0.8fr 1.3fr 1fr 0.7fr 0.7fr 0.7fr", gap: 12, padding: "14px 20px", alignItems: "center", borderTop: "1px solid #f5f5f5", transition: "background 0.2s" }}
+            <div key={p.id} style={{ display: "grid", gridTemplateColumns: "minmax(160px,2.2fr) 90px minmax(100px,1.5fr) minmax(90px,1fr) 70px 65px 95px", gap: 10, padding: "14px 20px", alignItems: "center", borderTop: "1px solid #f5f5f5", transition: "background 0.2s" }}
               onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#FAFBFC"}
               onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "white"}>
               <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
@@ -146,12 +146,12 @@ export default function FounderAnalytics() {
                 <div style={{ flex: 1, height: 5, borderRadius: 3, backgroundColor: "#f3f4f6", overflow: "hidden" }}>
                   <div style={{ height: "100%", borderRadius: 3, width: `${prog}%`, backgroundColor: prog >= 100 ? "#059669" : "#D4A017", transition: "width 0.5s" }} />
                 </div>
-                <span style={{ fontSize: 11, fontWeight: 700, color: "#0F2044", minWidth: 28 }}>{prog}%</span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: "#0F2044", minWidth: 30, textAlign: "right" }}>{prog}%</span>
               </div>
               <span style={{ fontSize: 12, fontWeight: 600, color: "#D4A017" }}>EGP {(Number(p.currentAmount) || 0).toLocaleString()}</span>
-              <span style={{ fontSize: 12, fontWeight: 600, color: "#3B82F6" }}>{p.numberOfInvestors ?? "—"}</span>
-              <span style={{ fontSize: 11, fontWeight: 600, color: (p.daysRemaining || 0) <= 7 ? "#DC2626" : "#64748b" }}>{p.daysRemaining != null ? `${p.daysRemaining}d` : "—"}</span>
-              <StatusBadge status={p.projectStatus} />
+              <span style={{ fontSize: 12, fontWeight: 600, color: "#3B82F6", textAlign: "center" }}>{p.numberOfInvestors ?? "—"}</span>
+              <span style={{ fontSize: 11, fontWeight: 600, color: (p.daysRemaining || 0) <= 7 ? "#DC2626" : "#64748b", textAlign: "center" }}>{p.daysRemaining != null ? `${p.daysRemaining}d` : "—"}</span>
+              <div style={{ textAlign: "center" }}><StatusBadge status={p.projectStatus} /></div>
             </div>
           );
         })}

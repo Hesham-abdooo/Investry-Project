@@ -48,6 +48,7 @@ function CreateProject() {
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [kycModal, setKycModal] = useState({ show: false, type: '' });
+  const [showExitModal, setShowExitModal] = useState(false);
 
   /* ── جيب الـ KYC status لما الصفحة تفتح ── */
   useEffect(() => {
@@ -73,12 +74,16 @@ function CreateProject() {
   ];
 
   const handleExit = () => {
-    const confirmExit = window.confirm(
-      "Are you sure you want to exit? Your progress may not be saved.",
-    );
-    if (confirmExit) {
-      navigate("/founder");
-    }
+    setShowExitModal(true);
+  };
+
+  const confirmExit = () => {
+    setShowExitModal(false);
+    navigate("/founder");
+  };
+
+  const cancelExit = () => {
+    setShowExitModal(false);
   };
 
   const handleNextStep = () => {
@@ -432,6 +437,30 @@ function CreateProject() {
                 </button>
               </>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Exit Confirmation Modal (same style as KYC modal) ── */}
+      {showExitModal && (
+        <div className="kyc_modal_overlay" onClick={cancelExit}>
+          <div className="kyc_modal" onClick={(e) => e.stopPropagation()}>
+            <button className="kyc_modal_close" onClick={cancelExit}>
+              <FiX />
+            </button>
+            <div className="kyc_modal_icon" style={{ background: 'linear-gradient(135deg, #FEF2F2, #FFF5F5)', borderColor: 'rgba(239, 68, 68, 0.2)' }}>
+              <IoAlertCircleOutline style={{ color: '#EF4444' }} />
+            </div>
+            <h3 className="kyc_modal_title">Discard Changes?</h3>
+            <p className="kyc_modal_text">
+              Are you sure you want to exit? Your progress has not been saved and any details you've entered will be lost.
+            </p>
+            <button className="kyc_modal_btn" style={{ backgroundColor: '#EF4444', boxShadow: '0 2px 8px rgba(239, 68, 68, 0.25)' }} onClick={confirmExit}>
+              Discard & Exit
+            </button>
+            <button className="kyc_modal_btn_secondary" onClick={cancelExit}>
+              Keep Editing
+            </button>
           </div>
         </div>
       )}
