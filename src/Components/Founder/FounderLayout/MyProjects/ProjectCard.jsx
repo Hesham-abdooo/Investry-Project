@@ -66,6 +66,9 @@ export default function ProjectCard({
         display: "flex",
         flexDirection: "column",
         transition: "box-shadow 0.25s ease, transform 0.25s ease",
+        maxWidth: "100%",
+        boxSizing: "border-box",
+        minWidth: 0,
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.08)";
