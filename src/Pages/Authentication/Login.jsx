@@ -43,8 +43,8 @@ export default function Login() {
     localStorage.setItem("token", token);
     localStorage.setItem("role", roles?.[0] || roles);
     const userRole = (roles?.[0] || roles)?.toLowerCase();
-    if (userRole === "investor") navigate("/investor/investorDashboard");
-    else if (userRole === "founder") navigate("/founder/founderDashboard");
+    if (userRole === "investor") navigate("/investor");
+    else if (userRole === "founder") navigate("/founder");
   };
 
   return (

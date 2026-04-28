@@ -123,8 +123,8 @@ export default function SignUp() {
             <GoogleLoginButton
               role={role}
               onSuccess={() => {
-                if (role === "founder") navigate("/founder/founderDashboard");
-                else navigate("/investor/investorDashboard");
+                if (role === "founder") navigate("/founder");
+                else navigate("/investor");
               }}
               onError={(msg) => setError(msg)}
             />
