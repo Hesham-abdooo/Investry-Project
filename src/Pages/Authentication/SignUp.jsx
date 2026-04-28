@@ -80,8 +80,14 @@ export default function SignUp() {
 
       navigate("/email-check");
     } catch (err) {
+      console.error("SignUp Error:", err.response?.data || err);
+      const data = err.response?.data;
       const msg =
-        err.response?.data?.errors?.[0]?.message || err.response?.data?.message;
+        data?.errors?.[0]?.message ||
+        data?.errors?.[0]?.description ||
+        data?.message ||
+        (typeof data === "string" ? data : null) ||
+        (data?.errors && typeof data.errors === "object" ? Object.values(data.errors).flat().join(", ") : null);
       setError(msg || "Something went wrong. Please try again.");
     } finally {
       setLoading(false);
