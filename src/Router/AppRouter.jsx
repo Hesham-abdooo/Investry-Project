@@ -30,6 +30,8 @@ import FounderEditProject from "../Pages/Founder/FounderEditProject.jsx";
 
 import ProtectedRoute from "../../src/Components/Routes/ProtectedRoute.jsx";
 
+import PaymentSuccess from "../Pages/Payment/PaymentSuccess.jsx";
+
 const routes = createBrowserRouter([
   // Landing
   {
@@ -42,6 +44,12 @@ const routes = createBrowserRouter([
   { path: "/signup", element: <SignUp /> },
   { path: "/email-check", element: <EmailCheck /> },
   { path: "/email-confirm", element: <EmailConfirm /> },
+
+  // Payment Success (Stripe redirect)
+  { path: "/payment-success", element: <PaymentSuccess /> },
+  { path: "/payment/success", element: <PaymentSuccess /> },
+  { path: "/wallet/success", element: <PaymentSuccess /> },
+  { path: "/success", element: <PaymentSuccess /> },
 
   // Investor
   {

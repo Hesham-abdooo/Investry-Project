@@ -60,11 +60,11 @@ export default function FounderAnalytics() {
   });
 
   const statusCounts = {
-    Active: projects.filter((p) => p.projectStatus === "Active").length,
+    Published: projects.filter((p) => p.projectStatus === "Published").length,
     PendingReview: projects.filter((p) => p.projectStatus === "PendingReview").length,
     Completed: projects.filter((p) => p.projectStatus === "Completed").length,
   };
-  const totalForBar = Math.max(statusCounts.Active + statusCounts.PendingReview + statusCounts.Completed, 1);
+  const totalForBar = Math.max(statusCounts.Published + statusCounts.PendingReview + statusCounts.Completed, 1);
 
   const handleAnalyze = () => {
     const proj = projects.find((p) => p.id === selectedId);
@@ -180,12 +180,12 @@ export default function FounderAnalytics() {
           <SectionLabel text="Status Distribution" />
           <div style={{ backgroundColor: "white", borderRadius: 14, border: "1.5px solid #f0f0f0", padding: 20 }}>
             <div style={{ display: "flex", height: 14, borderRadius: 7, overflow: "hidden", marginBottom: 16 }}>
-              {statusCounts.Active > 0 && <div style={{ width: `${(statusCounts.Active / totalForBar) * 100}%`, backgroundColor: "#059669" }} />}
+              {statusCounts.Published > 0 && <div style={{ width: `${(statusCounts.Published / totalForBar) * 100}%`, backgroundColor: "#059669" }} />}
               {statusCounts.PendingReview > 0 && <div style={{ width: `${(statusCounts.PendingReview / totalForBar) * 100}%`, backgroundColor: "#D4A017" }} />}
               {statusCounts.Completed > 0 && <div style={{ width: `${(statusCounts.Completed / totalForBar) * 100}%`, backgroundColor: "#3B82F6" }} />}
-              {totalForBar <= 1 && statusCounts.Active === 0 && statusCounts.PendingReview === 0 && statusCounts.Completed === 0 && <div style={{ width: "100%", backgroundColor: "#f3f4f6" }} />}
+              {totalForBar <= 1 && statusCounts.Published === 0 && statusCounts.PendingReview === 0 && statusCounts.Completed === 0 && <div style={{ width: "100%", backgroundColor: "#f3f4f6" }} />}
             </div>
-            {[{ label: "Active", count: statusCounts.Active, color: "#059669" }, { label: "Pending Review", count: statusCounts.PendingReview, color: "#D4A017" }, { label: "Completed", count: statusCounts.Completed, color: "#3B82F6" }].map((s) => (
+            {[{ label: "Published", count: statusCounts.Published, color: "#059669" }, { label: "Pending Review", count: statusCounts.PendingReview, color: "#D4A017" }, { label: "Completed", count: statusCounts.Completed, color: "#3B82F6" }].map((s) => (
               <div key={s.label} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
                 <div style={{ width: 10, height: 10, borderRadius: "50%", backgroundColor: s.color, flexShrink: 0 }} />
                 <span style={{ fontSize: 13, color: "#0F2044", fontWeight: 500, flex: 1 }}>{s.label}</span>
@@ -451,7 +451,7 @@ function ModelBadge({ model }) {
 }
 
 function StatusBadge({ status }) {
-  const m = { Active: { bg: "#E8F5E9", c: "#2E7D32" }, PendingReview: { bg: "#FEF9EC", c: "#D4A017" }, Completed: { bg: "#E3F2FD", c: "#1565C0" } };
+  const m = { Published: { bg: "#E8F5E9", c: "#2E7D32" }, PendingReview: { bg: "#FEF9EC", c: "#D4A017" }, Completed: { bg: "#E3F2FD", c: "#1565C0" } };
   const s = m[status] || { bg: "#F3F4F6", c: "#9CA3AF" };
   const label = status === "PendingReview" ? "Pending" : status || "—";
   return <span style={{ fontSize: 9, fontWeight: 700, padding: "3px 8px", borderRadius: 6, backgroundColor: s.bg, color: s.c, textTransform: "uppercase" }}>{label}</span>;

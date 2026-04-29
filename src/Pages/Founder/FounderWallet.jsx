@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import {
   FiDollarSign, FiBriefcase, FiTrendingUp, FiLock,
   FiArrowDownLeft, FiArrowUpRight, FiChevronLeft, FiChevronRight,
-  FiCheck, FiClock, FiAlertCircle, FiExternalLink,
+  FiCheck, FiClock, FiAlertCircle, FiExternalLink, FiPlus, FiCreditCard, FiX,
 } from "react-icons/fi";
 import axiosInstance from "../../Api/axiosInstance";
 
@@ -39,6 +39,11 @@ export default function FounderWallet() {
   const [txLoading, setTxLoading]   = useState(true);
   const [page, setPage]             = useState(1);
   const [hasMore, setHasMore]       = useState(false);
+  const [showDeposit, setShowDeposit] = useState(false);
+  const [depositAmt, setDepositAmt]   = useState("");
+  const [depositLoading, setDepositLoading] = useState(false);
+  const [depositMsg, setDepositMsg]   = useState(null);
+  const [selectedQuick, setSelectedQuick] = useState(null);
 
   useEffect(() => {
     axiosInstance.get("/Wallet/balance")
@@ -75,6 +80,34 @@ export default function FounderWallet() {
 
   if (allLoading) return <WalletSkeleton />;
 
+  /* ── Deposit Handler ── */
+  const handleDeposit = async () => {
+    const val = parseFloat(depositAmt);
+    if (!val || val <= 0) return;
+    setDepositLoading(true);
+    setDepositMsg(null);
+    try {
+      const res = await axiosInstance.post("/Wallet/deposit", { amount: val });
+      const data = res.data?.data ?? res.data;
+      if (data?.url || data?.checkoutUrl || data?.paymentUrl) {
+        window.location.href = data.url || data.checkoutUrl || data.paymentUrl;
+        return;
+      }
+      setDepositMsg({ type: "success", text: "Deposit successful!" });
+      setDepositAmt(""); setSelectedQuick(null);
+      const balRes = await axiosInstance.get("/Wallet/balance");
+      const bData = balRes.data?.data ?? balRes.data;
+      setBalance(typeof bData === "number" ? bData : bData?.balance ?? bData?.availableBalance ?? 0);
+      setPage(1);
+      setTimeout(() => setShowDeposit(false), 1500);
+    } catch (err) {
+      const msg = err.response?.data?.errors?.[0]?.message || err.response?.data?.message || "Deposit failed. Please try again.";
+      setDepositMsg({ type: "error", text: msg });
+    } finally {
+      setDepositLoading(false);
+    }
+  };
+
   return (
     <div style={{ padding: "8px 0" }}>
       {/* ══ SECTION 1: Hero Banner ══ */}
@@ -97,8 +130,13 @@ export default function FounderWallet() {
               </div>
               {balLoading
                 ? <div style={{ height: 32, width: 140, borderRadius: 8, background: "rgba(255,255,255,0.1)", animation: "pulse 1.5s infinite" }} />
-                : <p style={{ fontSize: 28, fontWeight: 700, color: "#D4A017", margin: 0 }}>EGP {fmt(balance)}</p>
+                : <p style={{ fontSize: 28, fontWeight: 700, color: "#D4A017", margin: "0 0 10px" }}>EGP {fmt(balance)}</p>
               }
+              <button onClick={() => { setShowDeposit(true); setDepositMsg(null); }} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 18px", borderRadius: 10, border: "1px solid rgba(212,160,23,0.3)", background: "rgba(212,160,23,0.12)", color: "#D4A017", fontSize: 12, fontWeight: 700, cursor: "pointer", transition: "all 0.2s", letterSpacing: 0.3 }}
+                onMouseEnter={e => e.currentTarget.style.background = "rgba(212,160,23,0.22)"}
+                onMouseLeave={e => e.currentTarget.style.background = "rgba(212,160,23,0.12)"}>
+                <FiPlus size={14} /> Add Funds
+              </button>
             </div>
             {/* In Escrow */}
             <div style={{ background: "rgba(255,255,255,0.07)", borderRadius: 16, padding: "20px 24px", border: "1px solid rgba(255,255,255,0.08)", backdropFilter: "blur(10px)" }}>
@@ -179,7 +217,80 @@ export default function FounderWallet() {
           <EmptyBlock icon={FiClock} title="No transactions yet" sub="Your financial activity will appear here." />
         )}
       </div>
-      <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}`}</style>
+
+      {/* ══ Deposit Modal ══ */}
+      {showDeposit && (
+        <div onClick={() => setShowDeposit(false)} style={{ position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.5)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, backdropFilter: "blur(4px)" }}>
+          <div onClick={e => e.stopPropagation()} style={{ backgroundColor: "white", borderRadius: 20, padding: 32, width: "100%", maxWidth: 420, boxShadow: "0 20px 60px rgba(0,0,0,0.15)", position: "relative" }}>
+            {/* Close */}
+            <button onClick={() => setShowDeposit(false)} style={{ position: "absolute", top: 16, right: 16, width: 32, height: 32, borderRadius: "50%", border: "none", background: "#f3f4f6", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", transition: "background 0.2s" }}
+              onMouseEnter={e => e.currentTarget.style.background = "#e5e7eb"}
+              onMouseLeave={e => e.currentTarget.style.background = "#f3f4f6"}>
+              <FiX size={16} style={{ color: "#6b7280" }} />
+            </button>
+
+            {/* Header */}
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 24 }}>
+              <div style={{ width: 40, height: 40, borderRadius: 12, background: "#FEF9EC", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <FiCreditCard size={18} style={{ color: "#D4A017" }} />
+              </div>
+              <div>
+                <h3 style={{ fontSize: 18, fontWeight: 700, color: "#0F2044", margin: 0 }}>Add Funds</h3>
+                <p style={{ fontSize: 12, color: "#94a3b8", margin: 0 }}>Top up your wallet via Stripe</p>
+              </div>
+            </div>
+
+            {/* Quick Amounts */}
+            <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, color: "#94a3b8", margin: "0 0 8px" }}>Quick Amount</p>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8, marginBottom: 20 }}>
+              {[100, 500, 1000, 5000].map(v => (
+                <button key={v} onClick={() => { setSelectedQuick(v); setDepositAmt(v.toString()); }}
+                  style={{ padding: "10px 0", borderRadius: 10, border: selectedQuick === v ? "1.5px solid #D4A017" : "1.5px solid #f0f0f0", background: selectedQuick === v ? "#FEF9EC" : "white", color: selectedQuick === v ? "#D4A017" : "#0F2044", fontSize: 13, fontWeight: 700, cursor: "pointer", transition: "all 0.2s" }}
+                  onMouseEnter={e => { if (selectedQuick !== v) e.currentTarget.style.borderColor = "#d1d5db"; }}
+                  onMouseLeave={e => { if (selectedQuick !== v) e.currentTarget.style.borderColor = "#f0f0f0"; }}>
+                  {v >= 1000 ? `${v/1000}K` : v}
+                </button>
+              ))}
+            </div>
+
+            {/* Custom Input */}
+            <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, color: "#94a3b8", margin: "0 0 8px" }}>Custom Amount</p>
+            <div style={{ display: "flex", alignItems: "center", border: "1.5px solid #f0f0f0", borderRadius: 12, padding: "0 16px", marginBottom: 20, transition: "border-color 0.2s" }}
+              onFocus={e => e.currentTarget.style.borderColor = "#D4A017"}
+              onBlur={e => e.currentTarget.style.borderColor = "#f0f0f0"}>
+              <span style={{ fontSize: 14, fontWeight: 600, color: "#94a3b8", marginRight: 8 }}>EGP</span>
+              <input type="text" value={depositAmt} placeholder="0.00"
+                onChange={e => { setDepositAmt(e.target.value.replace(/[^0-9.]/g, "")); setSelectedQuick(null); }}
+                style={{ flex: 1, border: "none", outline: "none", padding: "14px 0", fontSize: 20, fontWeight: 700, color: "#0F2044", background: "transparent" }} />
+            </div>
+
+            {/* Message */}
+            {depositMsg && (
+              <div style={{ padding: "10px 14px", borderRadius: 10, marginBottom: 16, fontSize: 12, fontWeight: 600, background: depositMsg.type === "success" ? "#ECFDF5" : "#FEF2F2", color: depositMsg.type === "success" ? "#059669" : "#EF4444", display: "flex", alignItems: "center", gap: 8 }}>
+                {depositMsg.type === "success" ? <FiCheck size={14} /> : <FiAlertCircle size={14} />}
+                {depositMsg.text}
+              </div>
+            )}
+
+            {/* Buttons */}
+            <button onClick={handleDeposit} disabled={depositLoading || !depositAmt || parseFloat(depositAmt) <= 0}
+              style={{ width: "100%", padding: "14px 0", borderRadius: 12, border: "none", background: (!depositAmt || parseFloat(depositAmt) <= 0) ? "#e5e7eb" : "linear-gradient(135deg, #D4A017, #B8860B)", color: (!depositAmt || parseFloat(depositAmt) <= 0) ? "#9ca3af" : "white", fontSize: 15, fontWeight: 700, cursor: (!depositAmt || parseFloat(depositAmt) <= 0) ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, transition: "all 0.2s", marginBottom: 10 }}>
+              {depositLoading ? (
+                <><div style={{ width: 16, height: 16, border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "white", borderRadius: "50%", animation: "spin 0.6s linear infinite" }} /> Processing...</>
+              ) : (
+                <><FiCreditCard size={16} /> Deposit via Stripe</>
+              )}
+            </button>
+            <button onClick={() => setShowDeposit(false)} style={{ width: "100%", padding: "12px 0", borderRadius: 12, border: "1.5px solid #f0f0f0", background: "white", color: "#6b7280", fontSize: 13, fontWeight: 600, cursor: "pointer", transition: "all 0.2s" }}
+              onMouseEnter={e => e.currentTarget.style.background = "#f9fafb"}
+              onMouseLeave={e => e.currentTarget.style.background = "white"}>
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}@keyframes spin{to{transform:rotate(360deg)}}`}</style>
     </div>
   );
 }

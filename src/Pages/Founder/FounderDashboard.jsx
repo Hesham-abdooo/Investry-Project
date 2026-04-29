@@ -46,7 +46,7 @@ export default function FounderDashboard() {
   /* ── Computed Stats ── */
   const stats = {
     total: projects.length,
-    active: projects.filter((p) => p.projectStatus === "Active").length,
+    active: projects.filter((p) => p.projectStatus === "Published").length,
     pending: projects.filter((p) => p.projectStatus === "PendingReview").length,
     raised: projects.reduce((sum, p) => sum + (Number(p.currentAmount) || 0), 0),
   };
@@ -162,7 +162,7 @@ function WelcomeHeader({ name, totalProjects }) {
 
 const STAT_CONFIG = [
   { key: "total", label: "Total Projects", icon: FiBriefcase, color: "#0F2044", bgIcon: "#F0F4F8" },
-  { key: "active", label: "Active", icon: FiActivity, color: "#059669", bgIcon: "#ECFDF5" },
+  { key: "active", label: "Published", icon: FiActivity, color: "#059669", bgIcon: "#ECFDF5" },
   { key: "pending", label: "Pending Review", icon: FiClock, color: "#D4A017", bgIcon: "#FEF9EC" },
   { key: "raised", label: "Total Raised", icon: FiDollarSign, color: "#D4A017", bgIcon: "#FEF9EC", isCurrency: true },
 ];
@@ -470,8 +470,8 @@ function QuickActions() {
 /* ═══════════════════════════════════════════════════════ */
 
 const getStatusBadge = (status) => {
-  if (status === "Active")
-    return { bg: "#E8F5E9", color: "#2E7D32", label: "Active" };
+  if (status === "Published")
+    return { bg: "#E8F5E9", color: "#2E7D32", label: "Published" };
   if (status === "PendingReview")
     return { bg: "#FEF9EC", color: "#D4A017", label: "Pending" };
   if (status === "Completed")
