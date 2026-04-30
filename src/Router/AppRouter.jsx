@@ -16,6 +16,7 @@ import InvestorWallet from "../Components/Investor/InvestorLayout/InvestorWallet
 import ProjectDetails from "../Components/Investor/InvestorLayout/ProjectDetails.jsx";
 import InvestorMyInvestments from "../Components/Investor/InvestorLayout/InvestorMyInvestments.jsx";
 import InvestorProfile from "../Components/Investor/InvestorLayout/InvestorProfile.jsx";
+import InvestorSupport from "../Pages/Investor/InvestorSupport.jsx";
 
 import FounderDasboard from "../Pages/Founder/FounderDashboard.jsx";
 import FounderWallet from "../Pages/Founder/FounderWallet.jsx";
@@ -70,6 +71,7 @@ const routes = createBrowserRouter([
       { path: "investments", element: <InvestorMyInvestments /> },
       { path: "wallet", element: <InvestorWallet /> },
       { path: "profile", element: <InvestorProfile /> },
+      { path: "support", element: <InvestorSupport /> },
       { path: "project/:id", element: <ProjectDetails /> },
     ],
   },

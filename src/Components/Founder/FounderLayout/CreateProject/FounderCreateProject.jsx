@@ -32,6 +32,7 @@ function CreateProject() {
   const [minContribution, setMinContribution] = useState("");
   const [startDateOption, setStartDateOption] = useState("immediately");
   const [scheduledDate, setScheduledDate] = useState("");
+  const [projectLocation, setProjectLocation] = useState("");
 
   const [rewardTiers, setRewardTiers] = useState([
     { gift: "", amount: "", quantity: "" },
@@ -199,6 +200,8 @@ function CreateProject() {
           : 90,
     );
     formData.append("CoverImage", coverImages[0]);
+    if (projectLocation.trim()) formData.append("Location", projectLocation);
+    if (videoUrl.trim()) formData.append("PromotionalVideoURL", videoUrl);
     formData.append("EquityPercentage", equityOffered || 0);
     formData.append("InvestorsProfitSharePercentage", founderProfitShare || 0);
     formData.append(
@@ -277,6 +280,8 @@ function CreateProject() {
           setStartDateOption={setStartDateOption}
           scheduledDate={scheduledDate}
           setScheduledDate={setScheduledDate}
+          projectLocation={projectLocation}
+          setProjectLocation={setProjectLocation}
           errors={errors}
         />
       );

@@ -1,6 +1,6 @@
 import React from "react";
 import SupportForm from "../../Components/Shared/SupportForm";
 
-export default function FounderSupport() {
-  return <SupportForm variant="founder" />;
+export default function InvestorSupport() {
+  return <SupportForm variant="investor" />;
 }

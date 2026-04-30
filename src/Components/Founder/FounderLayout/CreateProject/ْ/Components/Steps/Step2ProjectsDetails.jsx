@@ -13,7 +13,9 @@ const Step2ProjectDetails = ({
   minContribution, setMinContribution,
   selectDuration, setSelectDuration,
   startDateOption, setStartDateOption,
-  scheduledDate, setScheduledDate, errors
+  scheduledDate, setScheduledDate,
+  projectLocation, setProjectLocation,
+  errors
 }) => {
 
   const [categories, setCategories] = React.useState([]);
@@ -101,6 +103,8 @@ const Step2ProjectDetails = ({
                   type="text"
                   placeholder="e.g. Cairo, Egypt"
                   className={inputClass}
+                  value={projectLocation || ""}
+                  onChange={(e) => setProjectLocation(e.target.value)}
                 />
               </div>
             </div>
