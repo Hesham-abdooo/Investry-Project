@@ -25,6 +25,7 @@ export default function Login() {
       const role = roles[0].toLowerCase();
       if (role === "investor") navigate("/investor");
       else if (role === "founder") navigate("/founder");
+      else if (role === "administrator") navigate("/admin");
     } catch (err) {
       const msg = err.response?.data?.errors?.[0]?.message;
       if (msg?.toLowerCase().includes("not confirmed")) {
@@ -45,6 +46,7 @@ export default function Login() {
     const userRole = (roles?.[0] || roles)?.toLowerCase();
     if (userRole === "investor") navigate("/investor");
     else if (userRole === "founder") navigate("/founder");
+    else if (userRole === "administrator") navigate("/admin");
   };
 
   return (

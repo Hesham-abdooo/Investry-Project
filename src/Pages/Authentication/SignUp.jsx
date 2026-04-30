@@ -124,6 +124,7 @@ export default function SignUp() {
               role={role}
               onSuccess={() => {
                 if (role === "founder") navigate("/founder");
+                else if (role === "administrator") navigate("/admin");
                 else navigate("/investor");
               }}
               onError={(msg) => setError(msg)}

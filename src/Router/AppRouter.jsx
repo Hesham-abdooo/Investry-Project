@@ -28,6 +28,11 @@ import FounderProjects from "../Pages/Founder/FounderProjects.jsx";
 import FounderProjectDetails from "../Pages/Founder/FounderProjectDetails.jsx";
 import FounderEditProject from "../Pages/Founder/FounderEditProject.jsx";
 
+import AdminLayout from "../Components/Layouts/Admin/AdminLayout.jsx";
+import AdminDashboard from "../Pages/Admin/AdminDashboard.jsx";
+import AdminProjects from "../Pages/Admin/AdminProjects.jsx";
+import AdminEscrow from "../Pages/Admin/AdminEscrow.jsx";
+
 import ProtectedRoute from "../../src/Components/Routes/ProtectedRoute.jsx";
 
 import PaymentSuccess from "../Pages/Payment/PaymentSuccess.jsx";
@@ -86,6 +91,21 @@ const routes = createBrowserRouter([
       { path: "analytics", element: <FounderAnalytics /> },
       { path: "support", element: <FounderSupport /> },
       { path: "profile", element: <FounderProfile /> },
+    ],
+  },
+
+  // Admin
+  {
+    path: "/admin",
+    element: (
+      <ProtectedRoute allowedRoles={["administrator"]}>
+        <AdminLayout />
+      </ProtectedRoute>
+    ),
+    children: [
+      { index: true, element: <AdminDashboard /> },
+      { path: "projects", element: <AdminProjects /> },
+      { path: "escrow", element: <AdminEscrow /> },
     ],
   },
 
