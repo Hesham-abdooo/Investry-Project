@@ -1,13 +1,35 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import {
   FiSearch, FiEye, FiCheck, FiX, FiCheckCircle,
   FiAlertTriangle, FiBriefcase, FiUser, FiMapPin,
-  FiCalendar, FiDollarSign, FiClock,
+  FiCalendar, FiDollarSign, FiClock, FiLoader,
 } from "react-icons/fi";
-import { pendingProjects as mockProjects } from "../../Data/adminMockData";
+import axiosInstance from "../../Api/axiosInstance";
 
 const fmt = (n) => Number(n || 0).toLocaleString("en-US");
 const fmtDate = (d) => d ? new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "";
+const resolveUrl = (url) => url ? (url.startsWith("http") ? url : `https://investry.runasp.net${url}`) : null;
+
+/* Normalize API response fields to match our UI */
+const normalize = (p) => ({
+  id: p.id || p.projectId,
+  title: p.title || "",
+  founderName: p.founderName || p.ownerName || "Unknown",
+  founderEmail: p.founderEmail || p.ownerEmail || "",
+  fundingModel: p.fundingModel || p.fundingType || "Equity",
+  targetAmount: p.targetAmount || 0,
+  category: p.category || p.categories?.[0]?.name || "General",
+  shortDescription: p.shortDescription || "",
+  longDescription: p.longDescription || "",
+  coverImageUrl: resolveUrl(p.coverImageUrl || p.coverImage),
+  location: p.location || "",
+  minimumContribution: p.minimumContribution || 0,
+  campaignDurationInDays: p.campaignDurationInDays || p.durationInDays || 0,
+  createdAt: p.createdAt,
+  projectStatus: p.projectStatus || p.status || "PendingReview",
+  equityPercentage: p.equityPercentage,
+  investorsProfitSharePercentage: p.investorsProfitSharePercentage,
+});
 
 const STATUS_COLORS = {
   PendingReview: { bg: "#FEF9EC", color: "#D4A017", label: "Pending" },
@@ -170,9 +192,9 @@ function DetailModal({ project, onClose, onApprove, onReject }) {
 
 /* ═══════════ MAIN PAGE ═══════════ */
 export default function AdminProjects() {
-  const [projects, setProjects] = useState(() =>
-    mockProjects.map(p => ({ ...p }))
-  );
+  const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedProject, setSelectedProject] = useState(null);
@@ -185,18 +207,55 @@ export default function AdminProjects() {
     setTimeout(() => setToast(null), 3000);
   };
 
-  const handleApprove = () => {
-    setProjects(prev => prev.map(p => p.id === approveTarget.id ? { ...p, projectStatus: "Published" } : p));
-    showToast(`"${approveTarget.title}" approved successfully`, "success");
-    setApproveTarget(null);
-    setSelectedProject(null);
+  /* ── Fetch projects from API ── */
+  const fetchProjects = useCallback(async () => {
+    try {
+      const res = await axiosInstance.get("/Admin/projects");
+      const raw = res.data?.value ?? res.data?.data ?? res.data;
+      const list = Array.isArray(raw) ? raw : [];
+      setProjects(list.map(normalize));
+    } catch (err) {
+      console.error("Failed to load projects:", err);
+      showToast("Failed to load projects", "error");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchProjects(); }, [fetchProjects]);
+
+  /* ── Approve ── */
+  const handleApprove = async () => {
+    setActionLoading(true);
+    try {
+      await axiosInstance.put(`/Admin/projects/${approveTarget.id}/approve`);
+      showToast(`"${approveTarget.title}" approved successfully`, "success");
+      setApproveTarget(null);
+      setSelectedProject(null);
+      await fetchProjects();
+    } catch (err) {
+      const msg = err.response?.data?.errors?.[0]?.message || err.response?.data?.data || "Approval failed";
+      showToast(msg, "error");
+    } finally {
+      setActionLoading(false);
+    }
   };
 
-  const handleReject = (reason) => {
-    setProjects(prev => prev.map(p => p.id === rejectTarget.id ? { ...p, projectStatus: "Rejected", rejectReason: reason } : p));
-    showToast(`"${rejectTarget.title}" rejected`, "error");
-    setRejectTarget(null);
-    setSelectedProject(null);
+  /* ── Reject ── */
+  const handleReject = async (reason) => {
+    setActionLoading(true);
+    try {
+      await axiosInstance.put(`/Admin/projects/${rejectTarget.id}/reject`, { reason });
+      showToast(`"${rejectTarget.title}" rejected`, "error");
+      setRejectTarget(null);
+      setSelectedProject(null);
+      await fetchProjects();
+    } catch (err) {
+      const msg = err.response?.data?.errors?.[0]?.message || err.response?.data?.data || "Rejection failed";
+      showToast(msg, "error");
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   const filtered = useMemo(() => {
@@ -260,7 +319,13 @@ export default function AdminProjects() {
         </div>
 
         {/* Rows */}
-        {filtered.length === 0 ? (
+        {loading ? (
+          <div style={{ padding: "60px 20px", textAlign: "center" }}>
+            <FiLoader size={24} style={{ color: "#D4A017", marginBottom: 8, animation: "spin 1s linear infinite" }} />
+            <p style={{ fontSize: 13, color: "#94a3b8", margin: 0 }}>Loading projects...</p>
+            <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+          </div>
+        ) : filtered.length === 0 ? (
           <div style={{ padding: "48px 20px", textAlign: "center" }}>
             <FiBriefcase size={32} style={{ color: "#e2e8f0", marginBottom: 8 }} />
             <p style={{ fontSize: 14, color: "#94a3b8", margin: 0 }}>No projects found</p>

@@ -2,6 +2,9 @@ import React, { useState, useEffect } from "react";
 import { FaWallet, FaSearch, FaBriefcase } from "react-icons/fa";
 import ProjectCard from "./ProjectCard";
 import { getProjects } from "./projectService";
+import axiosInstance from "../../../Api/axiosInstance";
+
+const fmt = (n) => Number(n || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 export default function InvestorDashboard() {
   const [search, setSearch] = useState("");
@@ -9,11 +12,24 @@ export default function InvestorDashboard() {
   const [fundingType, setFundingType] = useState("all");
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [balance, setBalance] = useState(null);
+  const [balanceLoading, setBalanceLoading] = useState(true);
 
   useEffect(() => {
     getProjects()
       .then(setProjects)
       .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => {
+    axiosInstance
+      .get("/Wallet/balance")
+      .then((res) => {
+        const data = res.data?.data ?? res.data;
+        setBalance(typeof data === "number" ? data : data?.balance ?? data?.availableBalance ?? 0);
+      })
+      .catch(() => setBalance(0))
+      .finally(() => setBalanceLoading(false));
   }, []);
 
   // ── Filtering ──
@@ -52,7 +68,7 @@ export default function InvestorDashboard() {
             </span>
           </div>
           <p className="text-2xl font-bold" style={{ color: "#0F2044" }}>
-            EGP <span style={{ color: "#D4A017" }}>0.00</span>
+            EGP <span style={{ color: "#D4A017" }}>{balanceLoading ? "..." : fmt(balance)}</span>
           </p>
         </div>
       </div>

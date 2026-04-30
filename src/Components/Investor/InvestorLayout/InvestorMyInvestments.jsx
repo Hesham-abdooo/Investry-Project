@@ -220,7 +220,8 @@ function InvestmentDetailsModal({ inv, onClose }) {
           <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
           <button
             onClick={onClose}
-            className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 flex items-center justify-center text-gray-600 hover:bg-white transition-colors cursor-pointer shadow-sm"
+            className="absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center text-white hover:text-gray-200 transition-colors cursor-pointer"
+            style={{ backgroundColor: "rgba(0,0,0,0.3)", backdropFilter: "blur(4px)" }}
           >
             <FiX size={16} />
           </button>
@@ -470,15 +471,7 @@ export default function InvestorMyInvestments() {
         <LoadingSkeleton />
       ) : (
         <>
-          {/* ── Stats ── */}
-          {investments.length > 0 && (
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-              <StatCard icon={FiDollarSign} label="Total Invested" value={`EGP ${fmt(stats.totalInvested)}`} accent="gold" />
-              <StatCard icon={FiBriefcase} label="Active Projects" value={stats.activeProjects} accent="blue" />
-              <StatCard icon={FiTrendingUp} label="Total Returns" value={`EGP ${fmt(stats.totalReturns)}`} accent="green" />
-              <StatCard icon={FiTarget} label="Avg. Progress" value={`${stats.avgProgress}%`} accent="blue" />
-            </div>
-          )}
+          {/* ── Stats removed ── */}
 
           {/* ── Filters ── */}
           {investments.length > 0 && (
