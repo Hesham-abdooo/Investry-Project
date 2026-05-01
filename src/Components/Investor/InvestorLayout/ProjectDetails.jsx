@@ -135,7 +135,7 @@ export default function ProjectDetails() {
     project.daysLeft <= 0;
 
   return (
-    <div className="p-4 md:p-6 max-w-5xl mx-auto">
+    <div className="px-3 py-4 sm:p-4 md:p-6 max-w-5xl mx-auto">
       {/* ── Back Button ── */}
       <Link
         to="/investor"
@@ -281,7 +281,7 @@ export default function ProjectDetails() {
       {/* ── PROJECT INFO ──                            */}
       {/* ══════════════════════════════════════════════ */}
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-50 p-5 md:p-6 mb-8">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-50 p-5 md:p-6 mb-5 sm:mb-8">
         {/* Category + Title */}
         <div className="flex items-center gap-3 mb-3">
           <span
@@ -329,7 +329,7 @@ export default function ProjectDetails() {
             {project.fundingType}
           </span>
         </div>
-        <p className="text-[13px] text-gray-500 leading-6 mt-2 ml-12">
+        <p className="text-[13px] text-gray-500 leading-6 mt-2 sm:ml-12">
               {project.fundingType === "Reward"
                 ? "This project follows a Reward-Based funding model. You can support it by choosing from the available reward tiers below. Each tier has a fixed contribution amount, a specific reward, and a limited quantity set by the founder. Once a tier is fully claimed, it becomes sold out."
                 : project.fundingType === "Equity"
@@ -342,23 +342,34 @@ export default function ProjectDetails() {
       {/* ── CAMPAIGN PROGRESS (Full Width) ──          */}
       {/* ══════════════════════════════════════════════ */}
 
-      <div className="rounded-xl p-5 mb-10" style={{ backgroundColor: "#F8F9FB" }}>
-        <div className="flex items-end justify-between mb-3">
+      <div className="progress-section rounded-xl px-5 py-6 sm:p-5 mb-6 sm:mb-10" style={{ backgroundColor: "#F8F9FB" }}>
+        <style>{`
+          @media (max-width: 640px) {
+            .progress-section {
+              margin-left: -12px !important;
+              margin-right: -12px !important;
+              border-radius: 0 !important;
+              padding-left: 16px !important;
+              padding-right: 16px !important;
+            }
+          }
+        `}</style>
+        <div className="flex items-end justify-between mb-5 sm:mb-3">
           <div>
-            <p className="text-xs text-gray-400 mb-0.5">Raised</p>
-            <p className="text-lg font-bold" style={{ color: "#D4A017" }}>
+            <p className="text-xs text-gray-400 mb-1.5 sm:mb-1">Raised</p>
+            <p className="text-base sm:text-lg font-bold" style={{ color: "#D4A017" }}>
               EGP {project.raised?.toLocaleString("en-US")}
             </p>
           </div>
           <div className="text-right">
-            <p className="text-xs text-gray-400 mb-0.5">Target</p>
-            <p className="text-lg font-bold" style={{ color: "#0F2044" }}>
+            <p className="text-xs text-gray-400 mb-1.5 sm:mb-1">Target</p>
+            <p className="text-base sm:text-lg font-bold" style={{ color: "#0F2044" }}>
               EGP {project.target?.toLocaleString("en-US")}
             </p>
           </div>
         </div>
 
-        <div className="w-full h-3 rounded-full bg-gray-200 mb-3 overflow-hidden">
+        <div className="w-full h-3 rounded-full bg-gray-200 mb-4 sm:mb-3 overflow-hidden">
           <div
             className="h-full rounded-full transition-all duration-700 ease-out"
             style={{
@@ -368,7 +379,7 @@ export default function ProjectDetails() {
           />
         </div>
 
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-2">
           <span
             className="text-sm font-semibold"
             style={{ color: "#0F2044" }}
@@ -396,10 +407,10 @@ export default function ProjectDetails() {
               border: project.status === "Failed" ? "1px solid #FEE2E2" : "none",
             }}
           >
-            <div className="flex items-center gap-4 p-5">
+            <div className="flex sm:flex-row flex-col items-center sm:items-center gap-3 sm:gap-4 p-5 text-center sm:text-left">
               {/* Icon */}
               <div
-                className="flex h-12 w-12 items-center justify-center rounded-xl shrink-0"
+                className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-xl shrink-0"
                 style={{
                   backgroundColor: project.status === "Failed"
                     ? "#FEE2E2"
@@ -407,16 +418,16 @@ export default function ProjectDetails() {
                 }}
               >
                 {project.status === "Failed" ? (
-                  <FiAlertCircle size={22} style={{ color: "#DC2626" }} />
+                  <FiAlertCircle size={20} style={{ color: "#DC2626" }} />
                 ) : (
-                  <FiCheck size={22} style={{ color: "#D4A017" }} />
+                  <FiCheck size={20} style={{ color: "#D4A017" }} />
                 )}
               </div>
 
               {/* Text */}
               <div className="flex-1">
                 <p
-                  className="text-[15px] font-bold mb-1"
+                  className="text-[14px] sm:text-[15px] font-bold mb-1"
                   style={{
                     color: project.status === "Failed" ? "#DC2626" : "#D4A017",
                   }}
@@ -426,7 +437,7 @@ export default function ProjectDetails() {
                     : "🎉 Campaign Fully Funded!"}
                 </p>
                 <p
-                  className="text-[13px] leading-relaxed"
+                  className="text-[12px] sm:text-[13px] leading-relaxed"
                   style={{
                     color: project.status === "Failed" ? "#94A3B8" : "rgba(255,255,255,0.6)",
                   }}
@@ -589,90 +600,87 @@ export default function ProjectDetails() {
               Invest in This Project
             </h2>
 
-            <div className="rounded-xl border border-gray-100 p-5 md:p-6">
-              {/* Equity Info */}
-              <div className="flex items-center gap-3 mb-5 pb-5 border-b border-gray-100">
-                <div
-                  className="flex h-10 w-10 items-center justify-center rounded-lg shrink-0"
-                  style={{ backgroundColor: "#FEF9EC" }}
-                >
-                  <FaChartPie size={16} style={{ color: "#D4A017" }} />
+            <div className="rounded-xl border border-gray-100 overflow-hidden">
+              {/* Stats Row — inline with dividers */}
+              <div className="equity-stats flex flex-wrap" style={{ borderBottom: "1px solid #f3f4f6" }}>
+                <div className="equity-stat-item flex-1 px-5 py-4" style={{ borderRight: "1px solid #f3f4f6", minWidth: "33%" }}>
+                  <p className="text-[9px] font-semibold uppercase tracking-widest text-gray-400 mb-0.5">Equity Offered</p>
+                  <p className="equity-stat-value text-lg font-bold" style={{ color: "#D4A017" }}>{project.equityOffered}%</p>
                 </div>
-                <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">
-                    Total Equity Offered
-                  </p>
-                  <p className="text-xl font-bold" style={{ color: "#D4A017" }}>
-                    {project.equityOffered}%
-                  </p>
+                <div className="equity-stat-item flex-1 px-5 py-4" style={{ borderRight: "1px solid #f3f4f6", minWidth: "33%" }}>
+                  <p className="text-[9px] font-semibold uppercase tracking-widest text-gray-400 mb-0.5">Funding Goal</p>
+                  <p className="equity-stat-value text-lg font-bold" style={{ color: "#0F2044" }}>EGP {project.target?.toLocaleString("en-US")}</p>
                 </div>
-                <div className="ml-auto text-right">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">
-                    For Funding Goal
-                  </p>
-                  <p className="text-sm font-bold" style={{ color: "#0F2044" }}>
-                    EGP {project.target?.toLocaleString("en-US")}
-                  </p>
+                <div className="equity-stat-item flex-1 px-5 py-4" style={{ minWidth: "33%" }}>
+                  <p className="text-[9px] font-semibold uppercase tracking-widest text-gray-400 mb-0.5">Min. Investment</p>
+                  <p className="equity-stat-value text-lg font-bold" style={{ color: "#0F2044" }}>EGP {(project.minContribution || 0).toLocaleString("en-US")}</p>
                 </div>
               </div>
+              <style>{`
+                @media (max-width: 640px) {
+                  .equity-stats { display: grid !important; grid-template-columns: 1fr 1fr !important; }
+                  .equity-stat-item { min-width: 0 !important; padding: 14px 16px !important; border-bottom: 1px solid #f3f4f6; }
+                  .equity-stat-item:nth-child(odd) { border-right: 1px solid #f3f4f6 !important; }
+                  .equity-stat-item:nth-child(even) { border-right: none !important; }
+                  .equity-stat-item:last-child { grid-column: 1 / -1; border-right: none !important; }
+                  .equity-stat-value { font-size: 15px !important; }
+                }
+              `}</style>
 
-              {/* Input + Share */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
-                {/* Amount Input */}
-                <div>
-                  <label className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5 block">
-                    Enter Investment Amount
-                  </label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-gray-400">
-                      EGP
-                    </span>
-                    <input
-                      type="number"
-                      min={project.minContribution || 0}
-                      value={investAmount}
-                      onChange={(e) => setInvestAmount(e.target.value)}
-                      placeholder={`Min ${(project.minContribution || 0).toLocaleString("en-US")}`}
-                      className="w-full pl-11 pr-4 py-3 rounded-lg border border-gray-200 text-sm font-semibold focus:outline-none focus:ring-2 transition-all"
+              {/* Investment Input Area */}
+              <div className="p-5 md:p-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <label className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5 block">
+                      Enter Investment Amount
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-gray-400">
+                        EGP
+                      </span>
+                      <input
+                        type="number"
+                        min={project.minContribution || 0}
+                        value={investAmount}
+                        onChange={(e) => setInvestAmount(e.target.value)}
+                        placeholder={`Min ${(project.minContribution || 0).toLocaleString("en-US")}`}
+                        className="w-full pl-11 pr-4 py-3 rounded-lg border border-gray-200 text-sm font-semibold focus:outline-none focus:ring-2 transition-all"
+                        style={{ color: "#0F2044" }}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5 block">
+                      Your Equity Share
+                    </label>
+                    <div
+                      className="flex items-center justify-center h-[46px] rounded-lg text-xl font-bold"
                       style={{
-                        color: "#0F2044",
-                        focusRingColor: "#D4A017",
+                        backgroundColor: "#FEF9EC",
+                        color: amount > 0 ? "#D4A017" : "#CCC",
                       }}
-                    />
+                    >
+                      {yourShare}%
+                    </div>
                   </div>
                 </div>
 
-                {/* Your Share */}
-                <div>
-                  <label className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5 block">
-                    Your Equity Share
-                  </label>
-                  <div
-                    className="flex items-center justify-center h-[46px] rounded-lg text-xl font-bold"
-                    style={{
-                      backgroundColor: "#FEF9EC",
-                      color: amount > 0 ? "#D4A017" : "#CCC",
-                    }}
-                  >
-                    {yourShare}%
-                  </div>
-                </div>
-              </div>
-
-              {/* Min notice + Button */}
-              <div className="flex items-center justify-between gap-4">
-                <p className="text-[11px] text-gray-400">
+                {/* Min notice */}
+                <p className="text-[11px] text-gray-400 mb-4">
                   Min. contribution:{" "}
                   <span className="font-semibold text-gray-500">
                     EGP {(project.minContribution || 0).toLocaleString("en-US")}
                   </span>
                 </p>
+
+                {/* Invest Button — Full Width */}
                 {isCampaignClosed ? (
-                  <span
-                    className="px-6 py-2.5 rounded-lg text-sm font-semibold bg-gray-100 text-gray-400 cursor-not-allowed"
+                  <div
+                    className="w-full py-3.5 rounded-xl text-center text-sm font-semibold bg-gray-100 text-gray-400 cursor-not-allowed"
                   >
                     {project.status === "Failed" ? "Campaign Ended" : "Fully Funded"}
-                  </span>
+                  </div>
                 ) : (
                   <button
                     onClick={() =>
@@ -681,12 +689,14 @@ export default function ProjectDetails() {
                         : showToast("warning", `Minimum investment is EGP ${(project.minContribution || 0).toLocaleString("en-US")}`)
                     }
                     disabled={investing}
-                    className="px-6 py-2.5 rounded-lg text-sm font-semibold text-white transition-all duration-200 cursor-pointer shrink-0 disabled:opacity-50"
+                    className="w-full py-3.5 rounded-xl text-sm font-bold text-white transition-all duration-200 cursor-pointer disabled:opacity-50"
                     style={{
-                      backgroundColor: isValid ? "#0F2044" : "#9CA3AF",
+                      backgroundColor: isValid ? "#0F2044" : "#CBD5E1",
                     }}
+                    onMouseEnter={(e) => { if (isValid) e.currentTarget.style.opacity = "0.9"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.opacity = "1"; }}
                   >
-                    {investing ? "Processing..." : "Invest"}
+                    {investing ? "Processing..." : "Invest Now"}
                   </button>
                 )}
               </div>
@@ -723,108 +733,90 @@ export default function ProjectDetails() {
               Invest in This Project
             </h2>
 
-            <div className="rounded-xl border border-gray-100 p-5 md:p-6">
-              {/* Profit Share Info */}
-              <div className="flex items-center gap-3 mb-5 pb-5 border-b border-gray-100">
-                <div
-                  className="flex h-10 w-10 items-center justify-center rounded-lg shrink-0"
-                  style={{ backgroundColor: "#FEF9EC" }}
-                >
-                  <FaChartPie size={16} style={{ color: "#D4A017" }} />
+            <div className="rounded-xl border border-gray-100 overflow-hidden">
+              {/* Stats Row — inline with dividers */}
+              <div className="mudarabah-stats flex flex-wrap" style={{ borderBottom: "1px solid #f3f4f6" }}>
+                <div className="mudarabah-stat-item flex-1 px-5 py-4" style={{ borderRight: "1px solid #f3f4f6", minWidth: "25%" }}>
+                  <p className="text-[9px] font-semibold uppercase tracking-widest text-gray-400 mb-0.5">Profit Share</p>
+                  <p className="mudarabah-stat-value text-lg font-bold" style={{ color: "#D4A017" }}>{project.investorProfitShare}%</p>
                 </div>
-                <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">
-                    Investor Profit Share
-                  </p>
-                  <p className="text-xl font-bold" style={{ color: "#D4A017" }}>
-                    {project.investorProfitShare}%
-                  </p>
+                <div className="mudarabah-stat-item flex-1 px-5 py-4" style={{ borderRight: "1px solid #f3f4f6", minWidth: "25%" }}>
+                  <p className="text-[9px] font-semibold uppercase tracking-widest text-gray-400 mb-0.5">Funding Goal</p>
+                  <p className="mudarabah-stat-value text-lg font-bold" style={{ color: "#0F2044" }}>EGP {project.target?.toLocaleString("en-US")}</p>
                 </div>
-                <div className="ml-auto text-right">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">
-                    For Funding Goal
-                  </p>
-                  <p className="text-sm font-bold" style={{ color: "#0F2044" }}>
-                    EGP {project.target?.toLocaleString("en-US")}
-                  </p>
+                <div className="mudarabah-stat-item flex-1 px-5 py-4" style={{ borderRight: "1px solid #f3f4f6", minWidth: "25%" }}>
+                  <p className="text-[9px] font-semibold uppercase tracking-widest text-gray-400 mb-0.5">Duration</p>
+                  <p className="mudarabah-stat-value text-lg font-bold" style={{ color: "#0F2044" }}>{project.contractDuration} Mo</p>
+                </div>
+                <div className="mudarabah-stat-item flex-1 px-5 py-4" style={{ minWidth: "25%" }}>
+                  <p className="text-[9px] font-semibold uppercase tracking-widest text-gray-400 mb-0.5">Payout</p>
+                  <p className="mudarabah-stat-value text-lg font-bold" style={{ color: "#0F2044" }}>{project.payoutFrequency === "SemiAnnually" ? "Semi-Annual" : project.payoutFrequency}</p>
                 </div>
               </div>
+              <style>{`
+                @media (max-width: 640px) {
+                  .mudarabah-stats { display: grid !important; grid-template-columns: 1fr 1fr !important; }
+                  .mudarabah-stat-item { min-width: 0 !important; padding: 14px 16px !important; border-bottom: 1px solid #f3f4f6; }
+                  .mudarabah-stat-item:nth-child(odd) { border-right: 1px solid #f3f4f6 !important; }
+                  .mudarabah-stat-item:nth-child(even) { border-right: none !important; }
+                  .mudarabah-stat-value { font-size: 15px !important; }
+                }
+              `}</style>
 
-              {/* Contract Duration + Payout */}
-              <div className="grid grid-cols-2 gap-3 mb-5">
-                <div className="rounded-lg p-3" style={{ backgroundColor: "#FAFBFC" }}>
-                  <p className="text-[9px] font-semibold uppercase tracking-widest text-gray-400 mb-0.5">
-                    Contract Duration
-                  </p>
-                  <p className="text-sm font-bold" style={{ color: "#0F2044" }}>
-                    {project.contractDuration} Months
-                  </p>
-                </div>
-                <div className="rounded-lg p-3" style={{ backgroundColor: "#FAFBFC" }}>
-                  <p className="text-[9px] font-semibold uppercase tracking-widest text-gray-400 mb-0.5">
-                    Payout Frequency
-                  </p>
-                  <p className="text-sm font-bold" style={{ color: "#0F2044" }}>
-                    {project.payoutFrequency}
-                  </p>
-                </div>
-              </div>
+              {/* Investment Input Area */}
+              <div className="p-5 md:p-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <label className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5 block">
+                      Enter Investment Amount
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-gray-400">
+                        EGP
+                      </span>
+                      <input
+                        type="number"
+                        min={project.minContribution || 0}
+                        value={investAmount}
+                        onChange={(e) => setInvestAmount(e.target.value)}
+                        placeholder={`Min ${(project.minContribution || 0).toLocaleString("en-US")}`}
+                        className="w-full pl-11 pr-4 py-3 rounded-lg border border-gray-200 text-sm font-semibold focus:outline-none focus:ring-2 transition-all"
+                        style={{ color: "#0F2044" }}
+                      />
+                    </div>
+                  </div>
 
-              {/* Divider */}
-              <div className="border-t border-gray-100 mb-5" />
-
-              {/* Input + Share */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
-                <div>
-                  <label className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5 block">
-                    Enter Investment Amount
-                  </label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-gray-400">
-                      EGP
-                    </span>
-                    <input
-                      type="number"
-                      min={project.minContribution || 0}
-                      value={investAmount}
-                      onChange={(e) => setInvestAmount(e.target.value)}
-                      placeholder={`Min ${(project.minContribution || 0).toLocaleString("en-US")}`}
-                      className="w-full pl-11 pr-4 py-3 rounded-lg border border-gray-200 text-sm font-semibold focus:outline-none focus:ring-2 transition-all"
-                      style={{ color: "#0F2044" }}
-                    />
+                  <div>
+                    <label className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5 block">
+                      Your Profit Share
+                    </label>
+                    <div
+                      className="flex items-center justify-center h-[46px] rounded-lg text-xl font-bold"
+                      style={{
+                        backgroundColor: "#FEF9EC",
+                        color: amount > 0 ? "#D4A017" : "#CCC",
+                      }}
+                    >
+                      {yourShare}%
+                    </div>
                   </div>
                 </div>
 
-                <div>
-                  <label className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5 block">
-                    Your Profit Share
-                  </label>
-                  <div
-                    className="flex items-center justify-center h-[46px] rounded-lg text-xl font-bold"
-                    style={{
-                      backgroundColor: "#FEF9EC",
-                      color: amount > 0 ? "#D4A017" : "#CCC",
-                    }}
-                  >
-                    {yourShare}%
-                  </div>
-                </div>
-              </div>
-
-              {/* Min notice + Button */}
-              <div className="flex items-center justify-between gap-4 mb-5">
-                <p className="text-[11px] text-gray-400">
+                {/* Min notice */}
+                <p className="text-[11px] text-gray-400 mb-4">
                   Min. contribution:{" "}
                   <span className="font-semibold text-gray-500">
                     EGP {(project.minContribution || 0).toLocaleString("en-US")}
                   </span>
                 </p>
+
+                {/* Invest Button — Full Width */}
                 {isCampaignClosed ? (
-                  <span
-                    className="px-6 py-2.5 rounded-lg text-sm font-semibold bg-gray-100 text-gray-400 cursor-not-allowed"
+                  <div
+                    className="w-full py-3.5 rounded-xl text-center text-sm font-semibold bg-gray-100 text-gray-400 cursor-not-allowed"
                   >
                     {project.status === "Failed" ? "Campaign Ended" : "Fully Funded"}
-                  </span>
+                  </div>
                 ) : (
                   <button
                     onClick={() =>
@@ -833,28 +825,32 @@ export default function ProjectDetails() {
                         : showToast("warning", `Minimum investment is EGP ${(project.minContribution || 0).toLocaleString("en-US")}`)
                     }
                     disabled={investing}
-                    className="px-6 py-2.5 rounded-lg text-sm font-semibold text-white transition-all duration-200 cursor-pointer shrink-0 disabled:opacity-50"
+                    className="w-full py-3.5 rounded-xl text-sm font-bold text-white transition-all duration-200 cursor-pointer disabled:opacity-50"
                     style={{
-                      backgroundColor: isValid ? "#0F2044" : "#9CA3AF",
+                      backgroundColor: isValid ? "#0F2044" : "#CBD5E1",
                     }}
+                    onMouseEnter={(e) => { if (isValid) e.currentTarget.style.opacity = "0.9"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.opacity = "1"; }}
                   >
-                    {investing ? "Processing..." : "Invest"}
+                    {investing ? "Processing..." : "Invest Now"}
                   </button>
                 )}
-              </div>
 
-              <div className="border-t border-gray-100 pt-4">
-                <p className="text-[12px] text-gray-500 leading-5">
-                  Your profits will be distributed{" "}
-                  <span className="font-semibold" style={{ color: "#0F2044" }}>
-                    {freqLabel[project.payoutFrequency] || project.payoutFrequency}
-                  </span>{" "}
-                  for a total contract period of{" "}
-                  <span className="font-semibold" style={{ color: "#0F2044" }}>
-                    {project.contractDuration} months
-                  </span>
-                  . Returns are based on actual project profits and are not guaranteed.
-                </p>
+                {/* Disclaimer */}
+                <div className="mt-4 rounded-lg px-4 py-3 text-center" style={{ backgroundColor: "#F8F9FB" }}>
+                  <p className="text-[11px] text-gray-400 leading-relaxed">
+                    Profits distributed{" "}
+                    <span className="font-semibold" style={{ color: "#0F2044" }}>
+                      {freqLabel[project.payoutFrequency] || project.payoutFrequency}
+                    </span>{" "}
+                    for{" "}
+                    <span className="font-semibold" style={{ color: "#0F2044" }}>
+                      {project.contractDuration} months
+                    </span>.
+                    <br className="sm:hidden" />
+                    {" "}Returns based on actual profits and are not guaranteed.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
