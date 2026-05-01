@@ -321,7 +321,8 @@ function ProjectRow({ project: p }) {
   const progress = Math.min(p.fundingProgressPercentage || 0, 100);
   const st = getStatus(p.projectStatus || p.status);
   const s = (p.projectStatus || p.status || "").toLowerCase();
-  const isEscrow = s === "active" || s === "published";
+  const rs = (p.releaseStatus || p.escrowStatus || "").toLowerCase();
+  const isEscrow = rs === "pendingrelease" || rs === "escrow" || rs === "pending" || (rs === "" && (s === "active" || s === "published" || s === "fundingclosed" || s === "completed"));
   const cover = resolveUrl(p.coverImageUrl);
 
   return (
@@ -349,8 +350,8 @@ function ProjectRow({ project: p }) {
             <div style={{ height: "100%", borderRadius: 3, width: `${progress}%`, backgroundColor: progress >= 80 ? "#059669" : "#D4A017", transition: "width 0.7s ease-out" }} />
           </div>
         </div>
-        <span style={{ fontSize: 11, fontWeight: 600, color: isEscrow ? "#D4A017" : "#059669", display: "flex", alignItems: "center", gap: 4 }}>
-          {isEscrow ? <><FiLock size={12} /> Escrow</> : <><FiCheck size={12} /> Released</>}
+        <span style={{ fontSize: 11, fontWeight: 600, color: isEscrow ? "#D4A017" : "#059669", display: "inline-flex", alignItems: "center", gap: 5, alignSelf: "end", marginBottom: 1 }}>
+          {isEscrow ? <><FiLock size={12} style={{ position: "relative", top: -0.5 }} /> In Escrow</> : <><FiCheck size={12} style={{ position: "relative", top: -0.5 }} /> Released</>}
         </span>
       </div>
       {/* Mobile */}
@@ -363,7 +364,7 @@ function ProjectRow({ project: p }) {
             <p style={{ fontSize: 13, fontWeight: 600, color: "#0F2044", margin: "0 0 2px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.title}</p>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <span style={{ fontSize: 10, fontWeight: 700, color: st.color, background: st.bg, padding: "2px 8px", borderRadius: 4, display: "inline-flex", alignItems: "center", gap: 3 }}><span style={{ width: 4, height: 4, borderRadius: "50%", backgroundColor: st.dot }} />{st.label}</span>
-              <span style={{ fontSize: 10, fontWeight: 600, color: isEscrow ? "#D4A017" : "#059669", display: "flex", alignItems: "center", gap: 3 }}>{isEscrow ? <><FiLock size={10} /> Escrow</> : <><FiCheck size={10} /> Released</>}</span>
+              <span style={{ fontSize: 10, fontWeight: 600, color: isEscrow ? "#D4A017" : "#059669", display: "inline-flex", alignItems: "center", gap: 4 }}>{isEscrow ? <><FiLock size={10} style={{ verticalAlign: "middle", position: "relative", top: -0.5 }} /> In Escrow</> : <><FiCheck size={10} style={{ verticalAlign: "middle", position: "relative", top: -0.5 }} /> Released</>}</span>
             </div>
           </div>
         </div>

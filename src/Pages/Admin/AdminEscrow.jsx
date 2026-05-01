@@ -1,12 +1,27 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import {
   FiLock, FiClock, FiCheckCircle, FiDollarSign,
-  FiUser, FiUsers, FiCalendar, FiX,
+  FiUser, FiUsers, FiCalendar, FiLoader,
 } from "react-icons/fi";
-import { escrowProjects as mockEscrow } from "../../Data/adminMockData";
+import axiosInstance from "../../Api/axiosInstance";
 
 const fmt = (n) => Number(n || 0).toLocaleString("en-US");
 const fmtDate = (d) => d ? new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "";
+
+/* Normalize API response to match UI fields */
+const normalize = (p) => ({
+  id: p.projectId || p.id,
+  title: p.projectTitle || p.title || "",
+  founderName: p.founderName || "Unknown",
+  founderEmail: p.founderEmail || "",
+  targetAmount: p.targetAmount || 0,
+  currentAmount: p.collectedAmount || p.currentAmount || 0,
+  numberOfInvestors: p.investorsCount || p.numberOfInvestors || 0,
+  fundingProgressPercentage: p.fundingProgressPercentage || 0,
+  completedAt: p.endDate || p.completedAt || "",
+  escrowAmount: p.escrowAmount || 0,
+  projectStatus: p.releaseStatus || p.projectStatus || "PendingRelease",
+});
 
 /* ═══════════ Toast ═══════════ */
 function Toast({ message, type }) {
@@ -20,44 +35,73 @@ function Toast({ message, type }) {
 }
 
 /* ═══════════ Release Dialog ═══════════ */
-function ReleaseDialog({ project, onConfirm, onCancel }) {
+function ReleaseDialog({ project, onConfirm, onCancel, loading }) {
   if (!project) return null;
+  const isFailed = project.fundingProgressPercentage < 100;
+
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
       <div style={{ position: "absolute", inset: 0, backgroundColor: "rgba(0,0,0,0.4)", backdropFilter: "blur(4px)" }} onClick={onCancel} />
       <div style={{ position: "relative", backgroundColor: "white", borderRadius: 20, padding: "32px 28px", maxWidth: 420, width: "100%", textAlign: "center" }}>
         {/* Icon */}
-        <div style={{ width: 56, height: 56, borderRadius: "50%", backgroundColor: "#ECFDF5", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
-          <FiDollarSign size={28} style={{ color: "#059669" }} />
+        <div style={{ width: 56, height: 56, borderRadius: "50%", backgroundColor: isFailed ? "#FEF2F2" : "#ECFDF5", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
+          <FiDollarSign size={28} style={{ color: isFailed ? "#EF4444" : "#059669" }} />
         </div>
 
-        <h3 style={{ fontSize: 18, fontWeight: 700, color: "#0F2044", margin: "0 0 6px" }}>Release Escrow Funds?</h3>
+        <h3 style={{ fontSize: 18, fontWeight: 700, color: "#0F2044", margin: "0 0 6px" }}>
+          {isFailed ? "Campaign Failed" : "Release Escrow Funds?"}
+        </h3>
         <p style={{ fontSize: 14, fontWeight: 600, color: "#0F2044", margin: "0 0 16px" }}>{project.title}</p>
 
         {/* Amount */}
-        <div style={{ backgroundColor: "#ECFDF5", borderRadius: 14, padding: "16px 20px", marginBottom: 16 }}>
-          <p style={{ fontSize: 11, color: "#059669", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5, margin: "0 0 4px" }}>Amount to Release</p>
-          <p style={{ fontSize: 26, fontWeight: 800, color: "#059669", margin: 0 }}>EGP {fmt(project.escrowAmount)}</p>
+        <div style={{ backgroundColor: isFailed ? "#FEF2F2" : "#ECFDF5", borderRadius: 14, padding: "16px 20px", marginBottom: 16 }}>
+          <p style={{ fontSize: 11, color: isFailed ? "#EF4444" : "#059669", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5, margin: "0 0 4px" }}>
+            {isFailed ? "Amount to Refund" : "Amount to Release"}
+          </p>
+          <p style={{ fontSize: 26, fontWeight: 800, color: isFailed ? "#EF4444" : "#059669", margin: 0 }}>EGP {fmt(project.escrowAmount)}</p>
         </div>
 
         {/* Details */}
         <div style={{ textAlign: "left", marginBottom: 20 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
             <FiUser size={13} style={{ color: "#94a3b8" }} />
-            <span style={{ fontSize: 12, color: "#64748b" }}>Recipient: <strong style={{ color: "#0F2044" }}>{project.founderName}</strong></span>
+            <span style={{ fontSize: 12, color: "#64748b" }}>
+              {isFailed
+                ? <>Investors: <strong style={{ color: "#0F2044" }}>{project.numberOfInvestors} investor(s)</strong></>
+                : <>Recipient: <strong style={{ color: "#0F2044" }}>{project.founderName}</strong></>
+              }
+            </span>
           </div>
-          <p style={{ fontSize: 11, color: "#94a3b8", margin: 0, paddingLeft: 21 }}>Funds will be transferred to the founder's wallet</p>
+          <p style={{ fontSize: 11, color: "#94a3b8", margin: 0, paddingLeft: 21 }}>
+            {isFailed
+              ? "This campaign did not reach its funding goal. Funds will be refunded to all investors."
+              : "Funds will be transferred to the founder's wallet"
+            }
+          </p>
         </div>
+
+        {/* Funding Progress (for failed) */}
+        {isFailed && (
+          <div style={{ backgroundColor: "#fafbfc", borderRadius: 10, padding: "10px 14px", marginBottom: 16, textAlign: "left" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+              <span style={{ fontSize: 10, color: "#94a3b8", fontWeight: 600 }}>Funding Progress</span>
+              <span style={{ fontSize: 10, color: "#EF4444", fontWeight: 700 }}>{project.fundingProgressPercentage}%</span>
+            </div>
+            <div style={{ width: "100%", height: 5, borderRadius: 3, background: "#f3f4f6", overflow: "hidden" }}>
+              <div style={{ height: "100%", borderRadius: 3, width: `${Math.min(project.fundingProgressPercentage, 100)}%`, backgroundColor: "#EF4444" }} />
+            </div>
+          </div>
+        )}
 
         {/* Buttons */}
         <div style={{ display: "flex", gap: 10 }}>
-          <button onClick={onCancel} style={{ flex: 1, padding: "12px 0", borderRadius: 12, border: "1.5px solid #e5e7eb", backgroundColor: "white", fontSize: 13, fontWeight: 600, color: "#64748b", cursor: "pointer", transition: "all 0.2s" }}
+          <button onClick={onCancel} disabled={loading} style={{ flex: 1, padding: "12px 0", borderRadius: 12, border: "1.5px solid #e5e7eb", backgroundColor: "white", fontSize: 13, fontWeight: 600, color: "#64748b", cursor: "pointer", transition: "all 0.2s", opacity: loading ? 0.5 : 1 }}
             onMouseEnter={e => e.currentTarget.style.backgroundColor = "#fafafa"} onMouseLeave={e => e.currentTarget.style.backgroundColor = "white"}>
             Cancel
           </button>
-          <button onClick={onConfirm} style={{ flex: 1, padding: "12px 0", borderRadius: 12, border: "none", backgroundColor: "#059669", fontSize: 13, fontWeight: 600, color: "white", cursor: "pointer", transition: "all 0.2s" }}
-            onMouseEnter={e => e.currentTarget.style.backgroundColor = "#047857"} onMouseLeave={e => e.currentTarget.style.backgroundColor = "#059669"}>
-            Release Funds
+          <button onClick={onConfirm} disabled={loading} style={{ flex: 1, padding: "12px 0", borderRadius: 12, border: "none", backgroundColor: isFailed ? "#EF4444" : "#059669", fontSize: 13, fontWeight: 600, color: "white", cursor: loading ? "wait" : "pointer", transition: "all 0.2s", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
+            onMouseEnter={e => { if (!loading) e.currentTarget.style.opacity = "0.9"; }} onMouseLeave={e => { e.currentTarget.style.opacity = "1"; }}>
+            {loading ? <><FiLoader size={14} className="spin-icon" /> Processing...</> : isFailed ? "Refund Investors" : "Release Funds"}
           </button>
         </div>
       </div>
@@ -101,8 +145,12 @@ function EscrowCard({ project, onRelease }) {
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
             <FiUser size={13} style={{ color: "#94a3b8" }} />
             <span style={{ fontSize: 12, color: "#64748b" }}>{project.founderName}</span>
-            <span style={{ fontSize: 12, color: "#cbd5e1" }}>|</span>
-            <span style={{ fontSize: 11, color: "#94a3b8" }}>{project.founderEmail}</span>
+            {project.founderEmail && (
+              <>
+                <span style={{ fontSize: 12, color: "#cbd5e1" }}>|</span>
+                <span style={{ fontSize: 11, color: "#94a3b8" }}>{project.founderEmail}</span>
+              </>
+            )}
           </div>
         </div>
         <span style={{ fontSize: 10, fontWeight: 700, padding: "4px 12px", borderRadius: 8, backgroundColor: isReleased ? "#ECFDF5" : "#FEF9EC", color: isReleased ? "#059669" : "#D4A017", textTransform: "uppercase", flexShrink: 0 }}>
@@ -172,20 +220,52 @@ function EscrowCard({ project, onRelease }) {
 
 /* ═══════════ MAIN PAGE ═══════════ */
 export default function AdminEscrow() {
-  const [escrowList, setEscrowList] = useState(() => mockEscrow.map(p => ({ ...p })));
+  const [escrowList, setEscrowList] = useState([]);
   const [releaseTarget, setReleaseTarget] = useState(null);
   const [toast, setToast] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
 
-  const showToast = (message) => {
-    setToast({ message, type: "success" });
+  const showToast = (message, type = "success") => {
+    setToast({ message, type });
     setTimeout(() => setToast(null), 3500);
   };
 
-  const handleRelease = () => {
+  /* ── Fetch ended campaigns from API ── */
+  const fetchCampaigns = useCallback(async () => {
+    try {
+      const res = await axiosInstance.get("/Admin/campaigns/ended");
+      const body = res.data;
+      const items = body?.data?.items ?? body?.data ?? body?.value ?? body;
+      const list = Array.isArray(items) ? items : [];
+      setEscrowList(list.map(normalize));
+    } catch (err) {
+      console.error("Failed to load escrow campaigns:", err);
+      showToast("Failed to load escrow data", "error");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchCampaigns(); }, [fetchCampaigns]);
+
+  /* ── Process / Release funds ── */
+  const handleRelease = async () => {
     const project = releaseTarget;
-    setEscrowList(prev => prev.map(p => p.id === project.id ? { ...p, projectStatus: "Released" } : p));
-    showToast(`EGP ${fmt(project.escrowAmount)} released to ${project.founderName}'s wallet`);
-    setReleaseTarget(null);
+    setActionLoading(true);
+    try {
+      await axiosInstance.post(`/Admin/campaigns/${project.id}/process`);
+      showToast(`EGP ${fmt(project.escrowAmount)} released to ${project.founderName}'s wallet`, "success");
+      setReleaseTarget(null);
+      // Refresh the list from API
+      await fetchCampaigns();
+    } catch (err) {
+      console.error("Failed to process campaign:", err);
+      const errMsg = err.response?.data?.message || err.response?.data?.title || "Failed to release funds. Please try again.";
+      showToast(errMsg, "error");
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   const summary = useMemo(() => {
@@ -198,7 +278,7 @@ export default function AdminEscrow() {
   return (
     <div style={{ padding: "8px 0" }}>
       {toast && <Toast {...toast} />}
-      {releaseTarget && <ReleaseDialog project={releaseTarget} onConfirm={handleRelease} onCancel={() => setReleaseTarget(null)} />}
+      {releaseTarget && <ReleaseDialog project={releaseTarget} onConfirm={handleRelease} onCancel={() => !actionLoading && setReleaseTarget(null)} loading={actionLoading} />}
 
       {/* Header */}
       <div style={{ marginBottom: 20 }}>
@@ -213,11 +293,16 @@ export default function AdminEscrow() {
         <SummaryCard icon={FiCheckCircle} label="Released" value={`${summary.releasedCount} projects`} color="#059669" bg="#ECFDF5" />
       </div>
 
-      {/* Project Cards */}
-      {escrowList.length === 0 ? (
+      {/* Loading State */}
+      {loading ? (
+        <div style={{ textAlign: "center", padding: "60px 20px" }}>
+          <FiLoader size={32} className="spin-icon" style={{ color: "#D4A017", marginBottom: 12 }} />
+          <p style={{ fontSize: 14, color: "#94a3b8", margin: 0 }}>Loading escrow data...</p>
+        </div>
+      ) : escrowList.length === 0 ? (
         <div style={{ textAlign: "center", padding: "60px 20px" }}>
           <FiLock size={48} style={{ color: "#e2e8f0", marginBottom: 12 }} />
-          <p style={{ fontSize: 15, color: "#94a3b8", margin: 0 }}>No projects in escrow</p>
+          <p style={{ fontSize: 15, color: "#94a3b8", margin: 0 }}>No ended campaigns found</p>
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -227,7 +312,7 @@ export default function AdminEscrow() {
         </div>
       )}
 
-      {/* Responsive */}
+      {/* Responsive + Spinner */}
       <style>{`
         @media (max-width: 768px) {
           .escrow-summary-grid { grid-template-columns: 1fr !important; }
@@ -236,6 +321,8 @@ export default function AdminEscrow() {
         @media (max-width: 480px) {
           .escrow-info-grid { grid-template-columns: 1fr !important; }
         }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .spin-icon { animation: spin 1s linear infinite; }
       `}</style>
     </div>
   );
