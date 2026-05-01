@@ -157,7 +157,7 @@ function EscrowCard({ project, onRelease }) {
           <button onClick={() => onRelease(project)} style={{ padding: "12px 28px", borderRadius: 12, border: "none", backgroundColor: "#059669", fontSize: 13, fontWeight: 600, color: "white", cursor: "pointer", transition: "all 0.2s", display: "flex", alignItems: "center", gap: 8 }}
             onMouseEnter={e => { e.currentTarget.style.backgroundColor = "#047857"; e.currentTarget.style.boxShadow = "0 4px 12px rgba(5,150,105,0.3)"; }}
             onMouseLeave={e => { e.currentTarget.style.backgroundColor = "#059669"; e.currentTarget.style.boxShadow = "none"; }}>
-            <FiDollarSign size={15} /> Release Funds
+            Release Funds
           </button>
         ) : (
           <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "10px 20px", borderRadius: 12, backgroundColor: "#ECFDF5" }}>

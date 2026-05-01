@@ -45,22 +45,24 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* ── Stat Cards ── */}
-      <div className="stats-grid" style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 14, marginBottom: 28 }}>
-        {stats.map((s, i) => (
-          <div key={i} style={{ backgroundColor: "white", borderRadius: 16, border: "1.5px solid #f0f0f0", padding: "18px 16px", transition: "all 0.25s", cursor: "default" }}
-            onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.06)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
-            onMouseLeave={e => { e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "none"; }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 10 }}>
-              <div style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: s.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <s.icon size={18} style={{ color: s.color }} />
+      {/* ── Stats Bar ── */}
+      <div style={{ backgroundColor: "white", borderRadius: 16, border: "1.5px solid #f0f0f0", marginBottom: 28, overflow: "hidden" }}>
+        <div className="stats-bar" style={{ display: "flex" }}>
+          {stats.map((s, i) => (
+            <div key={i} className="stats-bar-item" style={{ flex: 1, padding: "20px 16px", display: "flex", alignItems: "center", gap: 12, borderRight: i < stats.length - 1 ? "1px solid #f0f0f0" : "none", transition: "background 0.2s", cursor: "default" }}
+              onMouseEnter={e => e.currentTarget.style.backgroundColor = "#fafbfc"}
+              onMouseLeave={e => e.currentTarget.style.backgroundColor = "white"}>
+              <div style={{ width: 38, height: 38, borderRadius: 10, backgroundColor: s.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <s.icon size={17} style={{ color: s.color }} />
               </div>
-              <p style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5, color: "#94a3b8", margin: 0 }}>{s.label}</p>
+              <div style={{ minWidth: 0 }}>
+                <p style={{ fontSize: 9, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5, color: "#94a3b8", margin: "0 0 2px", whiteSpace: "nowrap" }}>{s.label}</p>
+                <p style={{ fontSize: 18, fontWeight: 700, color: s.color, margin: "0 0 1px", whiteSpace: "nowrap" }}>{s.value}</p>
+                <p style={{ fontSize: 10, color: "#cbd5e1", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.sub}</p>
+              </div>
             </div>
-            <p style={{ fontSize: 22, fontWeight: 700, color: s.color, margin: "0 0 2px" }}>{s.value}</p>
-            <p style={{ fontSize: 11, color: "#94a3b8", margin: 0 }}>{s.sub}</p>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
       {/* ── Two Column: Pending Projects + Open Tickets ── */}
@@ -153,14 +155,17 @@ export default function AdminDashboard() {
       {/* ── Responsive Styles ── */}
       <style>{`
         @media (max-width: 1024px) {
-          .stats-grid { grid-template-columns: repeat(3, 1fr) !important; }
+          .stats-bar { flex-wrap: wrap !important; }
+          .stats-bar-item { flex: 1 1 33% !important; border-bottom: 1px solid #f0f0f0; }
+          .stats-bar-item:nth-child(4), .stats-bar-item:nth-child(5) { flex: 1 1 50% !important; }
+          .stats-bar-item:last-child { border-right: none !important; }
         }
         @media (max-width: 768px) {
-          .stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
+          .stats-bar-item { flex: 1 1 50% !important; }
+          .stats-bar-item:nth-child(odd) { border-right: 1px solid #f0f0f0 !important; }
+          .stats-bar-item:nth-child(even) { border-right: none !important; }
+          .stats-bar-item:last-child { border-right: none !important; flex: 1 1 100% !important; }
           .actions-grid { grid-template-columns: 1fr !important; }
-        }
-        @media (max-width: 480px) {
-          .stats-grid { grid-template-columns: 1fr !important; }
         }
       `}</style>
     </div>

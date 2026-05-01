@@ -33,6 +33,9 @@ import AdminLayout from "../Components/Layouts/Admin/AdminLayout.jsx";
 import AdminDashboard from "../Pages/Admin/AdminDashboard.jsx";
 import AdminProjects from "../Pages/Admin/AdminProjects.jsx";
 import AdminEscrow from "../Pages/Admin/AdminEscrow.jsx";
+import AdminTickets from "../Pages/Admin/AdminTickets.jsx";
+import AdminUsers from "../Pages/Admin/AdminUsers.jsx";
+import AdminAccounts from "../Pages/Admin/AdminAccounts.jsx";
 
 import ProtectedRoute from "../../src/Components/Routes/ProtectedRoute.jsx";
 
@@ -108,6 +111,9 @@ const routes = createBrowserRouter([
       { index: true, element: <AdminDashboard /> },
       { path: "projects", element: <AdminProjects /> },
       { path: "escrow", element: <AdminEscrow /> },
+      { path: "tickets", element: <AdminTickets /> },
+      { path: "users", element: <AdminUsers /> },
+      { path: "accounts", element: <AdminAccounts /> },
     ],
   },
 
