@@ -71,7 +71,16 @@ export default function FounderWallet() {
     return s === "active" || s === "published";
   };
   const activeProjects = projects.filter(isActive);
-  const inEscrow = activeProjects.reduce((s, p) => s + (Number(p.currentAmount) || 0), 0);
+  // Escrow = all projects with funds NOT yet released to wallet
+  const escrowProjects = projects.filter(p => {
+    const rs = (p.releaseStatus || p.escrowStatus || "").toLowerCase();
+    const s = (p.projectStatus || p.status || "").toLowerCase();
+    // If explicitly released, not in escrow
+    if (rs === "released") return false;
+    // Has funds collected → still in escrow
+    return (Number(p.currentAmount) || 0) > 0;
+  });
+  const inEscrow = escrowProjects.reduce((s, p) => s + (Number(p.currentAmount) || 0), 0);
   const fundedProjects = projects.filter(p => (Number(p.currentAmount) || 0) > 0);
   const avgProgress = projects.length > 0 ? Math.round(projects.reduce((s, p) => s + (p.fundingProgressPercentage || 0), 0) / projects.length) : 0;
   const totalReceived = txs.filter(t => t.amount > 0).reduce((s, t) => s + t.amount, 0);
@@ -150,7 +159,7 @@ export default function FounderWallet() {
                 ? <div style={{ height: 32, width: 140, borderRadius: 8, background: "rgba(255,255,255,0.1)", animation: "pulse 1.5s infinite" }} />
                 : <>
                     <p style={{ fontSize: 28, fontWeight: 700, color: "white", margin: "0 0 4px" }}>EGP {fmt(inEscrow)}</p>
-                    <p style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", margin: 0 }}>{activeProjects.length} active campaign{activeProjects.length !== 1 ? "s" : ""}</p>
+                    <p style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", margin: 0 }}>{escrowProjects.length} active campaign{escrowProjects.length !== 1 ? "s" : ""}</p>
                   </>
               }
             </div>
