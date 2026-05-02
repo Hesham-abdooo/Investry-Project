@@ -1,13 +1,13 @@
-import React, { useState, useMemo } from "react";
-import { FiSearch, FiEye, FiX, FiCheckCircle, FiUser, FiCalendar, FiMail, FiShield, FiAlertTriangle, FiSlash } from "react-icons/fi";
-import { allUsers as mockUsers } from "../../Data/adminMockData";
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import { FiSearch, FiEye, FiX, FiCheckCircle, FiUser, FiCalendar, FiMail, FiShield, FiAlertTriangle, FiSlash, FiLoader, FiChevronLeft, FiChevronRight, FiRefreshCw } from "react-icons/fi";
+import { getAdminUsers, getAdminUserById, banUser, unbanUser } from "../../Api/adminUsersService";
 
 const fmtDate = (d) => d ? new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "";
 const fmt = (n) => Number(n || 0).toLocaleString("en-US");
 
 const ROLE_COLORS = { Founder: { bg: "#0F2044", color: "#fff" }, Investor: { bg: "#FEF9EC", color: "#D4A017" } };
 const STATUS_COLORS = { Active: { bg: "#ECFDF5", color: "#059669" }, Banned: { bg: "#FEF2F2", color: "#EF4444" } };
-const KYC_COLORS = { Verified: { color: "#059669", label: "Verified" }, Pending: { color: "#D4A017", label: "Pending" }, "Not Started": { color: "#94a3b8", label: "Not Started" } };
+const KYC_COLORS = { Verified: { color: "#059669", label: "Verified" }, Pending: { color: "#D4A017", label: "Pending" }, "Not Started": { color: "#94a3b8", label: "Not Started" }, Rejected: { color: "#EF4444", label: "Rejected" } };
 
 const BAN_DURATIONS = [
   { label: "1 Day", days: 1 }, { label: "3 Days", days: 3 },
@@ -163,47 +163,122 @@ function UserModal({ user, onClose, onBan, onReactivate }) {
 
 /* ═══════════ MAIN PAGE ═══════════ */
 export default function AdminUsers() {
-  const [users, setUsers] = useState(() => mockUsers.map(u => ({ ...u })));
+  const [users, setUsers] = useState([]);
   const [activeTab, setActiveTab] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selectedUser, setSelectedUser] = useState(null);
   const [banTarget, setBanTarget] = useState(null);
   const [toast, setToast] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const PAGE_SIZE = 10;
+  const debounceRef = useRef(null);
 
   const showToast = (msg, type = "success") => { setToast({ msg, type }); setTimeout(() => setToast(null), 3000); };
 
-  const handleBan = (user, duration, reason) => {
-    const expiry = duration.days === -1 ? null : new Date(Date.now() + duration.days * 86400000).toISOString();
-    setUsers(prev => prev.map(u => u.id === user.id ? { ...u, status: "Banned", banReason: reason, banExpiry: expiry } : u));
-    const label = duration.days === -1 ? "permanently suspended" : `banned for ${duration.label.toLowerCase()}`;
-    showToast(`${user.firstName} ${user.lastName} ${label}`, "error");
-    setBanTarget(null); setSelectedUser(null);
+  /* ── Search debounce (300ms) ── */
+  const handleSearchChange = (value) => {
+    setSearchQuery(value);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      setDebouncedSearch(value);
+      setPage(1);
+    }, 300);
   };
 
-  const handleReactivate = (user) => {
-    setUsers(prev => prev.map(u => u.id === user.id ? { ...u, status: "Active", banReason: undefined, banExpiry: undefined } : u));
-    showToast(`${user.firstName} ${user.lastName} account reactivated`, "success");
-    setSelectedUser(null);
-  };
+  /* ── Fetch users from API ── */
+  const fetchUsers = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const filters = {};
+      if (activeTab === "Founder") filters.role = "Founder";
+      else if (activeTab === "Investor") filters.role = "Investor";
+      else if (activeTab === "Banned") filters.status = "Banned";
 
-  const filtered = useMemo(() => {
-    let list = users;
-    if (activeTab === "Founder") list = list.filter(u => u.role === "Founder");
-    else if (activeTab === "Investor") list = list.filter(u => u.role === "Investor");
-    else if (activeTab === "Banned") list = list.filter(u => u.status === "Banned");
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      list = list.filter(u => `${u.firstName} ${u.lastName}`.toLowerCase().includes(q) || u.email.toLowerCase().includes(q));
+      const result = await getAdminUsers({
+        ...filters,
+        searchQuery: debouncedSearch,
+        pageNumber: page,
+        pageSize: PAGE_SIZE,
+      });
+      setUsers(result.users);
+      setTotalCount(result.totalCount);
+      setTotalPages(result.totalPages);
+    } catch (err) {
+      console.error("Failed to load users:", err);
+      setError("Failed to load users");
+      showToast("Failed to load users", "error");
+    } finally {
+      setLoading(false);
     }
-    return list;
-  }, [users, activeTab, searchQuery]);
+  }, [activeTab, debouncedSearch, page]);
 
-  const counts = { all: users.length, founders: users.filter(u => u.role === "Founder").length, investors: users.filter(u => u.role === "Investor").length, banned: users.filter(u => u.status === "Banned").length };
+  useEffect(() => { fetchUsers(); }, [fetchUsers]);
+
+  /* ── Reset page on tab/search change ── */
+  const handleTabChange = (tab) => { setActiveTab(tab); setPage(1); };
+
+  /* ── View user details (from detail endpoint) ── */
+  const handleViewUser = async (user) => {
+    setDetailLoading(true);
+    try {
+      const detail = await getAdminUserById(user.id);
+      setSelectedUser(detail);
+    } catch {
+      // Fallback to the list data if detail endpoint fails
+      setSelectedUser(user);
+    } finally {
+      setDetailLoading(false);
+    }
+  };
+
+  /* ── Ban user via API ── */
+  const handleBan = async (user, duration, reason) => {
+    setActionLoading(true);
+    try {
+      await banUser(user.id, { reason, durationInDays: duration.days });
+      const label = duration.days === -1 ? "permanently suspended" : `banned for ${duration.label.toLowerCase()}`;
+      showToast(`${user.firstName} ${user.lastName} ${label}`, "error");
+      setBanTarget(null);
+      setSelectedUser(null);
+      await fetchUsers();
+    } catch (err) {
+      const msg = err.response?.data?.message || err.response?.data?.errors?.[0]?.message || "Failed to ban user";
+      showToast(msg, "error");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  /* ── Reactivate user via API ── */
+  const handleReactivate = async (user) => {
+    setActionLoading(true);
+    try {
+      await unbanUser(user.id);
+      showToast(`${user.firstName} ${user.lastName} account reactivated`, "success");
+      setSelectedUser(null);
+      await fetchUsers();
+    } catch (err) {
+      const msg = err.response?.data?.message || err.response?.data?.errors?.[0]?.message || "Failed to reactivate user";
+      showToast(msg, "error");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  /* ── Tabs (counts from current data — server handles filtering) ── */
   const tabs = [
-    { key: "All", label: "All Users", count: counts.all },
-    { key: "Founder", label: "Founders", count: counts.founders },
-    { key: "Investor", label: "Investors", count: counts.investors },
-    { key: "Banned", label: "Banned", count: counts.banned },
+    { key: "All", label: "All Users", count: activeTab === "All" ? totalCount : null },
+    { key: "Founder", label: "Founders", count: activeTab === "Founder" ? totalCount : null },
+    { key: "Investor", label: "Investors", count: activeTab === "Investor" ? totalCount : null },
+    { key: "Banned", label: "Banned", count: activeTab === "Banned" ? totalCount : null },
   ];
 
   return (
@@ -211,6 +286,16 @@ export default function AdminUsers() {
       {toast && <Toast message={toast.msg} type={toast.type} />}
       {selectedUser && <UserModal user={selectedUser} onClose={() => setSelectedUser(null)} onBan={u => { setSelectedUser(null); setBanTarget(u); }} onReactivate={handleReactivate} />}
       {banTarget && <BanDialog user={banTarget} onCancel={() => setBanTarget(null)} onConfirm={handleBan} />}
+
+      {/* Detail Loading Overlay */}
+      {detailLoading && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 850, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "rgba(0,0,0,0.2)", backdropFilter: "blur(2px)" }}>
+          <div style={{ backgroundColor: "white", borderRadius: 16, padding: "24px 32px", display: "flex", alignItems: "center", gap: 12, boxShadow: "0 8px 32px rgba(0,0,0,0.1)" }}>
+            <FiLoader size={20} style={{ color: "#D4A017", animation: "spin 1s linear infinite" }} />
+            <span style={{ fontSize: 14, fontWeight: 600, color: "#0F2044" }}>Loading user details...</span>
+          </div>
+        </div>
+      )}
 
       {/* Header */}
       <div style={{ marginBottom: 20 }}>
@@ -222,15 +307,15 @@ export default function AdminUsers() {
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
         <div style={{ display: "flex", gap: 4, borderBottom: "1.5px solid #f0f0f0", flex: 1, minWidth: 200 }}>
           {tabs.map(t => (
-            <button key={t.key} onClick={() => setActiveTab(t.key)} style={{ padding: "10px 16px", fontSize: 13, fontWeight: activeTab === t.key ? 600 : 400, color: activeTab === t.key ? "#D4A017" : "#94a3b8", backgroundColor: "transparent", border: "none", borderBottom: activeTab === t.key ? "2px solid #D4A017" : "2px solid transparent", cursor: "pointer", transition: "all 0.2s", display: "flex", alignItems: "center", gap: 6, marginBottom: -1.5 }}>
+            <button key={t.key} onClick={() => handleTabChange(t.key)} style={{ padding: "10px 16px", fontSize: 13, fontWeight: activeTab === t.key ? 600 : 400, color: activeTab === t.key ? "#D4A017" : "#94a3b8", backgroundColor: "transparent", border: "none", borderBottom: activeTab === t.key ? "2px solid #D4A017" : "2px solid transparent", cursor: "pointer", transition: "all 0.2s", display: "flex", alignItems: "center", gap: 6, marginBottom: -1.5 }}>
               {t.label}
-              <span style={{ fontSize: 10, fontWeight: 700, padding: "1px 7px", borderRadius: 20, backgroundColor: activeTab === t.key ? "#FEF9EC" : "#f5f5f5", color: activeTab === t.key ? "#D4A017" : "#94a3b8" }}>{t.count}</span>
+              {t.count !== null && <span style={{ fontSize: 10, fontWeight: 700, padding: "1px 7px", borderRadius: 20, backgroundColor: activeTab === t.key ? "#FEF9EC" : "#f5f5f5", color: activeTab === t.key ? "#D4A017" : "#94a3b8" }}>{t.count}</span>}
             </button>
           ))}
         </div>
         <div style={{ position: "relative", minWidth: 220 }}>
           <FiSearch size={15} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "#94a3b8" }} />
-          <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search users..." style={{ width: "100%", padding: "10px 12px 10px 36px", borderRadius: 12, border: "1.5px solid #f0f0f0", fontSize: 13, outline: "none", fontFamily: "inherit", boxSizing: "border-box" }}
+          <input value={searchQuery} onChange={e => handleSearchChange(e.target.value)} placeholder="Search users..." style={{ width: "100%", padding: "10px 12px 10px 36px", borderRadius: 12, border: "1.5px solid #f0f0f0", fontSize: 13, outline: "none", fontFamily: "inherit", boxSizing: "border-box" }}
             onFocus={e => e.target.style.borderColor = "#D4A017"} onBlur={e => e.target.style.borderColor = "#f0f0f0"} />
         </div>
       </div>
@@ -247,13 +332,28 @@ export default function AdminUsers() {
           <span style={{ width: "7%", flexShrink: 0, fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5, color: "#94a3b8", textAlign: "right" }}>Actions</span>
         </div>
 
-        {filtered.length === 0 ? (
+        {/* Loading State */}
+        {loading ? (
+          <div style={{ padding: "60px 20px", textAlign: "center" }}>
+            <FiLoader size={24} style={{ color: "#D4A017", marginBottom: 8, animation: "spin 1s linear infinite" }} />
+            <p style={{ fontSize: 13, color: "#94a3b8", margin: 0 }}>Loading users...</p>
+          </div>
+        ) : error ? (
+          /* Error State */
+          <div style={{ padding: "48px 20px", textAlign: "center" }}>
+            <FiAlertTriangle size={32} style={{ color: "#EF4444", marginBottom: 8 }} />
+            <p style={{ fontSize: 14, color: "#EF4444", margin: "0 0 12px", fontWeight: 600 }}>{error}</p>
+            <button onClick={fetchUsers} style={{ padding: "8px 20px", borderRadius: 10, border: "1.5px solid #f0f0f0", backgroundColor: "white", fontSize: 13, fontWeight: 600, color: "#0F2044", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6 }}>
+              <FiRefreshCw size={13} /> Retry
+            </button>
+          </div>
+        ) : users.length === 0 ? (
           <div style={{ padding: "48px 20px", textAlign: "center" }}>
             <FiUser size={32} style={{ color: "#e2e8f0", marginBottom: 8 }} />
             <p style={{ fontSize: 14, color: "#94a3b8", margin: 0 }}>No users found</p>
           </div>
         ) : (
-          filtered.map(u => {
+          users.map(u => {
             const fullName = `${u.firstName} ${u.lastName}`;
             const rc = ROLE_COLORS[u.role] || ROLE_COLORS.Investor;
             const sc = STATUS_COLORS[u.status] || STATUS_COLORS.Active;
@@ -263,7 +363,7 @@ export default function AdminUsers() {
             return (
               <div key={u.id} className="users-table-row" style={{ display: "flex", alignItems: "center", padding: "14px 20px", borderBottom: "1px solid #f5f5f5", transition: "background 0.15s", cursor: "pointer" }}
                 onMouseEnter={e => e.currentTarget.style.backgroundColor = "#fafbfc"} onMouseLeave={e => e.currentTarget.style.backgroundColor = "white"}
-                onClick={() => setSelectedUser(u)}>
+                onClick={() => handleViewUser(u)}>
                 <div style={{ width: "22%", flexShrink: 0, display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
                   <UserAvatar name={fullName} />
                   <div style={{ minWidth: 0 }}>
@@ -287,7 +387,7 @@ export default function AdminUsers() {
                   <span style={{ fontSize: 10, fontWeight: 700, padding: "3px 10px", borderRadius: 6, backgroundColor: sc.bg, color: sc.color, textTransform: "uppercase" }}>{u.status}</span>
                 </div>
                 <div style={{ width: "7%", flexShrink: 0, display: "flex", justifyContent: "flex-end" }} onClick={e => e.stopPropagation()}>
-                  <button onClick={() => setSelectedUser(u)} title="View" style={{ width: 32, height: 32, borderRadius: 8, border: "1px solid #e5e7eb", backgroundColor: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#64748b", transition: "all 0.15s" }}
+                  <button onClick={() => handleViewUser(u)} title="View" style={{ width: 32, height: 32, borderRadius: 8, border: "1px solid #e5e7eb", backgroundColor: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#64748b", transition: "all 0.15s" }}
                     onMouseEnter={e => { e.currentTarget.style.borderColor = "#0F2044"; e.currentTarget.style.color = "#0F2044"; }}
                     onMouseLeave={e => { e.currentTarget.style.borderColor = "#e5e7eb"; e.currentTarget.style.color = "#64748b"; }}>
                     <FiEye size={14} />
@@ -299,7 +399,27 @@ export default function AdminUsers() {
         )}
       </div>
 
+      {/* Pagination */}
+      {!loading && !error && totalPages > 1 && (
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 16, padding: "0 4px" }}>
+          <p style={{ fontSize: 12, color: "#94a3b8", margin: 0 }}>
+            Page {page} of {totalPages} — {totalCount} users
+          </p>
+          <div style={{ display: "flex", gap: 6 }}>
+            <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page <= 1}
+              style={{ width: 34, height: 34, borderRadius: 10, border: "1.5px solid #f0f0f0", backgroundColor: "white", cursor: page <= 1 ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: page <= 1 ? "#d1d5db" : "#0F2044", transition: "all 0.15s" }}>
+              <FiChevronLeft size={16} />
+            </button>
+            <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page >= totalPages}
+              style={{ width: 34, height: 34, borderRadius: 10, border: "1.5px solid #f0f0f0", backgroundColor: "white", cursor: page >= totalPages ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: page >= totalPages ? "#d1d5db" : "#0F2044", transition: "all 0.15s" }}>
+              <FiChevronRight size={16} />
+            </button>
+          </div>
+        </div>
+      )}
+
       <style>{`
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @media (max-width: 1024px) { .col-kyc, .col-joined { display: none !important; } }
         @media (max-width: 768px) { .col-role, .col-activity { display: none !important; } .users-table-header { display: none !important; } .users-table-row { flex-wrap: wrap; gap: 8px; } }
       `}</style>

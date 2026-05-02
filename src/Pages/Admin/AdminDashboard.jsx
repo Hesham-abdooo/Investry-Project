@@ -1,11 +1,13 @@
-import React from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   FiUsers, FiBriefcase, FiDollarSign, FiMessageSquare,
   FiLock, FiTrendingUp, FiArrowRight, FiClock,
-  FiCheckCircle, FiShield,
+  FiCheckCircle, FiShield, FiLoader,
 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
-import { dashboardStats, pendingProjects, supportTickets } from "../../Data/adminMockData";
+import { getAdminUsers } from "../../Api/adminUsersService";
+import { getAdminTickets } from "../../Api/adminTicketsService";
+import axiosInstance from "../../Api/axiosInstance";
 
 /* ── Format helpers ── */
 const fmt = (n) => Number(n || 0).toLocaleString("en-US");
@@ -13,17 +15,109 @@ const fmtDate = (d) => d ? new Date(d).toLocaleDateString("en-US", { month: "sho
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [dashData, setDashData] = useState({
+    totalUsers: 0, totalFounders: 0, totalInvestors: 0,
+    pendingProjects: 0, publishedProjects: 0,
+    totalRaised: 0, openTickets: 0, escrowBalance: 0,
+  });
+  const [recentPending, setRecentPending] = useState([]);
+  const [recentTickets, setRecentTickets] = useState([]);
+
+  const fetchDashboard = useCallback(async () => {
+    setLoading(true);
+    try {
+      // Fetch data in parallel
+      const [usersRes, ticketsRes, projectsRes, escrowRes] = await Promise.allSettled([
+        getAdminUsers({ pageSize: 1 }),
+        getAdminTickets(),
+        axiosInstance.get("/Admin/projects", { params: { pageSize: 5, status: "Pending" } }),
+        axiosInstance.get("/Admin/campaigns/ended"),
+      ]);
+
+      // --- Users stats ---
+      if (usersRes.status === "fulfilled") {
+        const totalCount = usersRes.value.totalCount || 0;
+        setDashData(prev => ({ ...prev, totalUsers: totalCount }));
+      }
+
+      // --- Tickets stats ---
+      if (ticketsRes.status === "fulfilled") {
+        const allTickets = ticketsRes.value || [];
+        const openCount = allTickets.filter(t => t.status === "Open").length;
+        setDashData(prev => ({ ...prev, openTickets: openCount }));
+
+        // Recent open tickets (top 4)
+        const openTickets = allTickets
+          .filter(t => t.status === "Open")
+          .slice(0, 4);
+        setRecentTickets(openTickets);
+      }
+
+      // --- Projects stats ---
+      if (projectsRes.status === "fulfilled") {
+        const payload = projectsRes.value?.data?.data ?? projectsRes.value?.data?.value ?? projectsRes.value?.data;
+        let pending = [];
+        let pendingCount = 0;
+
+        if (payload?.items && Array.isArray(payload.items)) {
+          pending = payload.items.slice(0, 4);
+          pendingCount = payload.totalCount ?? payload.items.length;
+        } else if (Array.isArray(payload)) {
+          pending = payload.slice(0, 4);
+          pendingCount = payload.length;
+        }
+
+        setRecentPending(pending.map(p => ({
+          id: p.id || p.projectId,
+          title: p.title || p.name || "",
+          founderName: p.founderName || p.ownerName || "",
+          fundingModel: p.fundingModel || p.fundingType || "",
+          targetAmount: p.targetAmount || p.goalAmount || 0,
+          coverImageUrl: p.coverImageUrl || p.imageUrl || "",
+          createdAt: p.createdAt || null,
+        })));
+        setDashData(prev => ({ ...prev, pendingProjects: pendingCount }));
+      }
+
+      // --- Escrow stats (totalRaised + escrowBalance) ---
+      if (escrowRes.status === "fulfilled") {
+        const body = escrowRes.value?.data;
+        const items = body?.data?.items ?? body?.data ?? body?.value ?? body;
+        const list = Array.isArray(items) ? items : [];
+
+        // Calculate total raised from all campaigns' collected amounts
+        const totalRaised = list.reduce((sum, p) => sum + (p.collectedAmount || p.currentAmount || 0), 0);
+        // Calculate escrow balance from pending (not yet released) campaigns
+        const pendingEscrow = list
+          .filter(p => (p.releaseStatus || p.projectStatus) !== "Released")
+          .reduce((sum, p) => sum + (p.escrowAmount || 0), 0);
+        // Count published/active projects
+        const publishedCount = list.length;
+
+        setDashData(prev => ({
+          ...prev,
+          totalRaised,
+          escrowBalance: pendingEscrow,
+          publishedProjects: publishedCount,
+        }));
+      }
+    } catch (err) {
+      console.error("Dashboard fetch error:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchDashboard(); }, [fetchDashboard]);
 
   const stats = [
-    { label: "Total Users", value: fmt(dashboardStats.totalUsers), sub: `${fmt(dashboardStats.totalFounders)} Founders · ${fmt(dashboardStats.totalInvestors)} Investors`, icon: FiUsers, color: "#0F2044", bg: "#F0F4F8" },
-    { label: "Pending Review", value: fmt(dashboardStats.pendingProjects), sub: "Projects awaiting approval", icon: FiBriefcase, color: "#D4A017", bg: "#FEF9EC" },
-    { label: "Total Raised", value: `EGP ${fmt(dashboardStats.totalRaised)}`, sub: `${dashboardStats.publishedProjects} active projects`, icon: FiDollarSign, color: "#059669", bg: "#ECFDF5" },
-    { label: "Open Tickets", value: fmt(dashboardStats.openTickets), sub: "Support requests pending", icon: FiMessageSquare, color: "#EF4444", bg: "#FEF2F2" },
-    { label: "Escrow Balance", value: `EGP ${fmt(dashboardStats.escrowBalance)}`, sub: "Awaiting release", icon: FiLock, color: "#3B82F6", bg: "#EFF6FF" },
+    { label: "Total Users", value: loading ? "..." : fmt(dashData.totalUsers), sub: "Founders & Investors", icon: FiUsers, color: "#0F2044", bg: "#F0F4F8" },
+    { label: "Pending Review", value: loading ? "..." : fmt(dashData.pendingProjects), sub: "Projects awaiting approval", icon: FiBriefcase, color: "#D4A017", bg: "#FEF9EC" },
+    { label: "Total Raised", value: loading ? "..." : `EGP ${fmt(dashData.totalRaised)}`, sub: `${dashData.publishedProjects} active projects`, icon: FiDollarSign, color: "#059669", bg: "#ECFDF5" },
+    { label: "Open Tickets", value: loading ? "..." : fmt(dashData.openTickets), sub: "Support requests pending", icon: FiMessageSquare, color: "#EF4444", bg: "#FEF2F2" },
+    { label: "Escrow Balance", value: loading ? "..." : `EGP ${fmt(dashData.escrowBalance)}`, sub: "Awaiting release", icon: FiLock, color: "#3B82F6", bg: "#EFF6FF" },
   ];
-
-  const recentPending = pendingProjects.slice(0, 4);
-  const recentTickets = supportTickets.filter(t => t.status === "Open").slice(0, 4);
 
   return (
     <div style={{ padding: "8px 0" }}>
@@ -80,21 +174,37 @@ export default function AdminDashboard() {
             </button>
           </div>
           <div style={{ padding: "8px 20px 16px" }}>
-            {recentPending.map((p, i) => (
-              <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 0", borderBottom: i < recentPending.length - 1 ? "1px solid #f9fafb" : "none" }}>
-                <div style={{ width: 40, height: 40, borderRadius: 10, overflow: "hidden", flexShrink: 0, backgroundColor: "#f3f4f6" }}>
-                  <img src={p.coverImageUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontSize: 13, fontWeight: 600, color: "#0F2044", margin: "0 0 2px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.title}</p>
-                  <p style={{ fontSize: 11, color: "#94a3b8", margin: 0 }}>{p.founderName} · {p.fundingModel}</p>
-                </div>
-                <div style={{ textAlign: "right", flexShrink: 0 }}>
-                  <p style={{ fontSize: 12, fontWeight: 700, color: "#D4A017", margin: "0 0 2px" }}>EGP {fmt(p.targetAmount)}</p>
-                  <p style={{ fontSize: 10, color: "#94a3b8", margin: 0 }}>{fmtDate(p.createdAt)}</p>
-                </div>
+            {loading ? (
+              <div style={{ textAlign: "center", padding: "32px 0" }}>
+                <FiLoader size={18} style={{ color: "#D4A017", animation: "dashSpin 1s linear infinite" }} />
               </div>
-            ))}
+            ) : recentPending.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "32px 0" }}>
+                <p style={{ fontSize: 13, color: "#94a3b8", margin: 0 }}>No pending projects</p>
+              </div>
+            ) : (
+              recentPending.map((p, i) => (
+                <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 0", borderBottom: i < recentPending.length - 1 ? "1px solid #f9fafb" : "none" }}>
+                  <div style={{ width: 40, height: 40, borderRadius: 10, overflow: "hidden", flexShrink: 0, backgroundColor: "#f3f4f6" }}>
+                    {p.coverImageUrl ? (
+                      <img src={p.coverImageUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    ) : (
+                      <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <FiBriefcase size={16} style={{ color: "#94a3b8" }} />
+                      </div>
+                    )}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: "#0F2044", margin: "0 0 2px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.title}</p>
+                    <p style={{ fontSize: 11, color: "#94a3b8", margin: 0 }}>{p.founderName}{p.fundingModel ? ` · ${p.fundingModel}` : ""}</p>
+                  </div>
+                  <div style={{ textAlign: "right", flexShrink: 0 }}>
+                    <p style={{ fontSize: 12, fontWeight: 700, color: "#D4A017", margin: "0 0 2px" }}>EGP {fmt(p.targetAmount)}</p>
+                    <p style={{ fontSize: 10, color: "#94a3b8", margin: 0 }}>{fmtDate(p.createdAt)}</p>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
@@ -110,22 +220,28 @@ export default function AdminDashboard() {
             </button>
           </div>
           <div style={{ padding: "8px 20px 16px" }}>
-            {recentTickets.map((t, i) => {
-              const pColor = t.priority === "High" ? "#EF4444" : t.priority === "Medium" ? "#D4A017" : "#059669";
-              return (
+            {loading ? (
+              <div style={{ textAlign: "center", padding: "32px 0" }}>
+                <FiLoader size={18} style={{ color: "#D4A017", animation: "dashSpin 1s linear infinite" }} />
+              </div>
+            ) : recentTickets.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "32px 0" }}>
+                <p style={{ fontSize: 13, color: "#94a3b8", margin: 0 }}>No open tickets</p>
+              </div>
+            ) : (
+              recentTickets.map((t, i) => (
                 <div key={t.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 0", borderBottom: i < recentTickets.length - 1 ? "1px solid #f9fafb" : "none" }}>
-                  <div style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: pColor, flexShrink: 0 }} />
+                  <div style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: "#D4A017", flexShrink: 0 }} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p style={{ fontSize: 13, fontWeight: 600, color: "#0F2044", margin: "0 0 2px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.subject}</p>
-                    <p style={{ fontSize: 11, color: "#94a3b8", margin: 0 }}>{t.userName} · {t.userRole}</p>
+                    <p style={{ fontSize: 11, color: "#94a3b8", margin: 0 }}>{t.userName}{t.userRole ? ` · ${t.userRole}` : ""}</p>
                   </div>
                   <div style={{ textAlign: "right", flexShrink: 0 }}>
-                    <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 8px", borderRadius: 6, backgroundColor: `${pColor}15`, color: pColor, textTransform: "uppercase" }}>{t.priority}</span>
-                    <p style={{ fontSize: 10, color: "#94a3b8", margin: "4px 0 0" }}>{fmtDate(t.createdAt)}</p>
+                    <p style={{ fontSize: 10, color: "#94a3b8", margin: 0 }}>{fmtDate(t.createdAt)}</p>
                   </div>
                 </div>
-              );
-            })}
+              ))
+            )}
           </div>
         </div>
       </div>
@@ -134,9 +250,9 @@ export default function AdminDashboard() {
       <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.8, color: "#94a3b8", margin: "0 0 12px" }}>Quick Actions</p>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14 }} className="actions-grid">
         {[
-          { icon: FiBriefcase, title: "Review Projects", sub: `${dashboardStats.pendingProjects} pending`, path: "/admin/projects", color: "#D4A017", bg: "#FEF9EC" },
-          { icon: FiUsers, title: "Manage Users", sub: `${fmt(dashboardStats.totalUsers)} total users`, path: "/admin/users", color: "#0F2044", bg: "#F0F4F8" },
-          { icon: FiLock, title: "Release Escrow", sub: `EGP ${fmt(dashboardStats.escrowBalance)}`, path: "/admin/escrow", color: "#059669", bg: "#ECFDF5" },
+          { icon: FiBriefcase, title: "Review Projects", sub: `${fmt(dashData.pendingProjects)} pending`, path: "/admin/projects", color: "#D4A017", bg: "#FEF9EC" },
+          { icon: FiUsers, title: "Manage Users", sub: `${fmt(dashData.totalUsers)} total users`, path: "/admin/users", color: "#0F2044", bg: "#F0F4F8" },
+          { icon: FiLock, title: "Release Escrow", sub: `EGP ${fmt(dashData.escrowBalance)}`, path: "/admin/escrow", color: "#059669", bg: "#ECFDF5" },
         ].map((a, i) => (
           <div key={i} onClick={() => navigate(a.path)} style={{ backgroundColor: "white", borderRadius: 16, border: "1.5px solid #f0f0f0", padding: "20px", cursor: "pointer", transition: "all 0.25s", display: "flex", alignItems: "center", gap: 14 }}
             onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.06)"; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.borderColor = "#D4A017"; }}
@@ -154,6 +270,7 @@ export default function AdminDashboard() {
 
       {/* ── Responsive Styles ── */}
       <style>{`
+        @keyframes dashSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @media (max-width: 1024px) {
           .stats-bar { flex-wrap: wrap !important; }
           .stats-bar-item { flex: 1 1 33% !important; border-bottom: 1px solid #f0f0f0; }

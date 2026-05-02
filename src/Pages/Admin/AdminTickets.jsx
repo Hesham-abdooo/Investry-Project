@@ -1,10 +1,10 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
 import {
   FiSearch, FiEye, FiCheck, FiX, FiCheckCircle,
   FiMessageCircle, FiAlertCircle, FiUser,
-  FiCalendar, FiMail, FiTag, FiSend,
+  FiCalendar, FiMail, FiTag, FiSend, FiLoader, FiRefreshCw, FiAlertTriangle,
 } from "react-icons/fi";
-import { supportTickets as mockTickets } from "../../Data/adminMockData";
+import { getAdminTickets, replyToTicket } from "../../Api/adminTicketsService";
 
 const fmtDate = (d) => d ? new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "";
 
@@ -167,21 +167,47 @@ function TicketModal({ ticket, onClose, onResolve }) {
 
 /* ═══════════ MAIN PAGE ═══════════ */
 export default function AdminTickets() {
-  const [tickets, setTickets] = useState(() => mockTickets.map(t => ({ ...t })));
+  const [tickets, setTickets] = useState([]);
   const [activeTab, setActiveTab] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [toast, setToast] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const showToast = (msg) => {
     setToast(msg);
     setTimeout(() => setToast(null), 3000);
   };
 
-  const handleResolve = (ticket, replyText) => {
-    setTickets(prev => prev.map(t => t.id === ticket.id ? { ...t, status: "Resolved", adminReply: replyText } : t));
-    showToast(`Reply sent to ${ticket.userEmail}`);
-    setSelectedTicket(null);
+  /* ── Fetch tickets from API ── */
+  const fetchTickets = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const list = await getAdminTickets();
+      setTickets(list);
+    } catch (err) {
+      console.error("Failed to load tickets:", err);
+      setError("Failed to load support tickets");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchTickets(); }, [fetchTickets]);
+
+  /* ── Reply & resolve via API ── */
+  const handleResolve = async (ticket, replyText) => {
+    try {
+      await replyToTicket(ticket.id, replyText);
+      showToast(`Reply sent to ${ticket.userEmail}`);
+      setSelectedTicket(null);
+      await fetchTickets();
+    } catch (err) {
+      const msg = err.response?.data?.message || err.response?.data?.errors?.[0]?.message || "Failed to send reply";
+      showToast(msg);
+    }
   };
 
   const filtered = useMemo(() => {
@@ -271,7 +297,20 @@ export default function AdminTickets() {
         </div>
 
         {/* Rows */}
-        {filtered.length === 0 ? (
+        {loading ? (
+          <div style={{ padding: "60px 20px", textAlign: "center" }}>
+            <FiLoader size={24} style={{ color: "#D4A017", marginBottom: 8, animation: "tkSpin 1s linear infinite" }} />
+            <p style={{ fontSize: 13, color: "#94a3b8", margin: 0 }}>Loading tickets...</p>
+          </div>
+        ) : error ? (
+          <div style={{ padding: "48px 20px", textAlign: "center" }}>
+            <FiAlertTriangle size={32} style={{ color: "#EF4444", marginBottom: 8 }} />
+            <p style={{ fontSize: 14, color: "#EF4444", margin: "0 0 12px", fontWeight: 600 }}>{error}</p>
+            <button onClick={fetchTickets} style={{ padding: "8px 20px", borderRadius: 10, border: "1.5px solid #f0f0f0", backgroundColor: "white", fontSize: 13, fontWeight: 600, color: "#0F2044", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6 }}>
+              <FiRefreshCw size={13} /> Retry
+            </button>
+          </div>
+        ) : filtered.length === 0 ? (
           <div style={{ padding: "48px 20px", textAlign: "center" }}>
             <FiMessageCircle size={32} style={{ color: "#e2e8f0", marginBottom: 8 }} />
             <p style={{ fontSize: 14, color: "#94a3b8", margin: 0 }}>No support tickets found</p>
@@ -321,13 +360,6 @@ export default function AdminTickets() {
                     onMouseLeave={e => { e.currentTarget.style.borderColor = "#e5e7eb"; e.currentTarget.style.color = "#64748b"; }}>
                     <FiEye size={14} />
                   </button>
-                  {isOpen && (
-                    <button onClick={() => handleResolve(t)} title="Resolve" style={{ width: 32, height: 32, borderRadius: 8, border: "1px solid #e5e7eb", backgroundColor: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#64748b", transition: "all 0.15s" }}
-                      onMouseEnter={e => { e.currentTarget.style.borderColor = "#059669"; e.currentTarget.style.color = "#059669"; e.currentTarget.style.backgroundColor = "#ECFDF5"; }}
-                      onMouseLeave={e => { e.currentTarget.style.borderColor = "#e5e7eb"; e.currentTarget.style.color = "#64748b"; e.currentTarget.style.backgroundColor = "white"; }}>
-                      <FiCheck size={14} />
-                    </button>
-                  )}
                 </div>
               </div>
             );
@@ -337,6 +369,7 @@ export default function AdminTickets() {
 
       {/* Responsive Styles */}
       <style>{`
+        @keyframes tkSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @media (max-width: 1024px) {
           .col-category, .col-date { display: none !important; }
         }

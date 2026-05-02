@@ -1,6 +1,6 @@
-import React, { useState } from "react";
-import { FiPlus, FiTrash2, FiX, FiCheckCircle, FiAlertTriangle, FiEye, FiEyeOff, FiShield } from "react-icons/fi";
-import { adminAccounts as mockAdmins } from "../../Data/adminMockData";
+import React, { useState, useEffect, useCallback } from "react";
+import { FiPlus, FiTrash2, FiX, FiCheckCircle, FiAlertTriangle, FiEye, FiEyeOff, FiShield, FiLoader, FiRefreshCw } from "react-icons/fi";
+import { getAdminAccounts, createAdminAccount, deleteAdminAccount } from "../../Api/adminAccountsService";
 
 const fmtDate = (d) => d ? new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—";
 
@@ -154,24 +154,65 @@ function DeleteModal({ admin, onClose, onConfirm }) {
 
 /* ═══════════ MAIN PAGE ═══════════ */
 export default function AdminAccountsPage() {
-  const [admins, setAdmins] = useState(() => mockAdmins.map(a => ({ ...a })));
+  const [admins, setAdmins] = useState([]);
   const [showCreate, setShowCreate] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [toast, setToast] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [actionLoading, setActionLoading] = useState(false);
 
   const showToast = (msg, type = "success") => { setToast({ msg, type }); setTimeout(() => setToast(null), 3000); };
 
-  const handleCreate = (form) => {
-    const newAdmin = { id: `a${Date.now()}`, ...form, createdAt: new Date().toISOString(), lastLogin: null };
-    setAdmins(prev => [...prev, newAdmin]);
-    setShowCreate(false);
-    showToast("Admin account created successfully");
+  /* ── Fetch admins from API ── */
+  const fetchAdmins = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const list = await getAdminAccounts();
+      setAdmins(list);
+    } catch (err) {
+      console.error("Failed to load admins:", err);
+      setError("Failed to load admin accounts");
+      showToast("Failed to load admin accounts", "error");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchAdmins(); }, [fetchAdmins]);
+
+  /* ── Create admin via API ── */
+  const handleCreate = async (form) => {
+    setActionLoading(true);
+    try {
+      await createAdminAccount(form);
+      setShowCreate(false);
+      showToast("Admin account created successfully");
+      await fetchAdmins();
+    } catch (err) {
+      const msg = err.response?.data?.message || err.response?.data?.errors?.[0]?.message || "Failed to create admin";
+      showToast(msg, "error");
+    } finally {
+      setActionLoading(false);
+    }
   };
 
-  const handleDelete = (admin) => {
-    setAdmins(prev => prev.filter(a => a.id !== admin.id));
-    setDeleteTarget(null);
-    showToast(`Admin access removed for ${admin.firstName} ${admin.lastName}`, "error");
+  /* ── Delete admin via API ── */
+  const handleDelete = async (admin) => {
+    setActionLoading(true);
+    try {
+      await deleteAdminAccount(admin.id);
+      setDeleteTarget(null);
+      showToast(`Admin access removed for ${admin.firstName} ${admin.lastName}`, "error");
+      await fetchAdmins();
+    } catch (err) {
+      const msg = err.response?.data?.message || err.response?.data?.errors?.[0]?.message || "Failed to remove admin";
+      showToast(msg, "error");
+      setDeleteTarget(null);
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   return (
@@ -204,7 +245,20 @@ export default function AdminAccountsPage() {
         </div>
 
         {/* Rows */}
-        {admins.length === 0 ? (
+        {loading ? (
+          <div style={{ padding: "60px 20px", textAlign: "center" }}>
+            <FiLoader size={24} style={{ color: "#D4A017", marginBottom: 8, animation: "accSpin 1s linear infinite" }} />
+            <p style={{ fontSize: 13, color: "#94a3b8", margin: 0 }}>Loading admin accounts...</p>
+          </div>
+        ) : error ? (
+          <div style={{ padding: "48px 20px", textAlign: "center" }}>
+            <FiAlertTriangle size={32} style={{ color: "#EF4444", marginBottom: 8 }} />
+            <p style={{ fontSize: 14, color: "#EF4444", margin: "0 0 12px", fontWeight: 600 }}>{error}</p>
+            <button onClick={fetchAdmins} style={{ padding: "8px 20px", borderRadius: 10, border: "1.5px solid #f0f0f0", backgroundColor: "white", fontSize: 13, fontWeight: 600, color: "#0F2044", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6 }}>
+              <FiRefreshCw size={13} /> Retry
+            </button>
+          </div>
+        ) : admins.length === 0 ? (
           <div style={{ padding: "48px 20px", textAlign: "center" }}>
             <FiShield size={32} style={{ color: "#e2e8f0", marginBottom: 8 }} />
             <p style={{ fontSize: 14, color: "#94a3b8", margin: 0 }}>No admin accounts</p>
@@ -251,6 +305,7 @@ export default function AdminAccountsPage() {
 
       {/* Responsive */}
       <style>{`
+        @keyframes accSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @media (max-width: 768px) {
           .col-created, .col-login { display: none !important; }
           .acc-table-header { display: none !important; }

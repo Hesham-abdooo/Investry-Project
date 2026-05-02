@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   FiSend, FiCheckCircle, FiMail, FiClock,
   FiMessageCircle, FiChevronDown, FiRefreshCw,
-  FiInbox, FiChevronRight,
+  FiInbox, FiChevronRight, FiLoader, FiAlertTriangle,
 } from "react-icons/fi";
+import { createSupportTicket, getMyTickets } from "../../Api/supportService";
 
 const CATEGORIES = [
   { value: "", label: "Select a category" },
@@ -113,10 +114,30 @@ export default function SupportForm({ variant = "founder" }) {
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
   const [sending, setSending] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
 
-  // My Tickets — empty for now, will come from API
-  const [myTickets] = useState([]);
+  // My Tickets
+  const [myTickets, setMyTickets] = useState([]);
   const [expandedTicket, setExpandedTicket] = useState(null);
+  const [ticketsLoading, setTicketsLoading] = useState(true);
+  const [ticketsError, setTicketsError] = useState(null);
+
+  /* ── Fetch my tickets from API ── */
+  const fetchMyTickets = useCallback(async () => {
+    setTicketsLoading(true);
+    setTicketsError(null);
+    try {
+      const list = await getMyTickets();
+      setMyTickets(list);
+    } catch (err) {
+      console.error("Failed to load tickets:", err);
+      setTicketsError("Failed to load your tickets");
+    } finally {
+      setTicketsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchMyTickets(); }, [fetchMyTickets]);
 
   const validate = () => {
     const errs = {};
@@ -127,15 +148,23 @@ export default function SupportForm({ variant = "founder" }) {
     return Object.keys(errs).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  /* ── Submit ticket via API ── */
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
     setSending(true);
-    // Simulate send (replace with API later)
-    setTimeout(() => {
+    setSubmitError(null);
+    try {
+      await createSupportTicket({ category, subject, message });
       setSending(false);
       setSubmitted(true);
-    }, 800);
+      // Refresh the tickets list
+      await fetchMyTickets();
+    } catch (err) {
+      setSending(false);
+      const msg = err.response?.data?.message || err.response?.data?.errors?.[0]?.message || "Failed to submit ticket. Please try again.";
+      setSubmitError(msg);
+    }
   };
 
   const handleReset = () => {
@@ -144,6 +173,7 @@ export default function SupportForm({ variant = "founder" }) {
     setMessage("");
     setErrors({});
     setSubmitted(false);
+    setSubmitError(null);
   };
 
   const inputBase = {
@@ -226,6 +256,12 @@ export default function SupportForm({ variant = "founder" }) {
                   {errors.message && <p style={errorStyle}>{errors.message}</p>}
                 </div>
 
+                {submitError && (
+                  <div style={{ padding: "10px 14px", borderRadius: 10, backgroundColor: "#FEF2F2", border: "1px solid rgba(239,68,68,0.15)", marginBottom: 16 }}>
+                    <p style={{ fontSize: 12, color: "#EF4444", margin: 0, fontWeight: 500 }}>{submitError}</p>
+                  </div>
+                )}
+
                 <button type="submit" disabled={sending}
                   style={{ width: "100%", padding: "14px 0", borderRadius: 12, border: "none", backgroundColor: sending ? "#94a3b8" : accent, fontSize: 14, fontWeight: 600, color: "white", cursor: sending ? "not-allowed" : "pointer", transition: "all 0.2s", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
                   onMouseEnter={e => { if (!sending) e.currentTarget.style.opacity = "0.9"; }}
@@ -262,7 +298,20 @@ export default function SupportForm({ variant = "founder" }) {
               )}
             </h3>
 
-            {myTickets.length === 0 ? (
+            {ticketsLoading ? (
+              <div style={{ textAlign: "center", padding: "48px 20px" }}>
+                <FiLoader size={20} style={{ color: "#D4A017", marginBottom: 8, animation: "spSpin 1s linear infinite" }} />
+                <p style={{ fontSize: 12, color: "#94a3b8", margin: 0 }}>Loading tickets...</p>
+              </div>
+            ) : ticketsError ? (
+              <div style={{ textAlign: "center", padding: "48px 20px" }}>
+                <FiAlertTriangle size={24} style={{ color: "#EF4444", marginBottom: 8 }} />
+                <p style={{ fontSize: 12, color: "#EF4444", margin: "0 0 10px", fontWeight: 600 }}>{ticketsError}</p>
+                <button onClick={fetchMyTickets} style={{ padding: "6px 16px", borderRadius: 8, border: "1.5px solid #f0f0f0", backgroundColor: "white", fontSize: 12, fontWeight: 600, color: "#0F2044", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 4 }}>
+                  <FiRefreshCw size={11} /> Retry
+                </button>
+              </div>
+            ) : myTickets.length === 0 ? (
               <div style={{ textAlign: "center", padding: "48px 20px" }}>
                 <div style={{ width: 56, height: 56, borderRadius: "50%", backgroundColor: "#f8fafc", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
                   <FiInbox size={24} style={{ color: "#e2e8f0" }} />
@@ -290,6 +339,7 @@ export default function SupportForm({ variant = "founder" }) {
 
       {/* Responsive */}
       <style>{`
+        @keyframes spSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @media (max-width: 900px) {
           .support-layout { grid-template-columns: 1fr !important; }
           .support-contact-grid { grid-template-columns: 1fr !important; }
