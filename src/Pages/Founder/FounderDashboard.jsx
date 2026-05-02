@@ -46,8 +46,8 @@ export default function FounderDashboard() {
   /* ── Computed Stats ── */
   const stats = {
     total: projects.length,
-    active: projects.filter((p) => p.projectStatus === "Published").length,
-    pending: projects.filter((p) => p.projectStatus === "PendingReview").length,
+    active: projects.filter((p) => { const s = (p.projectStatus || "").toLowerCase(); return s === "published" || s === "active"; }).length,
+    pending: projects.filter((p) => { const s = (p.projectStatus || "").toLowerCase(); return s === "pendingreview" || s === "pending"; }).length,
     raised: projects.reduce((sum, p) => sum + (Number(p.currentAmount) || 0), 0),
   };
 
@@ -470,12 +470,15 @@ function QuickActions() {
 /* ═══════════════════════════════════════════════════════ */
 
 const getStatusBadge = (status) => {
-  if (status === "Published")
-    return { bg: "#E8F5E9", color: "#2E7D32", label: "Published" };
-  if (status === "PendingReview")
+  const s = (status || "").toLowerCase();
+  if (s === "published" || s === "active")
+    return { bg: "#E8F5E9", color: "#2E7D32", label: s === "active" ? "Active" : "Published" };
+  if (s === "pendingreview" || s === "pending")
     return { bg: "#FEF9EC", color: "#D4A017", label: "Pending" };
-  if (status === "Completed")
+  if (s === "completed" || s === "fundingclosed" || s === "closed")
     return { bg: "#E3F2FD", color: "#1565C0", label: "Completed" };
+  if (s === "rejected")
+    return { bg: "#FEF2F2", color: "#DC2626", label: "Rejected" };
   return { bg: "#F3F4F6", color: "#9CA3AF", label: status || "—" };
 };
 

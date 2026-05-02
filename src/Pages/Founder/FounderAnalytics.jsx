@@ -60,9 +60,18 @@ export default function FounderAnalytics() {
   });
 
   const statusCounts = {
-    Published: projects.filter((p) => p.projectStatus === "Published").length,
-    PendingReview: projects.filter((p) => p.projectStatus === "PendingReview").length,
-    Completed: projects.filter((p) => p.projectStatus === "Completed").length,
+    Published: projects.filter((p) => {
+      const s = (p.projectStatus || "").toLowerCase();
+      return s === "published" || s === "active";
+    }).length,
+    PendingReview: projects.filter((p) => {
+      const s = (p.projectStatus || "").toLowerCase();
+      return s === "pendingreview" || s === "pending";
+    }).length,
+    Completed: projects.filter((p) => {
+      const s = (p.projectStatus || "").toLowerCase();
+      return s === "completed" || s === "fundingclosed" || s === "closed";
+    }).length,
   };
   const totalForBar = Math.max(statusCounts.Published + statusCounts.PendingReview + statusCounts.Completed, 1);
 
@@ -451,9 +460,10 @@ function ModelBadge({ model }) {
 }
 
 function StatusBadge({ status }) {
-  const m = { Published: { bg: "#E8F5E9", c: "#2E7D32" }, PendingReview: { bg: "#FEF9EC", c: "#D4A017" }, Completed: { bg: "#E3F2FD", c: "#1565C0" } };
+  const m = { Published: { bg: "#E8F5E9", c: "#2E7D32" }, Active: { bg: "#E8F5E9", c: "#2E7D32" }, PendingReview: { bg: "#FEF9EC", c: "#D4A017" }, Completed: { bg: "#E3F2FD", c: "#1565C0" }, FundingClosed: { bg: "#E3F2FD", c: "#1565C0" }, Rejected: { bg: "#FEF2F2", c: "#DC2626" } };
   const s = m[status] || { bg: "#F3F4F6", c: "#9CA3AF" };
-  const label = status === "PendingReview" ? "Pending" : status || "—";
+  const labelMap = { PendingReview: "Pending", FundingClosed: "Completed", Active: "Active" };
+  const label = labelMap[status] || status || "—";
   return <span style={{ fontSize: 9, fontWeight: 700, padding: "3px 8px", borderRadius: 6, backgroundColor: s.bg, color: s.c, textTransform: "uppercase" }}>{label}</span>;
 }
 
