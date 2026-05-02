@@ -58,9 +58,9 @@ export async function getAdminTickets({ status } = {}) {
  *    @param {string} replyMessage - The admin's reply text
  *    @returns {Promise<Object>} API response
  */
-export async function replyToTicket(ticketId, replyMessage) {
+export async function replyToTicket(ticketId, replyText) {
   const res = await axiosInstance.put(`/Admin/tickets/${ticketId}/reply`, {
-    replyMessage,
+    reply: replyText,
   });
   return res.data;
 }
