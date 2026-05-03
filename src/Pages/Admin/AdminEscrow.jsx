@@ -306,7 +306,16 @@ export default function AdminEscrow() {
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          {escrowList.map(p => (
+          {[...escrowList]
+            .sort((a, b) => {
+              // Pending before Released
+              const aRel = a.projectStatus === "Released" ? 1 : 0;
+              const bRel = b.projectStatus === "Released" ? 1 : 0;
+              if (aRel !== bRel) return aRel - bRel;
+              // Newest first
+              return new Date(b.completedAt || 0) - new Date(a.completedAt || 0);
+            })
+            .map(p => (
             <EscrowCard key={p.id} project={p} onRelease={setReleaseTarget} />
           ))}
         </div>
