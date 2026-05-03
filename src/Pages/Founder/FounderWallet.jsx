@@ -14,10 +14,11 @@ const fmtDate = (d) => d ? new Date(d).toLocaleDateString("en-US", { month: "sho
 const resolveUrl = (url) => url ? (url.startsWith("http") ? url : `https://investry.runasp.net${url}`) : null;
 
 const statusCfg = {
-  Published:     { label: "Published", bg: "#ECFDF5", color: "#059669", dot: "#059669" },
-  Successful:    { label: "Successful", bg: "#E3F2FD", color: "#1565C0", dot: "#1565C0" },
-  PendingReview: { label: "Pending",   bg: "#FEF9EC", color: "#D4A017", dot: "#D4A017" },
-  Rejected:      { label: "Rejected",  bg: "#FEF2F2", color: "#DC2626", dot: "#DC2626" },
+  Published:     { label: "Published",      bg: "#ECFDF5", color: "#059669", dot: "#059669" },
+  Successful:    { label: "Successful",     bg: "#E3F2FD", color: "#1565C0", dot: "#1565C0" },
+  FundingClosed: { label: "Funding Closed", bg: "#FEF9EC", color: "#D4A017", dot: "#D4A017" },
+  PendingReview: { label: "Pending",        bg: "#FEF9EC", color: "#D4A017", dot: "#D4A017" },
+  Rejected:      { label: "Rejected",       bg: "#FEF2F2", color: "#DC2626", dot: "#DC2626" },
 };
 const getStatus = (s) => statusCfg[s] || { label: s || "—", bg: "#F0F4F8", color: "#0F2044", dot: "#0F2044" };
 
@@ -71,10 +72,8 @@ export default function FounderWallet() {
   const activeProjects = projects.filter(isActive);
   // Escrow = all projects with funds NOT yet released to wallet
   const escrowProjects = projects.filter(p => {
-    const rs = (p.releaseStatus || p.escrowStatus || "").toLowerCase();
-    const s = (p.projectStatus || p.status || "").toLowerCase();
-    // If explicitly released, not in escrow
-    if (rs === "released") return false;
+    // Successful = admin already released funds, not in escrow
+    if (p.projectStatus === "Successful") return false;
     // Has funds collected → still in escrow
     return (Number(p.currentAmount) || 0) > 0;
   });
@@ -156,8 +155,7 @@ export default function FounderWallet() {
               {projLoading
                 ? <div style={{ height: 32, width: 140, borderRadius: 8, background: "rgba(255,255,255,0.1)", animation: "pulse 1.5s infinite" }} />
                 : <>
-                    <p style={{ fontSize: 28, fontWeight: 700, color: "white", margin: "0 0 4px" }}>EGP {fmt(inEscrow)}</p>
-                    <p style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", margin: 0 }}>{escrowProjects.length} active campaign{escrowProjects.length !== 1 ? "s" : ""}</p>
+                    <p style={{ fontSize: 28, fontWeight: 700, color: "white", margin: 0 }}>EGP {fmt(inEscrow)}</p>
                   </>
               }
             </div>
@@ -327,9 +325,8 @@ function StatCard({ icon: Icon, label, value, color, bg }) {
 function ProjectRow({ project: p }) {
   const progress = Math.min(p.fundingProgressPercentage || 0, 100);
   const st = getStatus(p.projectStatus || p.status);
-  const s = (p.projectStatus || p.status || "").toLowerCase();
-  const rs = (p.releaseStatus || p.escrowStatus || "").toLowerCase();
-  const isEscrow = rs === "pendingrelease" || rs === "escrow" || rs === "pending" || (rs === "" && (s === "active" || s === "published" || s === "fundingclosed" || s === "completed"));
+  const s = (p.projectStatus || "").toLowerCase();
+  const isEscrow = s !== "successful" && (Number(p.currentAmount) || 0) > 0;
   const cover = resolveUrl(p.coverImageUrl);
 
   return (
@@ -345,9 +342,11 @@ function ProjectRow({ project: p }) {
             <p style={{ fontSize: 10, color: "#94a3b8", margin: 0 }}>{p.category || "General"}</p>
           </div>
         </div>
-        <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.3, color: st.color, background: st.bg, padding: "4px 10px", borderRadius: 6, display: "inline-flex", alignItems: "center", gap: 4, width: "fit-content" }}>
-          <span style={{ width: 5, height: 5, borderRadius: "50%", backgroundColor: st.dot }} />{st.label}
-        </span>
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.3, color: st.color, background: st.bg, padding: "4px 10px", borderRadius: 6, display: "inline-flex", alignItems: "center", gap: 4 }}>
+            <span style={{ width: 5, height: 5, borderRadius: "50%", backgroundColor: st.dot }} />{st.label}
+          </span>
+        </div>
         <p style={{ fontSize: 13, fontWeight: 600, color: "#0F2044", margin: 0 }}>{fmtCur(p.currentAmount)} <span style={{ color: "#94a3b8", fontWeight: 400 }}>/ {fmtCur(p.targetAmount)}</span></p>
         <div>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
