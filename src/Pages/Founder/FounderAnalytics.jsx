@@ -60,20 +60,11 @@ export default function FounderAnalytics() {
   });
 
   const statusCounts = {
-    Published: projects.filter((p) => {
-      const s = (p.projectStatus || "").toLowerCase();
-      return s === "published" || s === "active";
-    }).length,
-    PendingReview: projects.filter((p) => {
-      const s = (p.projectStatus || "").toLowerCase();
-      return s === "pendingreview" || s === "pending";
-    }).length,
-    Completed: projects.filter((p) => {
-      const s = (p.projectStatus || "").toLowerCase();
-      return s === "completed" || s === "fundingclosed" || s === "closed";
-    }).length,
+    Published: projects.filter((p) => p.projectStatus === "Published").length,
+    PendingReview: projects.filter((p) => p.projectStatus === "PendingReview").length,
+    Successful: projects.filter((p) => p.projectStatus === "Successful").length,
   };
-  const totalForBar = Math.max(statusCounts.Published + statusCounts.PendingReview + statusCounts.Completed, 1);
+  const totalForBar = Math.max(statusCounts.Published + statusCounts.PendingReview + statusCounts.Successful, 1);
 
   const handleAnalyze = () => {
     const proj = projects.find((p) => p.id === selectedId);
@@ -191,10 +182,10 @@ export default function FounderAnalytics() {
             <div style={{ display: "flex", height: 14, borderRadius: 7, overflow: "hidden", marginBottom: 16 }}>
               {statusCounts.Published > 0 && <div style={{ width: `${(statusCounts.Published / totalForBar) * 100}%`, backgroundColor: "#059669" }} />}
               {statusCounts.PendingReview > 0 && <div style={{ width: `${(statusCounts.PendingReview / totalForBar) * 100}%`, backgroundColor: "#D4A017" }} />}
-              {statusCounts.Completed > 0 && <div style={{ width: `${(statusCounts.Completed / totalForBar) * 100}%`, backgroundColor: "#3B82F6" }} />}
-              {totalForBar <= 1 && statusCounts.Published === 0 && statusCounts.PendingReview === 0 && statusCounts.Completed === 0 && <div style={{ width: "100%", backgroundColor: "#f3f4f6" }} />}
+              {statusCounts.Successful > 0 && <div style={{ width: `${(statusCounts.Successful / totalForBar) * 100}%`, backgroundColor: "#3B82F6" }} />}
+              {totalForBar <= 1 && statusCounts.Published === 0 && statusCounts.PendingReview === 0 && statusCounts.Successful === 0 && <div style={{ width: "100%", backgroundColor: "#f3f4f6" }} />}
             </div>
-            {[{ label: "Published", count: statusCounts.Published, color: "#059669" }, { label: "Pending Review", count: statusCounts.PendingReview, color: "#D4A017" }, { label: "Completed", count: statusCounts.Completed, color: "#3B82F6" }].map((s) => (
+            {[{ label: "Published", count: statusCounts.Published, color: "#059669" }, { label: "Pending Review", count: statusCounts.PendingReview, color: "#D4A017" }, { label: "Successful", count: statusCounts.Successful, color: "#3B82F6" }].map((s) => (
               <div key={s.label} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
                 <div style={{ width: 10, height: 10, borderRadius: "50%", backgroundColor: s.color, flexShrink: 0 }} />
                 <span style={{ fontSize: 13, color: "#0F2044", fontWeight: 500, flex: 1 }}>{s.label}</span>
@@ -460,9 +451,9 @@ function ModelBadge({ model }) {
 }
 
 function StatusBadge({ status }) {
-  const m = { Published: { bg: "#E8F5E9", c: "#2E7D32" }, Active: { bg: "#E8F5E9", c: "#2E7D32" }, PendingReview: { bg: "#FEF9EC", c: "#D4A017" }, Completed: { bg: "#E3F2FD", c: "#1565C0" }, FundingClosed: { bg: "#E3F2FD", c: "#1565C0" }, Rejected: { bg: "#FEF2F2", c: "#DC2626" } };
+  const m = { Published: { bg: "#E8F5E9", c: "#2E7D32" }, PendingReview: { bg: "#FEF9EC", c: "#D4A017" }, Successful: { bg: "#E3F2FD", c: "#1565C0" }, Rejected: { bg: "#FEF2F2", c: "#DC2626" } };
   const s = m[status] || { bg: "#F3F4F6", c: "#9CA3AF" };
-  const labelMap = { PendingReview: "Pending", FundingClosed: "Completed", Active: "Active" };
+  const labelMap = { PendingReview: "Pending" };
   const label = labelMap[status] || status || "—";
   return <span style={{ fontSize: 9, fontWeight: 700, padding: "3px 8px", borderRadius: 6, backgroundColor: s.bg, color: s.c, textTransform: "uppercase" }}>{label}</span>;
 }

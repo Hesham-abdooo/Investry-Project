@@ -3,23 +3,18 @@ import { useNavigate } from "react-router-dom";
 import { FiMoreVertical, FiTrash2, FiEye, FiEdit2 } from "react-icons/fi";
 
 const getStatusLabel = (status) => {
-  const s = (status || "").toLowerCase();
-  if (s === "pendingreview" || s === "pending") return "Pending";
-  if (s === "active" || s === "published") return "Active";
-  if (s === "completed" || s === "fundingclosed") return "Completed";
-  if (s === "rejected") return "Rejected";
+  if (status === "PendingReview") return "Pending";
   return status ?? "—";
 };
 
 const getStatusStyle = (status) => {
-  const s = (status || "").toLowerCase();
-  if (s === "active" || s === "published")
+  if (status === "Published")
     return { bg: "#E8F5E9", color: "#2E7D32", border: "#C8E6C9" };
-  if (s === "completed" || s === "fundingclosed")
+  if (status === "Successful")
     return { bg: "#E3F2FD", color: "#1565C0", border: "#BBDEFB" };
-  if (s === "pendingreview" || s === "pending")
+  if (status === "PendingReview")
     return { bg: "#FEF9EC", color: "#D4A017", border: "rgba(212,160,23,0.2)" };
-  if (s === "rejected")
+  if (status === "Rejected")
     return { bg: "#FEF2F2", color: "#DC2626", border: "#FECACA" };
   return { bg: "#F3F4F6", color: "#9CA3AF", border: "#E5E7EB" };
 };

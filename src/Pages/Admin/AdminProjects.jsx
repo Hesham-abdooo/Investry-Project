@@ -35,6 +35,7 @@ const STATUS_COLORS = {
   PendingReview: { bg: "#FEF9EC", color: "#D4A017", label: "Pending" },
   Published: { bg: "#ECFDF5", color: "#059669", label: "Published" },
   Rejected: { bg: "#FEF2F2", color: "#EF4444", label: "Rejected" },
+  Successful: { bg: "#E3F2FD", color: "#1565C0", label: "Successful" },
 };
 
 const MODEL_COLORS = {

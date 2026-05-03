@@ -14,13 +14,12 @@ const fmtDate = (d) => d ? new Date(d).toLocaleDateString("en-US", { month: "sho
 const resolveUrl = (url) => url ? (url.startsWith("http") ? url : `https://investry.runasp.net${url}`) : null;
 
 const statusCfg = {
-  Published:     { label: "Active",   bg: "#ECFDF5", color: "#059669", dot: "#059669" },
-  Active:        { label: "Active",   bg: "#ECFDF5", color: "#059669", dot: "#059669" },
-  Completed:     { label: "Completed", bg: "#F0F4F8", color: "#0F2044", dot: "#0F2044" },
-  PendingReview: { label: "Pending",  bg: "#FEF9EC", color: "#D4A017", dot: "#D4A017" },
-  Failed:        { label: "Failed",   bg: "#FEF2F2", color: "#DC2626", dot: "#DC2626" },
+  Published:     { label: "Published", bg: "#ECFDF5", color: "#059669", dot: "#059669" },
+  Successful:    { label: "Successful", bg: "#E3F2FD", color: "#1565C0", dot: "#1565C0" },
+  PendingReview: { label: "Pending",   bg: "#FEF9EC", color: "#D4A017", dot: "#D4A017" },
+  Rejected:      { label: "Rejected",  bg: "#FEF2F2", color: "#DC2626", dot: "#DC2626" },
 };
-const getStatus = (s) => statusCfg[s] || statusCfg.Active;
+const getStatus = (s) => statusCfg[s] || { label: s || "—", bg: "#F0F4F8", color: "#0F2044", dot: "#0F2044" };
 
 const txIcons = {
   EscrowReleased: { Icon: FiArrowDownLeft, color: "#059669", bg: "#ECFDF5" },
@@ -67,8 +66,7 @@ export default function FounderWallet() {
 
   /* ── Computed ── */
   const isActive = (p) => {
-    const s = (p.projectStatus || p.status || "").toLowerCase();
-    return s === "active" || s === "published";
+    return p.projectStatus === "Published";
   };
   const activeProjects = projects.filter(isActive);
   // Escrow = all projects with funds NOT yet released to wallet
