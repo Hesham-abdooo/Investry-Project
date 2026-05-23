@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import {
   FiLock, FiClock, FiCheckCircle, FiDollarSign,
-  FiUser, FiUsers, FiCalendar, FiLoader,
+  FiUser, FiUsers, FiCalendar, FiLoader, FiRotateCcw,
 } from "react-icons/fi";
 import axiosInstance from "../../Api/axiosInstance";
 
@@ -34,7 +34,7 @@ function Toast({ message, type }) {
   );
 }
 
-/* ═══════════ Release Dialog ═══════════ */
+/* ═══════════ Release / Refund Dialog ═══════════ */
 function ReleaseDialog({ project, onConfirm, onCancel, loading }) {
   if (!project) return null;
   const isFailed = project.fundingProgressPercentage < 100;
@@ -49,7 +49,7 @@ function ReleaseDialog({ project, onConfirm, onCancel, loading }) {
         </div>
 
         <h3 style={{ fontSize: 18, fontWeight: 700, color: "#0F2044", margin: "0 0 6px" }}>
-          {isFailed ? "Campaign Failed" : "Release Escrow Funds?"}
+          {isFailed ? "Campaign Failed — Refund?" : "Release Escrow Funds?"}
         </h3>
         <p style={{ fontSize: 14, fontWeight: 600, color: "#0F2044", margin: "0 0 16px" }}>{project.title}</p>
 
@@ -130,15 +130,31 @@ function SummaryCard({ icon: Icon, label, value, color, bg }) {
 
 /* ═══════════ Project Card ═══════════ */
 function EscrowCard({ project, onRelease }) {
-  const isReleased = project.projectStatus === "Released";
+  const isReleased  = project.projectStatus === "Released";
+  const isRefunded  = project.projectStatus === "Refunded";
+  const isDone      = isReleased || isRefunded;
+  const isFailed    = project.fundingProgressPercentage < 100;
   const progressPercent = Math.min(project.fundingProgressPercentage, 100);
 
+  /* Badge style */
+  const badge = isReleased
+    ? { bg: "#ECFDF5", color: "#059669", label: "Released" }
+    : isRefunded
+    ? { bg: "#FEF2F2", color: "#EF4444", label: "Refunded" }
+    : { bg: "#FEF9EC", color: "#D4A017", label: "Pending Release" };
+
+  /* Progress bar color */
+  const barColor = isRefunded ? "#EF4444" : "#059669";
+
+  /* Escrow amount color */
+  const amountColor = isReleased ? "#059669" : isRefunded ? "#EF4444" : "#D4A017";
+
   return (
-    <div style={{ backgroundColor: "white", borderRadius: 16, border: "1.5px solid #f0f0f0", padding: "24px", opacity: isReleased ? 0.8 : 1, transition: "all 0.25s" }}
-      onMouseEnter={e => { if (!isReleased) { e.currentTarget.style.boxShadow = "0 4px 20px rgba(0,0,0,0.06)"; e.currentTarget.style.transform = "translateY(-2px)"; } }}
+    <div style={{ backgroundColor: "white", borderRadius: 16, border: "1.5px solid #f0f0f0", padding: "24px", opacity: isDone ? 0.8 : 1, transition: "all 0.25s" }}
+      onMouseEnter={e => { if (!isDone) { e.currentTarget.style.boxShadow = "0 4px 20px rgba(0,0,0,0.06)"; e.currentTarget.style.transform = "translateY(-2px)"; } }}
       onMouseLeave={e => { e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "none"; }}>
 
-      {/* Top: Title + Status */}
+      {/* Top: Title + Status Badge */}
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 16, gap: 12, flexWrap: "wrap" }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           <h3 style={{ fontSize: 16, fontWeight: 700, color: "#0F2044", margin: "0 0 6px" }}>{project.title}</h3>
@@ -153,8 +169,8 @@ function EscrowCard({ project, onRelease }) {
             )}
           </div>
         </div>
-        <span style={{ fontSize: 10, fontWeight: 700, padding: "4px 12px", borderRadius: 8, backgroundColor: isReleased ? "#ECFDF5" : "#FEF9EC", color: isReleased ? "#059669" : "#D4A017", textTransform: "uppercase", flexShrink: 0 }}>
-          {isReleased ? "Released" : "Pending Release"}
+        <span style={{ fontSize: 10, fontWeight: 700, padding: "4px 12px", borderRadius: 8, backgroundColor: badge.bg, color: badge.color, textTransform: "uppercase", flexShrink: 0 }}>
+          {badge.label}
         </span>
       </div>
 
@@ -162,10 +178,10 @@ function EscrowCard({ project, onRelease }) {
       <div style={{ marginBottom: 16 }}>
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
           <span style={{ fontSize: 11, color: "#94a3b8" }}>Funding Progress</span>
-          <span style={{ fontSize: 11, fontWeight: 700, color: "#059669" }}>{project.fundingProgressPercentage}%</span>
+          <span style={{ fontSize: 11, fontWeight: 700, color: barColor }}>{project.fundingProgressPercentage}%</span>
         </div>
         <div style={{ width: "100%", height: 6, backgroundColor: "#f0f0f0", borderRadius: 3, overflow: "hidden" }}>
-          <div style={{ width: `${progressPercent}%`, height: "100%", backgroundColor: "#059669", borderRadius: 3, transition: "width 0.5s ease" }} />
+          <div style={{ width: `${progressPercent}%`, height: "100%", backgroundColor: barColor, borderRadius: 3, transition: "width 0.5s ease" }} />
         </div>
       </div>
 
@@ -199,14 +215,23 @@ function EscrowCard({ project, onRelease }) {
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 16, borderTop: "1px solid #f5f5f5", flexWrap: "wrap", gap: 12 }}>
         <div>
           <p style={{ fontSize: 10, color: "#94a3b8", margin: "0 0 2px", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.3 }}>Escrow Amount</p>
-          <p style={{ fontSize: 22, fontWeight: 800, color: isReleased ? "#059669" : "#D4A017", margin: 0 }}>EGP {fmt(project.escrowAmount)}</p>
+          <p style={{ fontSize: 22, fontWeight: 800, color: amountColor, margin: 0 }}>EGP {fmt(project.escrowAmount)}</p>
         </div>
-        {!isReleased ? (
-          <button onClick={() => onRelease(project)} style={{ padding: "12px 28px", borderRadius: 12, border: "none", backgroundColor: "#059669", fontSize: 13, fontWeight: 600, color: "white", cursor: "pointer", transition: "all 0.2s", display: "flex", alignItems: "center", gap: 8 }}
-            onMouseEnter={e => { e.currentTarget.style.backgroundColor = "#047857"; e.currentTarget.style.boxShadow = "0 4px 12px rgba(5,150,105,0.3)"; }}
-            onMouseLeave={e => { e.currentTarget.style.backgroundColor = "#059669"; e.currentTarget.style.boxShadow = "none"; }}>
-            Release Funds
+
+        {/* Action Button / Done Badge */}
+        {!isDone ? (
+          <button
+            onClick={() => onRelease(project)}
+            style={{ padding: "12px 28px", borderRadius: 12, border: "none", backgroundColor: isFailed ? "#EF4444" : "#059669", fontSize: 13, fontWeight: 600, color: "white", cursor: "pointer", transition: "all 0.2s", display: "flex", alignItems: "center", gap: 8 }}
+            onMouseEnter={e => { e.currentTarget.style.opacity = "0.85"; e.currentTarget.style.boxShadow = isFailed ? "0 4px 12px rgba(239,68,68,0.3)" : "0 4px 12px rgba(5,150,105,0.3)"; }}
+            onMouseLeave={e => { e.currentTarget.style.opacity = "1"; e.currentTarget.style.boxShadow = "none"; }}>
+            {isFailed ? "Refund Investors" : "Release Funds"}
           </button>
+        ) : isRefunded ? (
+          <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "10px 20px", borderRadius: 12, backgroundColor: "#FEF2F2" }}>
+            <FiRotateCcw size={15} style={{ color: "#EF4444" }} />
+            <span style={{ fontSize: 13, fontWeight: 600, color: "#EF4444" }}>Investors Refunded</span>
+          </div>
         ) : (
           <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "10px 20px", borderRadius: 12, backgroundColor: "#ECFDF5" }}>
             <FiCheckCircle size={15} style={{ color: "#059669" }} />
@@ -220,10 +245,10 @@ function EscrowCard({ project, onRelease }) {
 
 /* ═══════════ MAIN PAGE ═══════════ */
 export default function AdminEscrow() {
-  const [escrowList, setEscrowList] = useState([]);
+  const [escrowList, setEscrowList]     = useState([]);
   const [releaseTarget, setReleaseTarget] = useState(null);
-  const [toast, setToast] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [toast, setToast]               = useState(null);
+  const [loading, setLoading]           = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
 
   const showToast = (message, type = "success") => {
@@ -234,10 +259,10 @@ export default function AdminEscrow() {
   /* ── Fetch ended campaigns from API ── */
   const fetchCampaigns = useCallback(async () => {
     try {
-      const res = await axiosInstance.get("/Admin/campaigns/ended");
+      const res  = await axiosInstance.get("/Admin/campaigns/ended");
       const body = res.data;
       const items = body?.data?.items ?? body?.data ?? body?.value ?? body;
-      const list = Array.isArray(items) ? items : [];
+      const list  = Array.isArray(items) ? items : [];
       setEscrowList(list.map(normalize));
     } catch (err) {
       console.error("Failed to load escrow campaigns:", err);
@@ -249,51 +274,74 @@ export default function AdminEscrow() {
 
   useEffect(() => { fetchCampaigns(); }, [fetchCampaigns]);
 
-  /* ── Process / Release funds ── */
+  /* ── Process / Release / Refund funds ── */
   const handleRelease = async () => {
-    const project = releaseTarget;
+    const project  = releaseTarget;
+    const isFailed = project.fundingProgressPercentage < 100;
     setActionLoading(true);
     try {
       await axiosInstance.post(`/Admin/campaigns/${project.id}/process`);
-      showToast(`EGP ${fmt(project.escrowAmount)} released to ${project.founderName}'s wallet`, "success");
+      showToast(
+        isFailed
+          ? `EGP ${fmt(project.escrowAmount)} refunded to ${project.numberOfInvestors} investor(s)`
+          : `EGP ${fmt(project.escrowAmount)} released to ${project.founderName}'s wallet`,
+        "success"
+      );
       setReleaseTarget(null);
-      // Refresh the list from API
       await fetchCampaigns();
     } catch (err) {
       console.error("Failed to process campaign:", err);
-      const errMsg = err.response?.data?.message || err.response?.data?.title || "Failed to release funds. Please try again.";
+      const errMsg = err.response?.data?.message || err.response?.data?.title || "Failed to process. Please try again.";
       showToast(errMsg, "error");
     } finally {
       setActionLoading(false);
     }
   };
 
+  /* ── Summary ── */
   const summary = useMemo(() => {
-    const pending = escrowList.filter(p => p.projectStatus !== "Released");
+    const pending  = escrowList.filter(p => p.projectStatus === "PendingRelease");
     const released = escrowList.filter(p => p.projectStatus === "Released");
+    const refunded = escrowList.filter(p => p.projectStatus === "Refunded");
     const totalEscrow = pending.reduce((sum, p) => sum + p.escrowAmount, 0);
-    return { totalEscrow, pendingCount: pending.length, releasedCount: released.length };
+    return { totalEscrow, pendingCount: pending.length, releasedCount: released.length, refundedCount: refunded.length };
   }, [escrowList]);
+
+  /* ── Sort: Pending → Released/Refunded, newest first ── */
+  const sorted = useMemo(() => [...escrowList].sort((a, b) => {
+    const order = { PendingRelease: 0, Released: 1, Refunded: 2 };
+    const diff = (order[a.projectStatus] ?? 1) - (order[b.projectStatus] ?? 1);
+    if (diff !== 0) return diff;
+    return new Date(b.completedAt || 0) - new Date(a.completedAt || 0);
+  }), [escrowList]);
 
   return (
     <div style={{ padding: "8px 0" }}>
       {toast && <Toast {...toast} />}
-      {releaseTarget && <ReleaseDialog project={releaseTarget} onConfirm={handleRelease} onCancel={() => !actionLoading && setReleaseTarget(null)} loading={actionLoading} />}
+      {releaseTarget && (
+        <ReleaseDialog
+          project={releaseTarget}
+          onConfirm={handleRelease}
+          onCancel={() => !actionLoading && setReleaseTarget(null)}
+          loading={actionLoading}
+        />
+      )}
 
       {/* Header */}
       <div style={{ marginBottom: 20 }}>
         <h1 style={{ fontSize: 20, fontWeight: 700, color: "#0F2044", margin: "0 0 4px" }}>Escrow Management</h1>
-        <p style={{ fontSize: 13, color: "#94a3b8", margin: 0 }}>Release funds to founders for completed projects</p>
+        <p style={{ fontSize: 13, color: "#94a3b8", margin: 0 }}>Release funds to founders or refund investors for ended projects</p>
       </div>
 
-      {/* Summary Cards */}
-      <div className="escrow-summary-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14, marginBottom: 28 }}>
-        <SummaryCard icon={FiLock} label="Total in Escrow" value={`EGP ${fmt(summary.totalEscrow)}`} color="#3B82F6" bg="#EFF6FF" />
-        <SummaryCard icon={FiClock} label="Pending Release" value={`${summary.pendingCount} projects`} color="#D4A017" bg="#FEF9EC" />
-        <SummaryCard icon={FiCheckCircle} label="Released" value={`${summary.releasedCount} projects`} color="#059669" bg="#ECFDF5" />
+      {/* Summary Cards — 4 cards */}
+      <div className="escrow-summary-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14, marginBottom: 28 }}>
+        <SummaryCard icon={FiLock}        label="Total in Escrow"  value={`EGP ${fmt(summary.totalEscrow)}`}        color="#3B82F6" bg="#EFF6FF" />
+        <SummaryCard icon={FiClock}       label="Pending Release"  value={`${summary.pendingCount} projects`}        color="#D4A017" bg="#FEF9EC" />
+        <SummaryCard icon={FiCheckCircle} label="Released"         value={`${summary.releasedCount} projects`}       color="#059669" bg="#ECFDF5" />
+        <SummaryCard icon={FiRotateCcw}   label="Refunded"         value={`${summary.refundedCount} projects`}       color="#EF4444" bg="#FEF2F2" />
       </div>
 
-      {/* Loading State */}
+      {/* Loading / Empty / List */}
       {loading ? (
         <div style={{ textAlign: "center", padding: "60px 20px" }}>
           <FiLoader size={32} className="spin-icon" style={{ color: "#D4A017", marginBottom: 12 }} />
@@ -306,16 +354,7 @@ export default function AdminEscrow() {
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          {[...escrowList]
-            .sort((a, b) => {
-              // Pending before Released
-              const aRel = a.projectStatus === "Released" ? 1 : 0;
-              const bRel = b.projectStatus === "Released" ? 1 : 0;
-              if (aRel !== bRel) return aRel - bRel;
-              // Newest first
-              return new Date(b.completedAt || 0) - new Date(a.completedAt || 0);
-            })
-            .map(p => (
+          {sorted.map(p => (
             <EscrowCard key={p.id} project={p} onRelease={setReleaseTarget} />
           ))}
         </div>
@@ -323,9 +362,12 @@ export default function AdminEscrow() {
 
       {/* Responsive + Spinner */}
       <style>{`
+        @media (max-width: 900px) {
+          .escrow-summary-grid { grid-template-columns: repeat(2, 1fr) !important; }
+        }
         @media (max-width: 768px) {
           .escrow-summary-grid { grid-template-columns: 1fr !important; }
-          .escrow-info-grid { grid-template-columns: 1fr 1fr !important; }
+          .escrow-info-grid    { grid-template-columns: 1fr 1fr !important; }
         }
         @media (max-width: 480px) {
           .escrow-info-grid { grid-template-columns: 1fr !important; }
