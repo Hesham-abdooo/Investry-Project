@@ -32,20 +32,21 @@ const normalize = (p) => ({
 });
 
 const STATUS_COLORS = {
-  PendingReview: { bg: "#FEF9EC", color: "#D4A017", label: "Pending" },
-  Published: { bg: "#ECFDF5", color: "#059669", label: "Published" },
-  Rejected: { bg: "#FEF2F2", color: "#EF4444", label: "Rejected" },
-  Successful: { bg: "#E3F2FD", color: "#1565C0", label: "Successful" },
+  PendingReview: { bg: "#FEF9EC", color: "#D4A017",  label: "Pending"   },
+  Published:     { bg: "#ECFDF5", color: "#059669",  label: "Published" },
+  Rejected:      { bg: "#FEF2F2", color: "#EF4444",  label: "Rejected"  },
+  Successful:    { bg: "#E3F2FD", color: "#1565C0",  label: "Successful"},
+  Failed:        { bg: "#FEF2F2", color: "#EF4444",  label: "Failed"    }, // ← جديد
 };
 
 const MODEL_COLORS = {
-  Equity: { bg: "#F0F4F8", color: "#0F2044" },
+  Equity:    { bg: "#F0F4F8", color: "#0F2044" },
   Mudarabah: { bg: "#FEF9EC", color: "#D4A017" },
-  Reward: { bg: "#ECFDF5", color: "#059669" },
+  Reward:    { bg: "#ECFDF5", color: "#059669" },
 };
 
 /* ═══════════ Toast ═══════════ */
-function Toast({ message, type, onClose }) {
+function Toast({ message, type }) {
   const isSuccess = type === "success";
   return (
     <div style={{ position: "fixed", top: 24, right: 24, zIndex: 9999, padding: "14px 24px", borderRadius: 12, backgroundColor: isSuccess ? "#059669" : "#EF4444", color: "white", fontSize: 13, fontWeight: 600, boxShadow: "0 8px 24px rgba(0,0,0,0.15)", display: "flex", alignItems: "center", gap: 8, animation: "slideIn 0.3s ease" }}>
@@ -145,10 +146,10 @@ function DetailModal({ project, onClose, onApprove, onReject }) {
           {/* Financial Grid */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 20 }}>
             {[
-              { icon: FiDollarSign, label: "Target Amount", value: `EGP ${fmt(project.targetAmount)}` },
-              { icon: FiDollarSign, label: "Min. Contribution", value: `EGP ${fmt(project.minimumContribution)}` },
-              { icon: FiClock, label: "Duration", value: `${project.campaignDurationInDays} days` },
-              { icon: FiBriefcase, label: project.equityPercentage ? "Equity" : project.investorsProfitSharePercentage ? "Profit Share" : "Type", value: project.equityPercentage ? `${project.equityPercentage}%` : project.investorsProfitSharePercentage ? `${project.investorsProfitSharePercentage}%` : project.fundingModel },
+              { icon: FiDollarSign, label: "Target Amount",    value: `EGP ${fmt(project.targetAmount)}` },
+              { icon: FiDollarSign, label: "Min. Contribution",value: `EGP ${fmt(project.minimumContribution)}` },
+              { icon: FiClock,      label: "Duration",         value: `${project.campaignDurationInDays} days` },
+              { icon: FiBriefcase,  label: project.equityPercentage ? "Equity" : project.investorsProfitSharePercentage ? "Profit Share" : "Type", value: project.equityPercentage ? `${project.equityPercentage}%` : project.investorsProfitSharePercentage ? `${project.investorsProfitSharePercentage}%` : project.fundingModel },
             ].map((item, i) => (
               <div key={i} style={{ backgroundColor: "#fafbfc", borderRadius: 10, padding: "10px 14px", display: "flex", alignItems: "center", gap: 10 }}>
                 <item.icon size={14} style={{ color: "#D4A017", flexShrink: 0 }} />
@@ -172,7 +173,7 @@ function DetailModal({ project, onClose, onApprove, onReject }) {
             </div>
           </div>
 
-          {/* Action Buttons */}
+          {/* Action Buttons — فقط لو Pending */}
           {isPending && (
             <div style={{ display: "flex", gap: 10 }}>
               <button onClick={() => onReject(project)} style={{ flex: 1, padding: "12px 0", borderRadius: 12, border: "1.5px solid #EF4444", backgroundColor: "white", fontSize: 13, fontWeight: 600, color: "#EF4444", cursor: "pointer", transition: "all 0.2s" }}
@@ -193,15 +194,15 @@ function DetailModal({ project, onClose, onApprove, onReject }) {
 
 /* ═══════════ MAIN PAGE ═══════════ */
 export default function AdminProjects() {
-  const [projects, setProjects] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [projects, setProjects]           = useState([]);
+  const [loading, setLoading]             = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState("All");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab]         = useState("All");
+  const [searchQuery, setSearchQuery]     = useState("");
   const [selectedProject, setSelectedProject] = useState(null);
   const [approveTarget, setApproveTarget] = useState(null);
-  const [rejectTarget, setRejectTarget] = useState(null);
-  const [toast, setToast] = useState(null);
+  const [rejectTarget, setRejectTarget]   = useState(null);
+  const [toast, setToast]                 = useState(null);
 
   const showToast = (message, type) => {
     setToast({ message, type });
@@ -211,8 +212,8 @@ export default function AdminProjects() {
   /* ── Fetch projects from API ── */
   const fetchProjects = useCallback(async () => {
     try {
-      const res = await axiosInstance.get("/Admin/projects");
-      const raw = res.data?.value ?? res.data?.data ?? res.data;
+      const res  = await axiosInstance.get("/Admin/projects");
+      const raw  = res.data?.value ?? res.data?.data ?? res.data;
       const list = Array.isArray(raw) ? raw : [];
       setProjects(list.map(normalize));
     } catch (err) {
@@ -269,11 +270,13 @@ export default function AdminProjects() {
     return list;
   }, [projects, activeTab, searchQuery]);
 
+  /* ── Tabs — أضفنا Failed ── */
   const tabs = [
-    { key: "All", label: "All Projects", count: projects.length },
-    { key: "PendingReview", label: "Pending", count: projects.filter(p => p.projectStatus === "PendingReview").length },
-    { key: "Published", label: "Published", count: projects.filter(p => p.projectStatus === "Published").length },
-    { key: "Rejected", label: "Rejected", count: projects.filter(p => p.projectStatus === "Rejected").length },
+    { key: "All",           label: "All Projects", count: projects.length },
+    { key: "PendingReview", label: "Pending",       count: projects.filter(p => p.projectStatus === "PendingReview").length },
+    { key: "Published",     label: "Published",     count: projects.filter(p => p.projectStatus === "Published").length },
+    { key: "Rejected",      label: "Rejected",      count: projects.filter(p => p.projectStatus === "Rejected").length },
+    { key: "Failed",        label: "Failed",        count: projects.filter(p => p.projectStatus === "Failed").length }, // ← جديد
   ];
 
   return (
@@ -281,7 +284,7 @@ export default function AdminProjects() {
       {toast && <Toast {...toast} />}
       {selectedProject && <DetailModal project={selectedProject} onClose={() => setSelectedProject(null)} onApprove={p => { setSelectedProject(null); setApproveTarget(p); }} onReject={p => { setSelectedProject(null); setRejectTarget(p); }} />}
       {approveTarget && <ApproveDialog project={approveTarget} onConfirm={handleApprove} onCancel={() => setApproveTarget(null)} />}
-      {rejectTarget && <RejectDialog project={rejectTarget} onConfirm={handleReject} onCancel={() => setRejectTarget(null)} />}
+      {rejectTarget  && <RejectDialog  project={rejectTarget}  onConfirm={handleReject}  onCancel={() => setRejectTarget(null)}  />}
 
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
@@ -297,7 +300,7 @@ export default function AdminProjects() {
       </div>
 
       {/* Tabs */}
-      <div style={{ display: "flex", gap: 4, marginBottom: 20, borderBottom: "1.5px solid #f0f0f0", paddingBottom: 0 }}>
+      <div style={{ display: "flex", gap: 4, marginBottom: 20, borderBottom: "1.5px solid #f0f0f0", flexWrap: "wrap" }}>
         {tabs.map(t => (
           <button key={t.key} onClick={() => setActiveTab(t.key)} style={{ padding: "10px 16px", fontSize: 13, fontWeight: activeTab === t.key ? 600 : 400, color: activeTab === t.key ? "#D4A017" : "#94a3b8", backgroundColor: "transparent", border: "none", borderBottom: activeTab === t.key ? "2px solid #D4A017" : "2px solid transparent", cursor: "pointer", transition: "all 0.2s", display: "flex", alignItems: "center", gap: 6, marginBottom: -1.5 }}>
             {t.label}
@@ -312,9 +315,9 @@ export default function AdminProjects() {
         <div className="table-header" style={{ display: "flex", alignItems: "center", padding: "12px 20px", backgroundColor: "#fafbfc", borderBottom: "1px solid #f0f0f0" }}>
           <span style={{ flex: 2, fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5, color: "#94a3b8" }}>Project</span>
           <span className="col-founder" style={{ flex: 1, fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5, color: "#94a3b8" }}>Founder</span>
-          <span className="col-model" style={{ flex: 0.7, fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5, color: "#94a3b8" }}>Model</span>
+          <span className="col-model"   style={{ flex: 0.7, fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5, color: "#94a3b8" }}>Model</span>
           <span style={{ flex: 0.8, fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5, color: "#94a3b8" }}>Target</span>
-          <span className="col-date" style={{ flex: 0.7, fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5, color: "#94a3b8" }}>Date</span>
+          <span className="col-date"    style={{ flex: 0.7, fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5, color: "#94a3b8" }}>Date</span>
           <span style={{ flex: 0.7, fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5, color: "#94a3b8" }}>Status</span>
           <span style={{ flex: 0.8, fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5, color: "#94a3b8", textAlign: "right" }}>Actions</span>
         </div>
@@ -340,6 +343,7 @@ export default function AdminProjects() {
               <div key={p.id} className="table-row" style={{ display: "flex", alignItems: "center", padding: "14px 20px", borderBottom: "1px solid #f5f5f5", transition: "background 0.15s", cursor: "pointer" }}
                 onMouseEnter={e => e.currentTarget.style.backgroundColor = "#fafbfc"} onMouseLeave={e => e.currentTarget.style.backgroundColor = "white"}
                 onClick={() => setSelectedProject(p)}>
+
                 {/* Project */}
                 <div style={{ flex: 2, display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
                   <div style={{ width: 40, height: 40, borderRadius: 10, overflow: "hidden", flexShrink: 0, backgroundColor: "#f3f4f6" }}>
@@ -350,29 +354,35 @@ export default function AdminProjects() {
                     <p style={{ fontSize: 11, color: "#94a3b8", margin: 0 }}>{p.category}</p>
                   </div>
                 </div>
+
                 {/* Founder */}
                 <div className="col-founder" style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ fontSize: 12, color: "#0F2044", margin: 0, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.founderName}</p>
                 </div>
+
                 {/* Model */}
                 <div className="col-model" style={{ flex: 0.7 }}>
                   <span style={{ fontSize: 10, fontWeight: 600, padding: "3px 10px", borderRadius: 6, backgroundColor: mc.bg, color: mc.color }}>{p.fundingModel}</span>
                 </div>
+
                 {/* Target */}
                 <div style={{ flex: 0.8 }}>
                   <p style={{ fontSize: 12, fontWeight: 600, color: "#0F2044", margin: 0 }}>EGP {fmt(p.targetAmount)}</p>
                 </div>
+
                 {/* Date */}
                 <div className="col-date" style={{ flex: 0.7 }}>
                   <p style={{ fontSize: 11, color: "#94a3b8", margin: 0 }}>{fmtDate(p.createdAt)}</p>
                 </div>
+
                 {/* Status */}
                 <div style={{ flex: 0.7 }}>
                   <span style={{ fontSize: 10, fontWeight: 700, padding: "3px 10px", borderRadius: 6, backgroundColor: sc.bg, color: sc.color, textTransform: "uppercase" }}>{sc.label}</span>
                 </div>
+
                 {/* Actions */}
                 <div style={{ flex: 0.8, display: "flex", justifyContent: "flex-end", gap: 6 }} onClick={e => e.stopPropagation()}>
-                  <button onClick={() => setSelectedProject(p)} title="View" style={{ width: 32, height: 32, borderRadius: 8, border: "1px solid #e5e7eb", backgroundColor: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.15s" }}
+                  <button onClick={() => setSelectedProject(p)} title="View" style={{ width: 32, height: 32, borderRadius: 8, border: "1px solid #e5e7eb", backgroundColor: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#64748b", transition: "all 0.15s" }}
                     onMouseEnter={e => { e.currentTarget.style.borderColor = "#0F2044"; e.currentTarget.style.color = "#0F2044"; }} onMouseLeave={e => { e.currentTarget.style.borderColor = "#e5e7eb"; e.currentTarget.style.color = "#64748b"; }}>
                     <FiEye size={14} />
                   </button>
