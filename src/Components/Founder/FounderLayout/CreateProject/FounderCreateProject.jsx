@@ -15,47 +15,99 @@ import { createProject } from "./Services/Service.js";
 import "./FounderCREATE.css";
 import axiosInstance from "../../../../Api/axiosInstance.js";
 
+// ─────────────────────────────────────────────
+// Hook: يحفظ أي state في localStorage تلقائياً
+// ─────────────────────────────────────────────
+function useLocalState(key, defaultValue) {
+  const [state, setState] = useState(() => {
+    try {
+      const saved = localStorage.getItem(key);
+      return saved !== null ? JSON.parse(saved) : defaultValue;
+    } catch {
+      return defaultValue;
+    }
+  });
+
+  const setStateAndSave = (value) => {
+    setState((prev) => {
+      const next = typeof value === "function" ? value(prev) : value;
+      try {
+        localStorage.setItem(key, JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  };
+
+  return [state, setStateAndSave];
+}
+
+// ─────────────────────────────────────────────
+// كل الـ keys بتاعت الـ localStorage في مكان واحد
+// ─────────────────────────────────────────────
+const LS_KEYS = [
+  "cp_step",
+  "cp_funding",
+  "cp_duration",
+  "cp_title",
+  "cp_category",
+  "cp_description",
+  "cp_fundingGoal",
+  "cp_minContribution",
+  "cp_startDateOption",
+  "cp_scheduledDate",
+  "cp_location",
+  "cp_rewardTiers",
+  "cp_equity",
+  "cp_founderProfit",
+  "cp_contractDuration",
+  "cp_payoutFrequency",
+  "cp_videoUrl",
+];
+
+function clearSavedProgress() {
+  LS_KEYS.forEach((k) => localStorage.removeItem(k));
+}
+
+// ─────────────────────────────────────────────
+// Component
+// ─────────────────────────────────────────────
 function CreateProject() {
   const navigate = useNavigate();
 
   const [kycStatus, setKycStatus] = useState(null);
-
-  const [selectedFunding, setSelectedFunding] = useState(null);
-  const [selectDuration, setSelectDuration] = useState(null);
-  const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitted, setIsSubmitted] = useState(false);
-
-  const [projectTitle, setProjectTitle] = useState("");
-  const [category, setCategory] = useState("");
-  const [projectDescription, setProjectDescription] = useState("");
-  const [fundingGoal, setFundingGoal] = useState("");
-  const [minContribution, setMinContribution] = useState("");
-  const [startDateOption, setStartDateOption] = useState("immediately");
-  const [scheduledDate, setScheduledDate] = useState("");
-  const [projectLocation, setProjectLocation] = useState("");
-
-  const [rewardTiers, setRewardTiers] = useState([
-    { gift: "", amount: "", quantity: "" },
-  ]);
-
-  const [equityOffered, setEquityOffered] = useState("");
-  const [founderProfitShare, setFounderProfitShare] = useState("");
-  const [contractDuration, setContractDuration] = useState("");
-  const [payoutFrequency, setPayoutFrequency] = useState("");
-
-  const [coverImages, setCoverImages] = useState([]);
-  const [documents, setDocuments] = useState([]);
-  const [videoUrl, setVideoUrl] = useState("");
-  const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
-  const [kycModal, setKycModal] = useState({ show: false, type: '' });
+  const [errors, setErrors] = useState({});
+  const [kycModal, setKycModal] = useState({ show: false, type: "" });
   const [showExitModal, setShowExitModal] = useState(false);
 
-  /* ── جيب الـ KYC status لما الصفحة تفتح ── */
+  // ── Files: مش بتتحفظ في localStorage (binary) ──
+  const [coverImages, setCoverImages] = useState([]);
+  const [documents, setDocuments] = useState([]);
+
+  // ── كل الـ fields بتتحفظ تلقائياً ──
+  const [currentStep, setCurrentStep]               = useLocalState("cp_step", 1);
+  const [selectedFunding, setSelectedFunding]       = useLocalState("cp_funding", null);
+  const [selectDuration, setSelectDuration]         = useLocalState("cp_duration", null);
+  const [projectTitle, setProjectTitle]             = useLocalState("cp_title", "");
+  const [category, setCategory]                     = useLocalState("cp_category", "");
+  const [projectDescription, setProjectDescription] = useLocalState("cp_description", "");
+  const [fundingGoal, setFundingGoal]               = useLocalState("cp_fundingGoal", "");
+  const [minContribution, setMinContribution]       = useLocalState("cp_minContribution", "");
+  const [startDateOption, setStartDateOption]       = useLocalState("cp_startDateOption", "immediately");
+  const [scheduledDate, setScheduledDate]           = useLocalState("cp_scheduledDate", "");
+  const [projectLocation, setProjectLocation]       = useLocalState("cp_location", "");
+  const [rewardTiers, setRewardTiers]               = useLocalState("cp_rewardTiers", [{ gift: "", amount: "", quantity: "" }]);
+  const [equityOffered, setEquityOffered]           = useLocalState("cp_equity", "");
+  const [founderProfitShare, setFounderProfitShare] = useLocalState("cp_founderProfit", "");
+  const [contractDuration, setContractDuration]     = useLocalState("cp_contractDuration", "");
+  const [payoutFrequency, setPayoutFrequency]       = useLocalState("cp_payoutFrequency", "");
+  const [videoUrl, setVideoUrl]                     = useLocalState("cp_videoUrl", "");
+
+  // ── جيب الـ KYC status لما الصفحة تفتح ──
   useEffect(() => {
     const fetchKyc = async () => {
       try {
-        const token = localStorage.getItem("token");
         const res = await axiosInstance.get("/Accounts/profile", {});
         setKycStatus(res.data?.data?.kycStatus ?? "Unknown");
       } catch (err) {
@@ -74,39 +126,33 @@ function CreateProject() {
     "Review everything before submitting.",
   ];
 
-  const handleExit = () => {
-    setShowExitModal(true);
-  };
+  // ── Exit ──
+  const handleExit = () => setShowExitModal(true);
 
   const confirmExit = () => {
+    clearSavedProgress();
     setShowExitModal(false);
     navigate("/founder");
   };
 
-  const cancelExit = () => {
-    setShowExitModal(false);
-  };
+  const cancelExit = () => setShowExitModal(false);
 
+  // ── Navigation ──
   const handleNextStep = () => {
     const newErrors = {};
 
     if (currentStep === 1) {
-      /* ── 1. لازم يختار funding model الأول ── */
       if (!selectedFunding) {
         newErrors.selectedFunding = "Please select a funding model";
         setErrors(newErrors);
         return;
       }
-
-      /* ── 2. لو الـ KYC status لسه بيتحمل ── */
       if (kycStatus === null) {
-        setKycModal({ show: true, type: 'loading' });
+        setKycModal({ show: true, type: "loading" });
         return;
       }
-
-      /* ── 3. بعدين نشيك KYC ── */
       if (kycStatus?.toLowerCase() !== "approved") {
-        setKycModal({ show: true, type: 'required' });
+        setKycModal({ show: true, type: "required" });
         return;
       }
     }
@@ -114,7 +160,8 @@ function CreateProject() {
     if (currentStep === 2) {
       if (!projectTitle.trim())
         newErrors.projectTitle = "Project title is required";
-      if (!category.trim()) newErrors.category = "Category is required";
+      if (!category.trim())
+        newErrors.category = "Category is required";
       if (!projectDescription.trim())
         newErrors.projectDescription = "Project description is required";
       if (!fundingGoal.trim())
@@ -137,11 +184,7 @@ function CreateProject() {
           newErrors.payoutFrequency = "Payout frequency is required";
       }
       if (selectedFunding === "Reward-Based") {
-        if (
-          rewardTiers.every(
-            (t) => !t.gift.trim() || !t.amount.trim() || !t.quantity.trim(),
-          )
-        )
+        if (rewardTiers.every((t) => !t.gift.trim() || !t.amount.trim() || !t.quantity.trim()))
           newErrors.rewardTiers = "Please fill all reward tiers";
       }
     }
@@ -166,6 +209,7 @@ function CreateProject() {
     setCurrentStep((prev) => Math.max(prev - 1, 1));
   };
 
+  // ── Submit ──
   const handleSubmit = async () => {
     setIsLoading(true);
 
@@ -177,11 +221,7 @@ function CreateProject() {
     formData.append("LongDescription", projectDescription);
     formData.append(
       "FundingModel",
-      selectedFunding === "Reward-Based"
-        ? 0
-        : selectedFunding === "Equity-Based"
-          ? 1
-          : 2,
+      selectedFunding === "Reward-Based" ? 0 : selectedFunding === "Equity-Based" ? 1 : 2
     );
     formData.append("TargetAmount", fundingGoal);
     formData.append("MinimumContribution", minContribution);
@@ -189,34 +229,24 @@ function CreateProject() {
       "StartDate",
       startDateOption === "immediately"
         ? new Date(Date.now() + 10 * 60 * 1000).toISOString()
-        : new Date(scheduledDate).toISOString(),
+        : new Date(scheduledDate).toISOString()
     );
     formData.append(
       "CampaignDurationInDays",
-      selectDuration === "30 days"
-        ? 30
-        : selectDuration === "60 days"
-          ? 60
-          : 90,
+      selectDuration === "30 days" ? 30 : selectDuration === "60 days" ? 60 : 90
     );
     formData.append("CoverImage", coverImages[0]);
     if (projectLocation.trim()) formData.append("Location", projectLocation);
     if (videoUrl.trim()) formData.append("PromotionalVideoURL", videoUrl);
     formData.append("EquityPercentage", equityOffered || 0);
     formData.append("InvestorsProfitSharePercentage", founderProfitShare || 0);
-    formData.append(
-      "DurationInMonths",
-      contractDuration ? parseInt(contractDuration) : 0,
-    );
+    formData.append("DurationInMonths", contractDuration ? parseInt(contractDuration) : 0);
     formData.append(
       "ProfitDistributionFrequency",
-      payoutFrequency === "Monthly"
-        ? 1
-        : payoutFrequency === "Quarterly"
-          ? 3
-          : payoutFrequency === "Semi-annually"
-            ? 6
-            : 12,
+      payoutFrequency === "Monthly" ? 1
+        : payoutFrequency === "Quarterly" ? 3
+        : payoutFrequency === "Semi-annually" ? 6
+        : 12
     );
 
     if (selectedFunding === "Reward-Based") {
@@ -228,18 +258,12 @@ function CreateProject() {
       });
     }
 
-    // Send additional gallery images as MediaFiles
-    coverImages.slice(1).forEach((img) => {
-      formData.append("MediaFiles", img);
-    });
-
-    // Send documents as MediaFiles
-    documents.forEach((doc) => {
-      formData.append("MediaFiles", doc);
-    });
+    coverImages.slice(1).forEach((img) => formData.append("MediaFiles", img));
+    documents.forEach((doc) => formData.append("MediaFiles", doc));
 
     try {
       await createProject(formData);
+      clearSavedProgress(); // ← امسح الـ cache بعد النجاح
       setIsSubmitted(true);
     } catch (error) {
       console.error(error);
@@ -248,8 +272,9 @@ function CreateProject() {
     }
   };
 
+  // ── Render Steps ──
   const renderStepContent = () => {
-    if (currentStep === 1) {
+    if (currentStep === 1)
       return (
         <Step1FundingModel
           selectedFunding={selectedFunding}
@@ -257,9 +282,8 @@ function CreateProject() {
           errors={errors}
         />
       );
-    }
 
-    if (currentStep === 2) {
+    if (currentStep === 2)
       return (
         <Step2ProjectDetails
           selectedFunding={selectedFunding}
@@ -285,9 +309,8 @@ function CreateProject() {
           errors={errors}
         />
       );
-    }
 
-    if (currentStep === 3) {
+    if (currentStep === 3)
       return (
         <Step3DealDetails
           selectedFunding={selectedFunding}
@@ -308,9 +331,8 @@ function CreateProject() {
           errors={errors}
         />
       );
-    }
 
-    if (currentStep === 4) {
+    if (currentStep === 4)
       return (
         <Step4MediaDocs
           coverImages={coverImages}
@@ -322,9 +344,8 @@ function CreateProject() {
           errors={errors}
         />
       );
-    }
 
-    if (currentStep === 5) {
+    if (currentStep === 5)
       return (
         <Step5Review
           selectedFunding={selectedFunding}
@@ -343,7 +364,6 @@ function CreateProject() {
           setCurrentStep={setCurrentStep}
         />
       );
-    }
 
     return null;
   };
@@ -410,21 +430,31 @@ function CreateProject() {
 
       {/* ── KYC Modal ── */}
       {kycModal.show && (
-        <div className="kyc_modal_overlay" onClick={() => setKycModal({ show: false, type: '' })}>
+        <div
+          className="kyc_modal_overlay"
+          onClick={() => setKycModal({ show: false, type: "" })}
+        >
           <div className="kyc_modal" onClick={(e) => e.stopPropagation()}>
-            <button className="kyc_modal_close" onClick={() => setKycModal({ show: false, type: '' })}>
+            <button
+              className="kyc_modal_close"
+              onClick={() => setKycModal({ show: false, type: "" })}
+            >
               <FiX />
             </button>
             <div className="kyc_modal_icon">
               <FiShield />
             </div>
-            {kycModal.type === 'loading' ? (
+            {kycModal.type === "loading" ? (
               <>
                 <h3 className="kyc_modal_title">Checking Verification</h3>
                 <p className="kyc_modal_text">
-                  We're checking your KYC verification status. Please wait a moment and try again.
+                  We're checking your KYC verification status. Please wait a
+                  moment and try again.
                 </p>
-                <button className="kyc_modal_btn" onClick={() => setKycModal({ show: false, type: '' })}>
+                <button
+                  className="kyc_modal_btn"
+                  onClick={() => setKycModal({ show: false, type: "" })}
+                >
                   Try Again
                 </button>
               </>
@@ -432,12 +462,20 @@ function CreateProject() {
               <>
                 <h3 className="kyc_modal_title">KYC Verification Required</h3>
                 <p className="kyc_modal_text">
-                  You need to complete your identity verification before creating a project. This ensures trust and security for all users on the platform.
+                  You need to complete your identity verification before
+                  creating a project. This ensures trust and security for all
+                  users on the platform.
                 </p>
-                <button className="kyc_modal_btn" onClick={() => navigate("/founder/profile")}>
+                <button
+                  className="kyc_modal_btn"
+                  onClick={() => navigate("/founder/profile")}
+                >
                   Verify Identity
                 </button>
-                <button className="kyc_modal_btn_secondary" onClick={() => setKycModal({ show: false, type: '' })}>
+                <button
+                  className="kyc_modal_btn_secondary"
+                  onClick={() => setKycModal({ show: false, type: "" })}
+                >
                   Cancel
                 </button>
               </>
@@ -446,21 +484,35 @@ function CreateProject() {
         </div>
       )}
 
-      {/* ── Exit Confirmation Modal (same style as KYC modal) ── */}
+      {/* ── Exit Confirmation Modal ── */}
       {showExitModal && (
         <div className="kyc_modal_overlay" onClick={cancelExit}>
           <div className="kyc_modal" onClick={(e) => e.stopPropagation()}>
             <button className="kyc_modal_close" onClick={cancelExit}>
               <FiX />
             </button>
-            <div className="kyc_modal_icon" style={{ background: 'linear-gradient(135deg, #FEF2F2, #FFF5F5)', borderColor: 'rgba(239, 68, 68, 0.2)' }}>
-              <IoAlertCircleOutline style={{ color: '#EF4444' }} />
+            <div
+              className="kyc_modal_icon"
+              style={{
+                background: "linear-gradient(135deg, #FEF2F2, #FFF5F5)",
+                borderColor: "rgba(239, 68, 68, 0.2)",
+              }}
+            >
+              <IoAlertCircleOutline style={{ color: "#EF4444" }} />
             </div>
             <h3 className="kyc_modal_title">Discard Changes?</h3>
             <p className="kyc_modal_text">
-              Are you sure you want to exit? Your progress has not been saved and any details you've entered will be lost.
+              Are you sure you want to exit? Your progress has not been saved
+              and any details you've entered will be lost.
             </p>
-            <button className="kyc_modal_btn" style={{ backgroundColor: '#EF4444', boxShadow: '0 2px 8px rgba(239, 68, 68, 0.25)' }} onClick={confirmExit}>
+            <button
+              className="kyc_modal_btn"
+              style={{
+                backgroundColor: "#EF4444",
+                boxShadow: "0 2px 8px rgba(239, 68, 68, 0.25)",
+              }}
+              onClick={confirmExit}
+            >
               Discard & Exit
             </button>
             <button className="kyc_modal_btn_secondary" onClick={cancelExit}>
