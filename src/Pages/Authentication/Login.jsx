@@ -2,9 +2,9 @@ import React from "react";
 import axiosInstance from "../../../src/Api/axiosInstance.js";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import TopBar from "../../Components/Basics/TopBar";
 import LoginForm from "../../Components/Authentication/Login/LoginForm";
 import Logo from "../../Components/Basics/Logo";
+import LeftSidePanel from "../../Components/Authentication/Login/LeftSidePanel";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -40,43 +40,41 @@ export default function Login() {
     }
   };
 
-  const handleGoogleSuccess = ({ token, roles }) => {
-    localStorage.setItem("token", token);
-    localStorage.setItem("role", roles?.[0] || roles);
-    const userRole = (roles?.[0] || roles)?.toLowerCase();
-    if (userRole === "investor") navigate("/investor");
-    else if (userRole === "founder") navigate("/founder");
-    else if (userRole === "administrator") navigate("/admin");
-  };
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#f5f6f8] px-4 py-10" style={{ fontFamily: '"Inter", sans-serif' }}>
-      <div className="w-full max-w-[440px]">
-        <div className="bg-white rounded-2xl shadow-[0_2px_20px_rgba(0,0,0,0.07)] border border-gray-100 px-8 sm:px-10 py-10">
+    <div className="h-screen flex overflow-hidden">
+      <LeftSidePanel />
 
-          {/* Logo centered */}
-          <div className="flex justify-center mb-8">
-            <Logo to="/" />
+      {/* Right Side */}
+      <div className="w-full lg:w-1/2 flex flex-col bg-[#f5f6f8]">
+        <div className="flex-1 flex items-center justify-center px-4 py-10">
+          <div className="w-full max-w-[440px]">
+            <div
+              className="bg-white rounded-2xl shadow-[0_2px_20px_rgba(0,0,0,0.07)] border border-gray-100 px-8 sm:px-10 py-10"
+              style={{ fontFamily: '"Inter", sans-serif' }}
+            >
+              <div className="flex justify-center mb-8">
+                <Logo to="/" />
+              </div>
+
+              <LoginForm
+                email={email}
+                password={password}
+                loading={loading}
+                error={error}
+                showPassword={showPassword}
+                onEmailChange={setEmail}
+                onPasswordChange={setPassword}
+                onTogglePassword={() => setShowPassword(!showPassword)}
+                onLogin={handleLogin}
+                onError={setError}
+              />
+            </div>
+
+            <p className="text-center text-xs text-gray-400 mt-16">
+              By continuing, you agree to InvesTry's Terms of Service and Privacy Policy.
+            </p>
           </div>
-
-          <LoginForm
-            email={email}
-            password={password}
-            loading={loading}
-            error={error}
-            showPassword={showPassword}
-            onEmailChange={setEmail}
-            onPasswordChange={setPassword}
-            onTogglePassword={() => setShowPassword(!showPassword)}
-            onLogin={handleLogin}
-            onGoogleSuccess={handleGoogleSuccess}
-            onError={setError}
-          />
         </div>
-
-        <p className="text-center text-xs text-gray-400 mt-16">
-          By continuing, you agree to InvesTry's Terms of Service and Privacy Policy.
-        </p>
       </div>
     </div>
   );

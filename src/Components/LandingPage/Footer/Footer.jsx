@@ -152,12 +152,6 @@ export default function Footer() {
           <a href="#" className="text-gray-400 text-sm hover:text-white transition-colors cursor-pointer no-underline" style={{ fontFamily: '"Inter", sans-serif' }}>
             Terms of Service
           </a>
-          <div className="flex items-center gap-2 border border-gray-700 rounded-lg px-3 py-1.5">
-            <Globe className="w-4 h-4 text-gray-400" />
-            <span className="text-gray-400 text-sm hover:text-white transition-colors cursor-pointer" style={{ fontFamily: '"Inter", sans-serif' }}>EN</span>
-            <span className="text-gray-600 text-sm">|</span>
-            <span className="text-gray-400 text-sm hover:text-white transition-colors cursor-pointer" style={{ fontFamily: '"Inter", sans-serif' }}>AR</span>
-          </div>
         </div>
       </div>
     </footer>

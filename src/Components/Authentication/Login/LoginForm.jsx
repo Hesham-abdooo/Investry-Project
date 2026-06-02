@@ -1,8 +1,6 @@
 import React from 'react'
-
 import { HiEye, HiEyeOff } from "react-icons/hi";
 import { Link } from "react-router-dom";
-import GoogleLoginButton from "./GoogleLoginButton";
 
 export default function LoginForm({
   email,
@@ -14,9 +12,6 @@ export default function LoginForm({
   onPasswordChange,
   onTogglePassword,
   onLogin,
-  onGoogleSuccess,
-  role,
-  onError,
 }) {
   return (
     <div className="w-full" style={{ fontFamily: '"Inter", sans-serif' }}>
@@ -32,18 +27,6 @@ export default function LoginForm({
           {error}
         </div>
       )}
-
-      {/* Google Login First */}
-      <div className="mb-6">
-        <GoogleLoginButton onSuccess={onGoogleSuccess} onError={onError} role={role} />
-      </div>
-
-      {/* Divider */}
-      <div className="flex items-center gap-4 mb-6">
-        <div className="flex-1 h-px bg-gray-200" />
-        <span className="text-xs text-gray-400 uppercase tracking-wider">or</span>
-        <div className="flex-1 h-px bg-gray-200" />
-      </div>
 
       <div className="mb-4">
         <label className="block text-sm font-medium text-[#1a2340] mb-1.5">
@@ -91,7 +74,7 @@ export default function LoginForm({
       <button
         onClick={onLogin}
         disabled={loading}
-        className="w-full text-white font-semibold py-3.5 rounded-xl transition-all duration-200 text-sm cursor-pointer active:scale-[0.98] disabled:opacity-50 shadow-sm hover:shadow-md"
+        className="w-full text-white font-semibold mb-3 py-3.5 rounded-xl transition-all duration-200 text-sm cursor-pointer active:scale-[0.98] disabled:opacity-50 shadow-sm hover:shadow-md"
         style={{ background: 'linear-gradient(135deg, #1a2340, #243060)' }}
       >
         {loading ? "Logging in..." : "Log In"}

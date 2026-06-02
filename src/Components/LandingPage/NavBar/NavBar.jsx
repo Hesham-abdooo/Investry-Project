@@ -72,7 +72,6 @@ export default function Navbar() {
 
             {/* Desktop Right Side */}
             <div className="hidden md:flex items-center gap-4">
-              <TopBar />
               <Link
                 to="/login"
                 className="text-sm font-semibold text-[#C9A84C] hover:text-[#b8932e] transition-colors duration-200 no-underline"
@@ -143,10 +142,7 @@ export default function Navbar() {
                   </motion.div>
                 ))}
 
-                {/* Language Switcher */}
-                <motion.div variants={slideItem} className="px-4 py-3">
-                  <TopBar />
-                </motion.div>
+              
 
                 {/* Buttons */}
                 <motion.div variants={slideItem} className="flex gap-3 pt-4 px-1">
