@@ -35,14 +35,22 @@ export default function SignUp() {
 
   const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
 
-  const handleGoogleSuccess = ({ token, roles }) => {
-    localStorage.setItem("token", token);
-    localStorage.setItem("role", roles?.[0] || roles);
-    const userRole = (roles?.[0] || roles)?.toLowerCase();
-    if (userRole === "investor") navigate("/investor");
-    else if (userRole === "founder") navigate("/founder");
-    else if (userRole === "administrator") navigate("/admin");
-  };
+const handleGoogleSuccess = ({ token, roles }) => {
+  console.log("handleGoogleSuccess called:", { token, roles }); // مؤقت للتشخيص
+
+  const userRole = (roles?.[0] || "").toLowerCase();
+
+  localStorage.setItem("token", token);
+  localStorage.setItem("role", roles?.[0] || "");
+
+  if (userRole === "investor") navigate("/investor");
+  else if (userRole === "founder") navigate("/founder");
+  else if (userRole === "administrator") navigate("/admin");
+  else {
+    console.warn("Unknown role:", userRole);
+    navigate("/login");
+  }
+};
 
   const handleSignUp = async () => {
     setError("");

@@ -21,10 +21,18 @@ export default function GoogleLoginButton({ onError, onSuccess, role }) {
       const res = await axiosInstance.post(endpoint, { idToken });
       const { token, roles } = res.data.data;
 
+      const returnedRole = roles?.[0]?.toLowerCase();
+
+      // لو السيرفر رجع role مختلف عن اللي اختاره
+      if (returnedRole !== normalizedRole) {
+        onError(`This email is already registered as a ${roles?.[0]}. Please login as ${roles?.[0]}.`);
+        return;
+      }
+
       localStorage.setItem("token", token);
-      const roleName = roles?.[0] || role;
-      localStorage.setItem("role", roleName);
+      localStorage.setItem("role", roles?.[0]);
       onSuccess({ token, roles });
+
     } catch (err) {
       console.error("Google Error:", err.response?.data || err);
 
@@ -43,7 +51,6 @@ export default function GoogleLoginButton({ onError, onSuccess, role }) {
 
   return (
     <div style={{ position: "relative" }}>
-      {/* Custom styled button visible to user */}
       <button
         type="button"
         className="w-full flex items-center justify-center gap-3 border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-gray-600 bg-white hover:bg-[#fafafa] hover:border-gray-300 transition-all duration-200 cursor-pointer active:scale-[0.99]"
@@ -57,7 +64,6 @@ export default function GoogleLoginButton({ onError, onSuccess, role }) {
         </svg>
         Continue with Google
       </button>
-      {/* Invisible GoogleLogin overlay on top to capture click */}
       <div style={{ position: "absolute", inset: 0, opacity: 0, overflow: "hidden" }}>
         <GoogleLogin
           onSuccess={handleGoogleSuccess}
