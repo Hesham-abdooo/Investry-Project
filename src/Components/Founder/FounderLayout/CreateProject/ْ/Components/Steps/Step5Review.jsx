@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { FiPieChart, FiEdit2 } from "react-icons/fi";
+import axiosInstance from '../../../../../../../Api/axiosInstance';
 
 const Step5Review = ({
   selectedFunding,
@@ -17,6 +18,24 @@ const Step5Review = ({
   documents,
   videoUrl,
 }) => {
+  const [categoryName, setCategoryName] = useState(category);
+
+  useEffect(() => {
+    const fetchCategoryName = async () => {
+      try {
+        const res = await axiosInstance.get('/Categories');
+        if (res.data && res.data.success) {
+          const cat = res.data.data.find(c => c.id === category);
+          if (cat) setCategoryName(cat.name);
+        }
+      } catch (err) {
+        console.error("Failed to fetch categories:", err);
+      }
+    };
+    if (category) {
+      fetchCategoryName();
+    }
+  }, [category]);
 
   const formatNumber = (num) => {
     if (!num) return '0';
@@ -104,7 +123,7 @@ const Step5Review = ({
           <div className='review_row'>
             <div className='review_field'>
               <span className='review_field_label'>CATEGORY</span>
-              <span className='review_field_value'>{category}</span>
+              <span className='review_field_value'>{categoryName || category}</span>
             </div>
             <div className='review_field'>
               <span className='review_field_label'>FUNDING GOAL</span>
@@ -178,7 +197,7 @@ const Step5Review = ({
             </div>
           )}
           <div className='preview_body'>
-            <span className='preview_category'>{category || 'CATEGORY'}</span>
+            <span className='preview_category'>{categoryName || category || 'CATEGORY'}</span>
             <h3 className='preview_title'>{projectTitle || 'Project Title'}</h3>
             <div className='preview_goal'>
               <span className='preview_goal_label'>Funding Goal</span>

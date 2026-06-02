@@ -171,7 +171,7 @@ export default function FounderEditProject() {
     try {
       const fd = new FormData();
       fd.append("Title", projectTitle);
-      fd.append("ShortDescription", projectDescription);
+      fd.append("ShortDescription", projectDescription.substring(0, 200));
       fd.append("LongDescription", projectDescription);
       fd.append("TargetAmount", fundingGoal);
       fd.append("MinimumContribution", minContribution);

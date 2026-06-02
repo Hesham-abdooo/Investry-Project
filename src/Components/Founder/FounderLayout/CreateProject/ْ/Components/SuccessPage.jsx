@@ -9,10 +9,7 @@ const SuccessPage = () => {
   return (
     <>
       <div className="topBar">
-        <div className="logo">
-          <Logo />
-          <span>InvesTry</span>
-        </div>
+        <Logo />
       </div>
 
       <div className="success_page">

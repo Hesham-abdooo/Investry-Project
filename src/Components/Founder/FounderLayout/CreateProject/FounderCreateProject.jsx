@@ -217,7 +217,7 @@ function CreateProject() {
 
     formData.append("Title", projectTitle);
     formData.append("CategoryIds[0]", category);
-    formData.append("ShortDescription", projectDescription);
+    formData.append("ShortDescription", projectDescription.substring(0, 200));
     formData.append("LongDescription", projectDescription);
     formData.append(
       "FundingModel",
@@ -266,7 +266,13 @@ function CreateProject() {
       clearSavedProgress(); // ← امسح الـ cache بعد النجاح
       setIsSubmitted(true);
     } catch (error) {
-      console.error(error);
+      console.error("Full Error:", error);
+      if (error.response && error.response.data) {
+        console.error("Backend Error Details:", error.response.data);
+        alert("Backend Validation Error: " + JSON.stringify(error.response.data));
+      } else {
+        alert("Request failed: " + error.message);
+      }
     } finally {
       setIsLoading(false);
     }
